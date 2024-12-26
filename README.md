@@ -23,8 +23,11 @@ cd zilliz-byoc-prepare/byoc-prepare
 Edit the terraform.tfvars.json file to specify the required variables. Below is an explanation of the variables you need to configure:
 
 `aws_region`: AWS region where resources will be deployed (e.g., us-west-2).
+
 `vpc_cidr`: CIDR block for the VPC (e.g., 10.0.0.0/16).
+
 `name`: A unique name for the BYOC project.
+
 `ExternalId`: The external ID provided by the Zilliz console.
 
 An example of terraform.tfvars.json:

@@ -104,12 +104,11 @@ resource "aws_iam_policy" "cross_account_policy" {
         "Action" : [
           "iam:PassRole"
         ],
-        "Resource" : [
-          "arn:*:iam::*:role/zilliz-byoc*"
-        ],
+        "Resource" : "*",
         "Condition" : {
           "StringEquals" : {
-            "iam:PassedToService" : "eks.amazonaws.com"
+            "iam:PassedToService" : "eks.amazonaws.com",
+            "iam:ResourceTag/Vendor": "zilliz-byoc"
           }
         }
       },
@@ -119,9 +118,12 @@ resource "aws_iam_policy" "cross_account_policy" {
         "Action" : [
           "iam:UpdateAssumeRolePolicy"
         ],
-        "Resource" : [
-          "arn:*:iam::*:role/zilliz-byoc*"
-        ]
+        "Resource" : "*",
+        "Condition" : {
+          "StringEquals" : {
+            "iam:ResourceTag/Vendor": "zilliz-byoc"
+          }
+        }
       },
       {
         "Sid" : "EC2Create",

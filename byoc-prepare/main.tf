@@ -13,6 +13,7 @@ module "aws_iam" {
   name       = var.name
   ExternalId = var.ExternalId
 
+  zillizAccount = "306787409409"
 }
 
 module "aws_vpc" {

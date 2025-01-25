@@ -6,13 +6,18 @@ module "aws_bucket" {
   s3_bucket_names = ["milvus"]
 }
 
+data "zillizcloud_external_id" "current" {}
+data "aws_caller_identity" "current" {}
+
 module "aws_iam" {
   source = "../modules/aws_iam"
 
   bucketName = module.aws_bucket.s3_bucket_ids
   name       = var.name
-  ExternalId = var.ExternalId
+  ExternalId = data.zillizcloud_external_id.current.id
 
+  eks_oidc_url = var.eks_oidc_url
+  account_id   = data.aws_caller_identity.current.account_id
 }
 
 module "aws_vpc" {

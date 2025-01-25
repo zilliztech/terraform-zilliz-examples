@@ -20,3 +20,14 @@ variable "federated_principal" {
   type        = string
   default     = "arn:aws:iam::accountid:oidc-provider/eks_oidc_url"
 }
+
+variable "eks_oidc_url" {
+  description = "The OIDC URL for the EKS cluster"
+  type        = string
+  default     = "eks_oidc_url"
+}
+
+variable "account_id" {
+  type        = string
+  default     = "accountid"
+}

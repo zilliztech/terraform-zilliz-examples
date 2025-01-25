@@ -15,8 +15,8 @@ resource "aws_iam_role" "storage_role" {
         "Action" : "sts:AssumeRoleWithWebIdentity",
         "Condition" : {
           "StringLike" : {
-            "eks_oidc_url:aud" : "sts.amazonaws.com",
-            "eks_oidc_url:sub" : [
+            "${var.eks_oidc_url}:aud" : "sts.amazonaws.com",
+            "${var.eks_oidc_url}:sub" : [
               "system:serviceaccount:milvus-*:milvus*",
               "system:serviceaccount:loki:loki*",
               "system:serviceaccount:index-pool:milvus*"

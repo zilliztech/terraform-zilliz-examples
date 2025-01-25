@@ -25,7 +25,10 @@ variable "name" {
   }
 }
 
-variable "ExternalId" {
-  description = "External identifier to use when assuming the role. To avoid the confused deputy problem."
+
+
+variable "eks_oidc_url" {
+  description = "The OIDC URL for the EKS cluster"
   type        = string
+  default     = "eks_oidc_url"
 }

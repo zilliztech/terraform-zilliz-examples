@@ -34,39 +34,39 @@ resource "aws_iam_role" "eks_role" {
       {
         "Effect" : "Allow",
         "Principal" : {
-          "Federated" : "${var.federated_principal}"
+          "Federated" : "arn:aws:iam::${var.account_id}:oidc-provider/${var.eks_oidc_url}"
         },
         "Action" : "sts:AssumeRoleWithWebIdentity",
         "Condition" : {
           "StringEquals" : {
-            "eks_oidc_url:aud" : "sts.amazonaws.com",
-            "eks_oidc_url:sub" : "system:serviceaccount:kube-system:aws-load-balancer-controller"
+            "${var.eks_oidc_url}:aud" : "sts.amazonaws.com",
+            "${var.eks_oidc_url}:sub" : "system:serviceaccount:kube-system:aws-load-balancer-controller"
           }
         }
       },
       {
         "Effect" : "Allow",
         "Principal" : {
-          "Federated" : "${var.federated_principal}"
+          "Federated" : "arn:aws:iam::${var.account_id}:oidc-provider/${var.eks_oidc_url}"
         },
         "Action" : "sts:AssumeRoleWithWebIdentity",
         "Condition" : {
           "StringEquals" : {
-            "eks_oidc_url:sub" : "system:serviceaccount:kube-system:ebs-csi-controller-sa",
-            "eks_oidc_url:aud" : "sts.amazonaws.com"
+            "${var.eks_oidc_url}:sub" : "system:serviceaccount:kube-system:ebs-csi-controller-sa",
+            "${var.eks_oidc_url}:aud" : "sts.amazonaws.com"
           }
         }
       },
       {
         "Effect" : "Allow",
         "Principal" : {
-          "Federated" : "${var.federated_principal}"
+          "Federated" : "arn:aws:iam::${var.account_id}:oidc-provider/${var.eks_oidc_url}"
         },
         "Action" : "sts:AssumeRoleWithWebIdentity",
         "Condition" : {
           "StringEquals" : {
-            "eks_oidc_url:sub" : "system:serviceaccount:kube-system:cluster-autoscaler",
-            "eks_oidc_url:aud" : "sts.amazonaws.com"
+            "${var.eks_oidc_url}:sub" : "system:serviceaccount:kube-system:cluster-autoscaler",
+            "${var.eks_oidc_url}:aud" : "sts.amazonaws.com"
           }
         }
       }

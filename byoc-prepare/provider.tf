@@ -8,6 +8,7 @@ terraform {
     }
     zillizcloud = {
       source  = "zilliztech/zillizcloud"
+      version = "~> 0.3.0"
     }
   }
 }

@@ -39,8 +39,8 @@ resource "aws_iam_role" "eks_role" {
         "Action" : "sts:AssumeRoleWithWebIdentity",
         "Condition" : {
           "StringEquals" : {
-            "eks_oidc_url:aud" : "sts.amazonaws.com",
-            "eks_oidc_url:sub" : "system:serviceaccount:kube-system:aws-load-balancer-controller"
+            "${var.eks_oidc_url}:aud" : "sts.amazonaws.com",
+            "${var.eks_oidc_url}:sub" : "system:serviceaccount:kube-system:aws-load-balancer-controller"
           }
         }
       },
@@ -52,8 +52,8 @@ resource "aws_iam_role" "eks_role" {
         "Action" : "sts:AssumeRoleWithWebIdentity",
         "Condition" : {
           "StringEquals" : {
-            "eks_oidc_url:sub" : "system:serviceaccount:kube-system:ebs-csi-controller-sa",
-            "eks_oidc_url:aud" : "sts.amazonaws.com"
+            "${var.eks_oidc_url}:sub" : "system:serviceaccount:kube-system:ebs-csi-controller-sa",
+            "${var.eks_oidc_url}:aud" : "sts.amazonaws.com"
           }
         }
       },
@@ -65,8 +65,8 @@ resource "aws_iam_role" "eks_role" {
         "Action" : "sts:AssumeRoleWithWebIdentity",
         "Condition" : {
           "StringEquals" : {
-            "eks_oidc_url:sub" : "system:serviceaccount:kube-system:cluster-autoscaler",
-            "eks_oidc_url:aud" : "sts.amazonaws.com"
+            "${var.eks_oidc_url}:sub" : "system:serviceaccount:kube-system:cluster-autoscaler",
+            "${var.eks_oidc_url}:aud" : "sts.amazonaws.com"
           }
         }
       }

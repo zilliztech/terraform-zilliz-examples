@@ -1,17 +1,28 @@
-# 1. set the environment variable for uat env
-export ZILLIZCLOUD_HOST_ADDRESS=https://api.cloud-uat3.zilliz.com
 
-# 2. terraform init to download the provider(zillizcloud and aws)
+# 1. terraform init to download the provider(zillizcloud and aws)
 terraform init
 
-# 3. terraform plan to check the changes
+# 2. config provider.tf
+- set the api_key
+- set the byoc_mode to true if you are using byoc mode
+- set the environment variable for uat env
+export ZILLIZCLOUD_HOST_ADDRESS=https://api.cloud-uat3.zilliz.com
+
+
+# 3. config terraform.tfvars.json
+- set the aws_region
+- set the vpc_cidr
+- set the name
+- set the ExternalId
+
+# 4. terraform plan to check the changes
 terraform plan
 
-# 4. terraform apply to apply the changes
+# 5. terraform apply to apply the changes
 terraform apply
 
 
-## update oidc and federated principal(optional)
+(optional)update oidc and federated principal for idempotence
 ```
 module "aws_iam" {
   source = "../modules/aws_iam"
@@ -27,5 +38,5 @@ module "aws_iam" {
 }
 ```
 
-# 5. clean up
+# 6. clean up
 terraform destroy

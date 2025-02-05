@@ -29,6 +29,36 @@ module "aws_vpc" {
 
 }
 
+
+resource "zillizcloud_byoc_project" "this" {
+  name = var.name
+
+  aws = {
+    region = "aws-${var.aws_region}"
+
+    network = {
+      vpc_id = module.aws_vpc.vpc_id
+      subnet_ids = module.aws_vpc.subnet_ids
+      security_group_ids = [module.aws_vpc.sg_id]
+      # vpc_endpoint_id    = "vpce-12345678"
+    }
+    role_arn = {
+      storage       = module.aws_iam.storage_role_arn
+      eks           = module.aws_iam.eks_role_arn
+      cross_account = module.aws_iam.cross_account_role_arn
+    }
+    storage = {
+      bucket_id = module.aws_bucket.s3_bucket_ids
+    }
+
+    instances = {
+      core_vm        = "m6i.2xlarge"
+      fundamental_vm = "m6i.2xlarge"
+      search_vm      = "m6id.2xlarge"
+    }
+  }
+}
+
 output "vpc_id" {
   value = module.aws_vpc.vpc_id
 }
@@ -60,4 +90,8 @@ output "storage_role_arn" {
 output "external_id" {
   value = module.aws_iam.external_id
   
+}
+
+output "project_id" {
+  value = zillizcloud_byoc_project.this.id
 }

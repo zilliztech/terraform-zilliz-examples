@@ -26,7 +26,7 @@ module "aws_vpc" {
   aws_region = var.aws_region
   vpc_cidr   = var.vpc_cidr
   name       = var.name
-
+  enable_private_link = var.enable_private_link
 }
 
 
@@ -40,7 +40,7 @@ resource "zillizcloud_byoc_project" "this" {
       vpc_id = module.aws_vpc.vpc_id
       subnet_ids = module.aws_vpc.subnet_ids
       security_group_ids = [module.aws_vpc.sg_id]
-      # vpc_endpoint_id    = "vpce-12345678"
+      vpc_endpoint_id    = var.enable_private_link ? module.aws_vpc.vpc_endpoint : null
     }
     role_arn = {
       storage       = module.aws_iam.storage_role_arn

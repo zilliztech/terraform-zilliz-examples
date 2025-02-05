@@ -32,3 +32,11 @@ variable "eks_oidc_url" {
   type        = string
   default     = "eks_oidc_url"
 }
+
+
+// enable private link for the byoc project
+variable "enable_private_link" {
+  description = "Enable private link for the byoc project"
+  type        = bool
+  default     = false
+}

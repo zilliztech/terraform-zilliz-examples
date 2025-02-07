@@ -31,8 +31,3 @@ variable "enable_private_link" {
   default     = false
 }
 
-variable "private_zone_name" {
-  description = "The name of the private zone"
-  type        = string
-  default     = "byoc.zillizcloud.com"
-}

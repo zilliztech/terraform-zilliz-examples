@@ -22,7 +22,7 @@ resource "aws_vpc_endpoint" "byoc_endpoint" {
 
 resource "aws_route53_zone" "byoc_private_zone" {
   count = var.enable_private_link ? 1 : 0
-  name = var.private_zone_name
+  name = local.config.private_zone_name
   vpc {
     vpc_id = module.vpc.vpc_id
   }

@@ -24,3 +24,10 @@ variable "name" {
     error_message = "variable name cannot be empty."
   }
 }
+
+variable "enable_private_link" {
+  description = "Enable private link for the byoc project"
+  type        = bool
+  default     = false
+}
+

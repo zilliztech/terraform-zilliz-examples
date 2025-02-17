@@ -4,6 +4,12 @@ resource "aws_iam_role" "storage_role" {
     Vendor = "zilliz-byoc"
   }
 
+  lifecycle {
+    ignore_changes = [
+      assume_role_policy
+    ]
+  }
+
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [

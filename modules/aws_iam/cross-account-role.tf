@@ -1,3 +1,7 @@
+locals {
+  config = yamldecode(file("${path.module}/conf.yaml"))
+}
+
 resource "aws_iam_role" "cross_account_role" {
   name = "zilliz-byoc-${var.name}-cross-account-role"
 
@@ -7,7 +11,7 @@ resource "aws_iam_role" "cross_account_role" {
       {
         "Effect" : "Allow",
         "Principal" : {
-          "AWS" : "arn:aws:iam::${var.zillizAccount}:role/zilliz-byoc"
+          "AWS" : "arn:aws:iam::${local.config.zillizAccount}:role/zilliz-byoc"
         },
         "Action" : [
           "sts:TagSession",
@@ -353,11 +357,4 @@ resource "aws_iam_policy" "cross_account_policy" {
       }
     ]
   })
-}
-
-variable "zillizAccount" {
-  description = "The account ID of zilliz"
-  type        = string
-
-  default = "965570967084"
 }

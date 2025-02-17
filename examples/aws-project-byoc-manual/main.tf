@@ -1,5 +1,5 @@
 module "aws_bucket" {
-  source = "../modules/aws_bucket"
+  source = "../../modules/aws_bucket"
 
   aws_region      = var.aws_region
   name            = var.name
@@ -7,7 +7,7 @@ module "aws_bucket" {
 }
 
 module "aws_iam" {
-  source = "../modules/aws_iam"
+  source = "../../modules/aws_iam"
 
   bucketName = module.aws_bucket.s3_bucket_ids
   name       = var.name
@@ -16,7 +16,7 @@ module "aws_iam" {
 }
 
 module "aws_vpc" {
-  source = "../modules/aws_vpc"
+  source = "../../modules/aws_vpc"
 
   aws_region = var.aws_region
   vpc_cidr   = var.vpc_cidr

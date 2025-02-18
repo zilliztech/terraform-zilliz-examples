@@ -20,9 +20,9 @@ module "aws_iam" {
 module "aws_vpc" {
   source = "../../modules/aws_vpc"
 
-  aws_region = var.aws_region
-  vpc_cidr   = var.vpc_cidr
-  name       = var.name
+  aws_region          = var.aws_region
+  vpc_cidr            = var.vpc_cidr
+  name                = var.name
   enable_private_link = var.enable_private_link
 }
 
@@ -34,8 +34,8 @@ resource "zillizcloud_byoc_project" "this" {
     region = "aws-${var.aws_region}"
 
     network = {
-      vpc_id = module.aws_vpc.vpc_id
-      subnet_ids = module.aws_vpc.subnet_ids
+      vpc_id             = module.aws_vpc.vpc_id
+      subnet_ids         = module.aws_vpc.subnet_ids
       security_group_ids = [module.aws_vpc.sg_id]
       vpc_endpoint_id    = var.enable_private_link ? module.aws_vpc.vpc_endpoint : null
     }
@@ -49,9 +49,9 @@ resource "zillizcloud_byoc_project" "this" {
     }
 
     instances = {
-      core_vm        = "m6i.2xlarge"
-      fundamental_vm = "m6i.2xlarge"
-      search_vm      = "m6id.2xlarge"
+      core_vm        = var.core_instance_type
+      fundamental_vm = var.fundamental_instance_type
+      search_vm      = var.search_instance_type
     }
   }
 }
@@ -86,7 +86,7 @@ output "storage_role_arn" {
 
 output "external_id" {
   value = module.aws_iam.external_id
-  
+
 }
 
 output "project_id" {

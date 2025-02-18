@@ -31,3 +31,21 @@ variable "enable_private_link" {
   type        = bool
   default     = false
 }
+
+variable "core_instance_type" {
+  description = "Instance type for core VM"
+  type        = string
+  default     = "m6i.2xlarge"
+}
+
+variable "fundamental_instance_type" {
+  description = "Instance type for fundamental VM"
+  type        = string
+  default     = "m6i.2xlarge"
+}
+
+variable "search_instance_type" {
+  description = "Instance type for search VM"
+  type        = string
+  default     = "m6id.2xlarge"
+}

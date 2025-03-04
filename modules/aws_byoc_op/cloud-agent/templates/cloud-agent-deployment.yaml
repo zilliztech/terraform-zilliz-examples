@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    configmap.reloader.stakater.com/reload: cloud-agent
+  name: cloud-agent
+  namespace: vdc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: vdc
+      app.kubernetes.io/name: cloud-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: vdc
+        app.kubernetes.io/name: cloud-agent
+    spec:
+      containers:
+      - env:
+        - name: SPRING_CONFIG_LOCATION
+          value: file:///spring-config/application.yml
+        - name: BYOC_K8S_TOKEN
+          value: "{{  .Values.config.tunnel.k8sToken }}"
+        - name: BYOC_K8S_KEY
+          value: "{{ .Values.config.tunnel.authToken }}"
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /cloud/check_healthy_db
+            port: 9501
+          initialDelaySeconds: 90
+          periodSeconds: 30
+          successThreshold: 1
+        name: cloud-agent
+        ports:
+        - containerPort: 9501
+        - containerPort: 9502
+        - containerPort: 9503
+        - containerPort: 9504
+        readinessProbe:
+          httpGet:
+            path: /cloud/check_healthy_db
+            port: 9501
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: 2
+            memory: 2Gi
+          requests:
+            cpu: 1
+            memory: 1Gi
+        volumeMounts:
+        - mountPath: /spring-config
+          name: spring-config
+      nodeSelector:
+        node-role/vdc: "true"
+      tolerations:
+      - effect: NoExecute
+        key: node-role/vdc
+        operator: Equal
+        value: "true"
+      volumes:
+      - configMap:
+          name: cloud-agent
+        name: spring-config

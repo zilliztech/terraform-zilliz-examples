@@ -9,15 +9,13 @@ terraform {
     }
     zillizcloud = {
       source  = "zilliztech/zillizcloud"
-      version = "~> 0.3.6"
+      version = "~> 0.4.0"
     }
   }
 }
 
 provider "aws" {
-  region = var.aws_region
 }
 
 provider "zillizcloud" {
-  host_address = "https://api.cloud-uat3.zilliz.com/v2"
 }

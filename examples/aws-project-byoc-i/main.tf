@@ -71,3 +71,11 @@ resource "zillizcloud_byoc_op_project" "this" {
 
   depends_on = [data.zillizcloud_byoc_op_project_settings.this, zillizcloud_byoc_op_project_agent.this, module.aws_byoc_op]
 }
+
+output "data_plane_id" {
+  value = data.zillizcloud_byoc_op_project_settings.this.data_plane_id
+}
+
+output "project_id" {
+  value = data.zillizcloud_byoc_op_project_settings.this.project_id
+}

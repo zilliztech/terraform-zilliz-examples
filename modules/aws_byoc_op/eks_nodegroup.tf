@@ -1,7 +1,7 @@
 # aws_eks_addon.coredns:
 resource "aws_eks_addon" "coredns" {
   addon_name    = "coredns"
-  cluster_name  = local.dataplane_id
+  cluster_name  = aws_eks_cluster.zilliz_byoc_cluster.name
   tags = {
     "Vendor" = "zilliz-byoc"
   }
@@ -13,7 +13,7 @@ resource "aws_eks_addon" "coredns" {
 }
 
 resource "aws_eks_addon" "ebs_csi" {
-  cluster_name    = local.dataplane_id
+  cluster_name    = aws_eks_cluster.zilliz_byoc_cluster.name
   addon_name      = "aws-ebs-csi-driver"
 
   tags = {
@@ -27,6 +27,57 @@ resource "aws_eks_addon" "ebs_csi" {
   service_account_role_arn = aws_iam_role.eks_addon_role.arn
   depends_on = [aws_eks_node_group.core, aws_eks_addon.coredns]
 }
+
+# aws_launch_template.default:
+resource "aws_launch_template" "core" {
+  description             = "Core launch template for zilliz-byoc-pulsar EKS managed node group"
+  disable_api_stop        = false
+  disable_api_termination = false
+  name_prefix             = "zilliz-byoc-core-"
+  tags = {
+    "Vendor" = "zilliz-byoc"
+  }
+  tags_all = {
+    "Vendor" = "zilliz-byoc"
+  }
+  vpc_security_group_ids = [
+    aws_security_group.zilliz_byoc_sg.id
+  ]
+  
+  user_data = local.core_user_data
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_put_response_hop_limit = 2
+    http_tokens                 = "required"
+  }
+
+  monitoring {
+    enabled = true
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "Name" = "zilliz-byoc-core"
+      "Vendor" = "zilliz-byoc"
+    }
+  }
+  tag_specifications {
+    resource_type = "network-interface"
+    tags = {
+      "Name" = "zilliz-byoc-core"
+      "Vendor" = "zilliz-byoc"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "Name" = "zilliz-byoc-core"
+      "Vendor" = "zilliz-byoc"
+    }
+  }
+}
+
 
 # aws_launch_template.default:
 resource "aws_launch_template" "default" {
@@ -138,7 +189,7 @@ resource "aws_launch_template" "diskann" {
 resource "aws_eks_node_group" "search" {
   ami_type      = "AL2_x86_64"
   capacity_type = local.k8s_node_groups.search.capacity_type
-  cluster_name  = local.dataplane_id
+  cluster_name  = aws_eks_cluster.zilliz_byoc_cluster.name
 
   instance_types = [
    local.k8s_node_groups.search.instance_types,
@@ -183,7 +234,7 @@ resource "aws_eks_node_group" "search" {
 resource "aws_eks_node_group" "core" {
   ami_type      = "AL2_x86_64"
   capacity_type = local.k8s_node_groups.core.capacity_type
-  cluster_name  = local.dataplane_id
+  cluster_name  = aws_eks_cluster.zilliz_byoc_cluster.name
 
   instance_types = [
     local.k8s_node_groups.core.instance_types,
@@ -209,8 +260,8 @@ resource "aws_eks_node_group" "core" {
   # version = "1.27"
 
   launch_template {
-    id      = aws_launch_template.default.id
-    version = aws_launch_template.default.latest_version
+    id      = aws_launch_template.core.id
+    version = aws_launch_template.core.latest_version
   }
 
   scaling_config {
@@ -226,13 +277,15 @@ resource "aws_eks_node_group" "core" {
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
   }
+
+  depends_on = [ aws_eks_addon.vpc-cni ]
 }
 
 # aws_eks_node_group.index:
 resource "aws_eks_node_group" "index" {
   ami_type      = "AL2_x86_64"
   capacity_type = local.k8s_node_groups.index.capacity_type
-  cluster_name  = local.dataplane_id
+  cluster_name  = aws_eks_cluster.zilliz_byoc_cluster.name
 
   instance_types = [
     local.k8s_node_groups.index.instance_types,
@@ -271,13 +324,14 @@ resource "aws_eks_node_group" "index" {
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
   }
+
 }
 
 # aws_eks_node_group.fundamental
 resource "aws_eks_node_group" "fundamental" {
     ami_type      = "AL2_x86_64"
     capacity_type = local.k8s_node_groups.fundamental.capacity_type
-    cluster_name  = local.dataplane_id
+    cluster_name  = aws_eks_cluster.zilliz_byoc_cluster.name
 
     instance_types = [
         local.k8s_node_groups.fundamental.instance_types,
@@ -316,4 +370,5 @@ resource "aws_eks_node_group" "fundamental" {
     lifecycle {
       ignore_changes = [scaling_config[0].desired_size]
     }
+
 }

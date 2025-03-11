@@ -16,7 +16,7 @@ resource "aws_eks_cluster" "zilliz_byoc_cluster" {
   # version = "1.31"
 
   access_config {
-    authentication_mode                         = "CONFIG_MAP"
+    authentication_mode                         = "API"
     bootstrap_cluster_creator_admin_permissions = true
   }
 
@@ -31,8 +31,7 @@ resource "aws_eks_cluster" "zilliz_byoc_cluster" {
 
   vpc_config {
     endpoint_private_access = true
-    endpoint_public_access  = true
-    public_access_cidrs = var.eks_access_cidrs
+    endpoint_public_access  = false
     security_group_ids = [
       aws_security_group.zilliz_byoc_sg.id
     ]
@@ -45,7 +44,7 @@ resource "aws_eks_cluster" "zilliz_byoc_cluster" {
 resource "aws_eks_addon" "kube-proxy" {
   addon_name    = "kube-proxy"
   # addon_version = "v1.27.6-eksbuild.2"
-  cluster_name  = local.dataplane_id
+  cluster_name  = aws_eks_cluster.zilliz_byoc_cluster.name
 
   depends_on = [ aws_eks_cluster.zilliz_byoc_cluster ]
   
@@ -96,3 +95,23 @@ resource "aws_iam_openid_connect_provider" "eks" {
   }
 }
 
+resource "aws_eks_access_policy_association" "example" {
+  cluster_name  = aws_eks_cluster.zilliz_byoc_cluster.name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = aws_iam_role.maintaince_role.arn
+
+  access_scope {
+    type       = "cluster"
+  }
+
+}
+
+resource "aws_eks_access_entry" "test" {
+  cluster_name = aws_eks_cluster.zilliz_byoc_cluster.name
+  principal_arn     = aws_iam_role.maintaince_role.arn
+  type  = "STANDARD"
+
+  tags = {
+    "Vendor" = "zilliz-byoc"
+  }
+}

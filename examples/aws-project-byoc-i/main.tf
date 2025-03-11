@@ -3,6 +3,7 @@ data "zillizcloud_byoc_op_project_settings" "this" {
   data_plane_id = var.dataplane_id
 }
 
+data "zillizcloud_external_id" "current" {}
 
 module "aws_byoc_op" {
   source     = "../../modules/aws_byoc_op"
@@ -10,9 +11,7 @@ module "aws_byoc_op" {
 
   vpc_cidr            = var.vpc_cidr
   enable_private_link = var.enable_private_link
-  eks_access_cidrs = [
-    "0.0.0.0/0"
-  ]
+  
   dataplane_id    = data.zillizcloud_byoc_op_project_settings.this.data_plane_id
   k8s_node_groups = data.zillizcloud_byoc_op_project_settings.this.node_quotas
   agent_config = {
@@ -20,6 +19,7 @@ module "aws_byoc_op" {
     tag        = data.zillizcloud_byoc_op_project_settings.this.op_config.agent_image_url
   }
 
+  external_id = data.zillizcloud_external_id.current.id
 }
 
 resource "zillizcloud_byoc_op_project_agent" "this" {

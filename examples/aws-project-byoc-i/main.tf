@@ -30,23 +30,12 @@ resource "zillizcloud_byoc_op_project_agent" "this" {
 
 resource "zillizcloud_byoc_op_project" "this" {
 
-  lifecycle {
-    ignore_changes = [data_plane_id, project_id, aws, ext_config]
-
-  }
-
-  # required
-  data_plane_id = data.zillizcloud_byoc_op_project_settings.this.data_plane_id
-  # required
   project_id = data.zillizcloud_byoc_op_project_settings.this.project_id
-  # required
-  ext_config = "ext_config"
+  data_plane_id = data.zillizcloud_byoc_op_project_settings.this.data_plane_id
 
   aws = {
-    # option
     region = data.zillizcloud_byoc_op_project_settings.this.region
 
-    # option
     network = {
       vpc_id             = module.aws_byoc_op.vpc_id
       subnet_ids         = module.aws_byoc_op.private_subnet_ids
@@ -69,7 +58,12 @@ resource "zillizcloud_byoc_op_project" "this" {
     }
   }
 
+  ext_config = "ext_config"
   depends_on = [data.zillizcloud_byoc_op_project_settings.this, zillizcloud_byoc_op_project_agent.this, module.aws_byoc_op]
+  lifecycle {
+    ignore_changes = [data_plane_id, project_id, aws, ext_config]
+
+  }
 }
 
 output "data_plane_id" {

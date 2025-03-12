@@ -29,6 +29,7 @@ module "aws_vpc" {
 
 resource "zillizcloud_byoc_project" "this" {
   name = var.name
+  status = "RUNNING"
 
   aws = {
     region = "aws-${var.aws_region}"
@@ -54,6 +55,8 @@ resource "zillizcloud_byoc_project" "this" {
       search_vm      = var.search_instance_type
     }
   }
+
+  depends_on = [module.aws_vpc, module.aws_bucket, module.aws_iam]
 }
 
 output "vpc_id" {

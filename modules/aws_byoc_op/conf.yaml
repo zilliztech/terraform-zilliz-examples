@@ -4,4 +4,4 @@ vpce_service_ids:
 private_zone_name: byoc-uat.zillizcloud.com
 agent_config: 
   server_host: zilliz-byoc-us.byoc-uat.zillizcloud.com
-  repository: 306787409409.dkr.ecr.us-west-2.amazonaws.com/zilliz-byoc/vdc/cloud-agent
+  repository: 965570967084.dkr.ecr.us-west-2.amazonaws.com/zilliz-byoc/vdc/cloud-agent

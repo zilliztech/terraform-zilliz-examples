@@ -12,10 +12,22 @@ resource "aws_iam_role" "maintaince_role" {
         "Action" : "sts:AssumeRoleWithWebIdentity",
         "Condition" : {
           "StringLike" : {
-            "eks_oidc_url:aud" : "sts.amazonaws.com",
-            "eks_oidc_url:sub" : [
+            "${local.eks_oidc_url}:aud" : "sts.amazonaws.com",
+            "${local.eks_oidc_url}:sub" : [
               "system:serviceaccount:kube-system:cluster-admin-sa"
             ]
+          }
+        }
+      },
+      {
+        "Effect" : "Allow",
+        "Principal" : {
+          "AWS" : aws_iam_role.eks_role.arn
+        },
+        "Action" : "sts:AssumeRole",
+        "Condition" : {
+          "StringEquals" : {
+            "sts:ExternalId" : "${var.external_id}"
           }
         }
       }
@@ -314,24 +326,24 @@ resource "aws_iam_policy" "maintaince_policy" {
           "eks:ListTagsForResource"
         ],
         "Resource" : [
-          "arn:aws:eks:*:*:cluster/zilliz-byoc-*",
-          "arn:aws:eks:*:*:addon/zilliz-byoc-*/*/*",
-          "arn:aws:eks:*:*:nodegroup/zilliz-byoc-*/zilliz*/*",
-          "arn:aws:eks:*:*:podidentityassociation/zilliz-byoc-*/*",
-          "arn:aws:eks::aws:access-entry/zilliz-byoc-*/*/*/*/*",
-          "arn:aws:eks::aws:access-policy/zilliz-byoc-*/*"
+          "arn:aws:eks:*:*:cluster/zilliz-*",
+          "arn:aws:eks:*:*:addon/zilliz-*/*/*",
+          "arn:aws:eks:*:*:nodegroup/zilliz-*/zilliz*/*",
+          "arn:aws:eks:*:*:podidentityassociation/zilliz-*/*",
+          "arn:aws:eks::aws:access-entry/zilliz-*/*/*/*/*",
+          "arn:aws:eks::aws:access-policy/zilliz-*/*"
         ]
       },
       {
         "Sid" : "EkSDelete",
         "Effect" : "Allow",
         "Resource" : [
-          "arn:aws:eks:*:*:cluster/zilliz-byoc-*",
-          "arn:aws:eks:*:*:addon/zilliz-byoc-*/*/*",
-          "arn:aws:eks:*:*:nodegroup/zilliz-byoc-*/zilliz*/*",
-          "arn:aws:eks:*:*:podidentityassociation/zilliz-byoc-*/*",
-          "arn:aws:eks::aws:access-entry/zilliz-byoc-*/*/*/*/*",
-          "arn:aws:eks::aws:access-policy/zilliz-byoc-*/*"
+          "arn:aws:eks:*:*:cluster/zilliz-*",
+          "arn:aws:eks:*:*:addon/zilliz-*/*/*",
+          "arn:aws:eks:*:*:nodegroup/zilliz-*/zilliz*/*",
+          "arn:aws:eks:*:*:podidentityassociation/zilliz-*/*",
+          "arn:aws:eks::aws:access-entry/zilliz-*/*/*/*/*",
+          "arn:aws:eks::aws:access-policy/zilliz-*/*"
         ],
         "Action" : [
           "eks:DeleteAccessEntry",

@@ -18,18 +18,3 @@ provider "aws" {
     }
   }
 }
-provider "kubernetes" {
-  host                   = aws_eks_cluster.zilliz_byoc_cluster.endpoint
-    cluster_ca_certificate = base64decode(aws_eks_cluster.zilliz_byoc_cluster.certificate_authority[0].data)
-    token                  = data.aws_eks_cluster_auth.example.token
-}
-
-# https://registry.terraform.io/providers/hashicorp/helm/latest/docs#credentials-config
-provider "helm" {
-  kubernetes {
-    host                   = aws_eks_cluster.zilliz_byoc_cluster.endpoint
-    cluster_ca_certificate = base64decode(aws_eks_cluster.zilliz_byoc_cluster.certificate_authority[0].data)
-    token                  = data.aws_eks_cluster_auth.example.token
-
-  }
-}

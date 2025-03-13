@@ -24,16 +24,15 @@ variable "enable_private_link" {
   default     = false
 }
 
-variable "eks_access_cidrs" {
-  description = "The CIDR blocks that can access the EKS cluster"
-  type        = list(string)
-  nullable = false
-} 
-
 variable "dataplane_id" {
   description = "The ID of the dataplane"
   type        = string
   nullable = false
+
+  validation {
+    condition     = can(regex("^zilliz-", var.dataplane_id))
+    error_message = "Dataplane ID must start with 'zilliz-'"
+  }
 }
 
 variable "k8s_node_groups" {
@@ -104,4 +103,10 @@ variable "agent_config" {
   })
 
   nullable = false
+}
+
+variable "external_id" {
+  description = "The external ID for the maintaince role"
+  type        = string
+  nullable    = false
 }

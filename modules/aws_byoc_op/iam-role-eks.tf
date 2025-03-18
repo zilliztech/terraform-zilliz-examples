@@ -66,7 +66,7 @@ resource "aws_iam_role_policy_attachment" "eks_assume" {
 }
 
 resource "aws_iam_policy" "node_assume_role_policy" {
-  name        = "AssumeSpecificRolePolicy"
+  name        = "${local.dataplane_id}-AssumeSpecificRolePolicy"
   description = "Policy to allow assuming a specific role"
   policy      = jsonencode({
     Version = "2012-10-17"

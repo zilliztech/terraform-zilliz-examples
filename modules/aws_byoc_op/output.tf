@@ -63,5 +63,5 @@ output "eks_cluster_endpoint" {
 //byoc_endpoint
 output "byoc_endpoint" {
   description = "Endpoint for the BYOC"
-  value       = aws_vpc_endpoint.byoc_endpoint[0].id
+  value       = var.enable_private_link ? aws_vpc_endpoint.byoc_endpoint[0].id : null
 }

@@ -10,6 +10,7 @@ resource "aws_eks_addon" "coredns" {
   }
 
   depends_on = [aws_eks_node_group.core]
+
 }
 
 resource "aws_eks_addon" "ebs_csi" {
@@ -228,6 +229,10 @@ resource "aws_eks_node_group" "search" {
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
   }
+
+  timeouts {
+    create = "30m"
+  }
 }
 
 # aws_eks_node_group.core:
@@ -279,6 +284,9 @@ resource "aws_eks_node_group" "core" {
   }
 
   depends_on = [ aws_eks_addon.vpc-cni ]
+  timeouts {
+    create = "30m"
+  }
 }
 
 # aws_eks_node_group.index:
@@ -325,6 +333,9 @@ resource "aws_eks_node_group" "index" {
     ignore_changes = [scaling_config[0].desired_size]
   }
 
+  timeouts {
+    create = "30m"
+  }
 }
 
 # aws_eks_node_group.fundamental
@@ -369,6 +380,10 @@ resource "aws_eks_node_group" "fundamental" {
 
     lifecycle {
       ignore_changes = [scaling_config[0].desired_size]
+    }
+
+    timeouts {
+      create = "30m"
     }
 
 }

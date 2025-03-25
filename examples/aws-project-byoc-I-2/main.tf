@@ -34,6 +34,8 @@ module "aws_byoc_op" {
 resource "zillizcloud_byoc_op_project_agent" "this" {
   project_id    = zillizcloud_byoc_op_project_settings.this.project_id
   data_plane_id = zillizcloud_byoc_op_project_settings.this.data_plane_id
+
+  depends_on = [zillizcloud_byoc_op_project_settings.this, module.aws_byoc_op]
 }
 
 
@@ -62,14 +64,9 @@ resource "zillizcloud_byoc_op_project" "this" {
       bucket_id = module.aws_byoc_op.s3_bucket_ids
     }
 
-    instances = {
-      core_vm        = "m6i.2xlarge"
-      fundamental_vm = "m6i.2xlarge"
-      search_vm      = "m6i.2xlarge"
-    }
+
   }
 
-  ext_config = "ext_config"
   depends_on = [zillizcloud_byoc_op_project_settings.this, zillizcloud_byoc_op_project_agent.this, module.aws_byoc_op]
   lifecycle {
     ignore_changes = [data_plane_id, project_id, aws, ext_config]

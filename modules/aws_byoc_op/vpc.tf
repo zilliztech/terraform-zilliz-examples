@@ -44,6 +44,7 @@ module "vpc" {
 
   tags = {
     Vendor    = "zilliz-byoc"
+    Caller = data.aws_caller_identity.current.arn
   }
 }
 

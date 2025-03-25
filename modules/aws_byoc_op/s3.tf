@@ -8,4 +8,9 @@ module "s3_bucket" {
 
   control_object_ownership = true
   object_ownership         = "ObjectWriter"
+
+  tags = {
+    Vendor = "zilliz-byoc"
+    Caller = data.aws_caller_identity.current.arn
+  }
 }

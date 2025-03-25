@@ -2,6 +2,7 @@ resource "aws_iam_role" "storage_role" {
   name = "${local.dataplane_id}-storage-role"
   tags = {
     Vendor = "zilliz-byoc"
+    Caller = data.aws_caller_identity.current.arn
   }
 
   lifecycle {

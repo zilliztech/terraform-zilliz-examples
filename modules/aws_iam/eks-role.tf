@@ -3,6 +3,7 @@ resource "aws_iam_role" "eks_role" {
 
   tags = {
     Vendor = "zilliz-byoc"
+    Caller = data.aws_caller_identity.current.arn
   }
   lifecycle {
     ignore_changes = [

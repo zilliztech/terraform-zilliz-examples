@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 locals {
   config = yamldecode(file("${path.module}/conf.yaml"))
 }
@@ -29,6 +31,7 @@ resource "aws_iam_role" "cross_account_role" {
 
   tags = {
     Vendor = "zilliz-byoc"
+    Caller = data.aws_caller_identity.current.arn
   }
 }
 

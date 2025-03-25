@@ -36,6 +36,7 @@ resource "aws_iam_role" "maintaince_role" {
 
   tags = {
     Vendor = "zilliz-byoc"
+    Caller = data.aws_caller_identity.current.arn
   }
 }
 

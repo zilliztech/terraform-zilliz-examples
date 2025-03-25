@@ -8,10 +8,12 @@ resource "aws_eks_cluster" "zilliz_byoc_cluster" {
   tags = {
 
     "Vendor" = "zilliz-byoc"
+    Caller = data.aws_caller_identity.current.arn
   }
   tags_all = {
 
     "Vendor" = "zilliz-byoc"
+    Caller = data.aws_caller_identity.current.arn
   }
   # version = "1.31"
 

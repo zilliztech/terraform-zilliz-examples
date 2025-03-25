@@ -1,3 +1,5 @@
+data aws_caller_identity "current" {}
+
 locals {
   config = yamldecode(file("${path.module}/conf.yaml"))
 }
@@ -16,6 +18,7 @@ resource "aws_vpc_endpoint" "byoc_endpoint" {
   tags = {
     Name   = "zilliz-byoc-${var.name}-endpoint"
     Vendor = "zilliz-byoc"
+    Caller = data.aws_caller_identity.current.arn
   }
 }
 
@@ -27,7 +30,13 @@ resource "aws_route53_zone" "byoc_private_zone" {
     vpc_id = module.vpc.vpc_id
   }
   comment = "Private hosted zone for BYOC project"
+
+  tags = {
+    Vendor = "zilliz-byoc"
+    Caller = data.aws_caller_identity.current.arn
+  }
 }
+
 resource "aws_route53_record" "byoc_endpoint_alias" {
   count = var.enable_private_link ? 1 : 0
   zone_id = aws_route53_zone.byoc_private_zone[0].zone_id

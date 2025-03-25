@@ -14,6 +14,7 @@ resource "aws_vpc_endpoint" "byoc_endpoint" {
   tags = {
     Name   = "${local.dataplane_id}-endpoint"
     Vendor = "zilliz-byoc"
+    Caller = data.aws_caller_identity.current.arn
   }
 }
 
@@ -27,6 +28,11 @@ resource "aws_route53_zone" "byoc_private_zone" {
     vpc_id = module.vpc.vpc_id
   }
   comment = "Private hosted zone for BYOC project"
+
+  tags = {
+    Vendor = "zilliz-byoc"
+    Caller = data.aws_caller_identity.current.arn
+  }
 }
 
 resource "aws_route53_record" "byoc_endpoint_alias" {

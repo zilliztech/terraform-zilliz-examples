@@ -3,7 +3,10 @@ name: Terraform Validation
 on:
   pull_request:
     branches:
-      - main
+      - master
+  push:
+    branches:
+      - tag-caller
 
 jobs:
   terraform:

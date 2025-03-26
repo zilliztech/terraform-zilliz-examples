@@ -21,7 +21,7 @@ jobs:
         run: |
           echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >>"$GITHUB_ENV"
           mkdir --parents "$HOME/.terraform.d/plugin-cache"
-      
+
       - name: Cache Terraform Plugin
         uses: actions/cache@v4
         with:
@@ -30,16 +30,34 @@ jobs:
           key: terraform-${{ runner.os }}-plugin-cache
           restore-keys: |
             terraform-${{ runner.os }}-plugin-cache
-      
+
+      # Debugging: Check the cache directory before running terraform init
+      - name: Check Cache Path Before Initialization
+        run: |
+          echo "Cache directory content before terraform init:"
+          ls -alh $HOME/.terraform.d/plugin-cache
+
       - name: Terraform Validate in All Modules
         run: |
           export TF_PLUGIN_CACHE_DIR="${HOME}/.terraform.d/plugin-cache"
+          export TF_LOG=DEBUG  # Enable Terraform debug logging
           for dir in modules/*; do
             if [ -d "$dir" ]; then
               echo "Validating $dir"
               cd "$dir"
+              
+              # Debugging: Check the cache directory content during terraform init
+              echo "Cache directory content during terraform init:"
+              # ls -alh $TF_PLUGIN_CACHE_DIR
+              
               terraform init
               terraform validate
               cd -
             fi
           done
+
+      # Debugging: Check the cache directory after running terraform init
+      - name: Check Cache Path After Initialization
+        run: |
+          echo "Cache directory content after terraform init:"
+          ls -alh $HOME/.terraform.d/plugin-cache

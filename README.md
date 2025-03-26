@@ -83,3 +83,4 @@ When working with Terraform, it’s essential to understand how state files (`te
 #### [Terraform State Tracks Resources](https://developer.hashicorp.com/terraform/language/state):
 
 Terraform maintains a state file (`terraform.tfstate`) to keep track of the infrastructure it manages. This file is critical for Terraform to know what resources exist and their current configurations.
+

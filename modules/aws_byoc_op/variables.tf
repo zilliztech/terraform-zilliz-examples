@@ -110,3 +110,10 @@ variable "external_id" {
   type        = string
   nullable    = false
 }
+
+variable "eks_enable_public_access" {
+  description = "Enable public access to the EKS cluster"
+  type        = bool
+  default     = false
+  
+}

@@ -33,7 +33,7 @@ resource "aws_eks_cluster" "zilliz_byoc_cluster" {
 
   vpc_config {
     endpoint_private_access = true
-    endpoint_public_access  = false
+    endpoint_public_access  = var.eks_enable_public_access
     security_group_ids = [
       aws_security_group.zilliz_byoc_sg.id
     ]

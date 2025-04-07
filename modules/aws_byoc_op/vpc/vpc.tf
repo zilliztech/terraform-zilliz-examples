@@ -5,7 +5,6 @@ data "aws_availability_zones" "available" {
     values = ["opt-in-not-required"]
   }
 }
-
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.15.0"
@@ -46,16 +45,4 @@ module "vpc" {
     Vendor    = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn
   }
-}
-
-
-data "aws_prefix_list" "s3" {
-  name = "com.amazonaws.${local.region}.s3"
-}
-
-resource "aws_vpc_endpoint" "s3" {
-  vpc_id       = module.vpc.vpc_id
-  service_name = "com.amazonaws.${local.region}.s3"
-
-  route_table_ids = module.vpc.private_route_table_ids
 }

@@ -1,4 +1,4 @@
-resource "aws_security_group" "zilliz_byoc_sg" {
+resource "aws_security_group" "zilliz_byoc_security_group" {
   name        = "${local.dataplane_id}-sg"
   vpc_id      = module.vpc.vpc_id
   description = "Default security group of the VPC"

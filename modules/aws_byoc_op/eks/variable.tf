@@ -1,0 +1,129 @@
+variable "region" {
+  description = "Region"
+  type        = string
+}
+
+
+variable "dataplane_id" {
+  description = "Dataplane ID"
+  type        = string
+}
+
+variable "vpc_id" {
+  description = "VPC ID"
+  type        = string
+}
+
+
+variable "route_table_ids" {
+  description = "Route table IDs"
+  type        = list(string)
+}
+
+variable "security_group_id" {
+  description = "Security group ID"
+  type        = string
+}
+
+variable "subnet_ids" {
+  description = "Subnet IDs"
+  type        = list(string)
+}
+
+variable "eks_enable_public_access" {
+  description = "Enable public access"
+  type        = bool
+  default     = false
+}
+
+variable "external_id" {
+  description = "External ID"
+  type        = string
+}
+
+variable "aws_region" {
+  description = "The region in which the resources will be created"
+  type        = string
+  default     = "us-west-2"
+  
+}
+variable "enable_private_link" {
+  description = "Enable private link for the byoc project"
+  type        = bool
+  default     = false
+}
+variable "agent_config" {
+  description = "Configuration for the agent including server host, auth token, and k8s token"
+  type = object({
+    auth_token  = string
+    tag         = string
+  })
+
+  nullable = false
+}
+
+
+variable "k8s_node_groups" {
+  description = "Configuration for Kubernetes node groups"
+  type = map(object({
+    disk_size      = number
+    min_size       = number
+    max_size       = number
+    desired_size   = number
+    instance_types = string
+    capacity_type  = string
+  }))
+  
+  default = {
+    core = {
+      disk_size      = 100
+      min_size       = 1
+      max_size       = 50
+      desired_size   = 1
+      instance_types = "m6i.2xlarge"
+      capacity_type  = "SPOT"
+    }
+    index = {
+      disk_size      = 100
+      min_size       = 0
+      max_size       = 100
+      desired_size   = 0
+      instance_types = "m6i.2xlarge"
+      capacity_type  = "SPOT"
+    }
+    search = {
+      disk_size      = 100
+      min_size       = 0
+      max_size       = 100
+      desired_size   = 0
+      instance_types = "m6i.2xlarge"
+      capacity_type  = "SPOT"
+    }
+    fundamental = {
+      disk_size      = 50
+      min_size       = 0
+      max_size       = 6
+      desired_size   = 0
+      instance_types = "m6i.2xlarge"
+      capacity_type  = "SPOT"
+    }
+  }
+  
+  validation {
+    condition = alltrue([
+      for k, v in var.k8s_node_groups : 
+        v.disk_size > 0 && 
+        v.min_size >= 0 && 
+        v.max_size > 0 && 
+        v.desired_size >= 0 && 
+        v.desired_size <= v.max_size &&
+        contains(["ON_DEMAND", "SPOT"], v.capacity_type)
+    ])
+    error_message = "Invalid node group configuration. Ensure disk sizes are positive, sizes are valid, and capacity_type is either ON_DEMAND or SPOT."
+  }
+}
+
+variable "s3_bucket_id" {
+  description = "S3 bucket ID"
+  type        = string
+}

@@ -1,42 +1,31 @@
-data "aws_caller_identity" "current" {}
-
 locals {
-  config = yamldecode(file("${path.module}/conf.yaml"))
-  // available zones
-  azs = slice(data.aws_availability_zones.available.names, 0, 3)
-
-  // auto-generate private subnets cidr
-  # private_subnets = [for k, v in local.azs : cidrsubnet(var.vpc_cidr, 2, k)]
-  # public_subnets  = [cidrsubnet(cidrsubnet(var.vpc_cidr, 2, 3), 6, 62)]
-  // security group ingress and egress rules
-  sg_egress_ports     = [443]
-  sg_ingress_protocol = ["tcp", "udp"]
-  sg_egress_protocol  = ["tcp", "udp"]
-
-  // eks output
-  eks_oidc_url = module.my_eks.eks_cluster_oidc_url
-  eks_cluster_name = module.my_eks.eks_cluster_name
-  eks_cluster_oidc_issuer = module.my_eks.eks_cluster_oidc_issuer
-  eks_role = module.my_eks.eks_role
-  maintaince_role = module.my_eks.maintaince_role
-  eks_addon_role = module.my_eks.eks_addon_role
-  storage_role = module.my_eks.storage_role
-  // bucket output
-  bucket_id = module.my_s3.s3_bucket_id
-
-  // input parameters:
-  vpc_cidr = var.vpc_cidr
-  region   = var.aws_region
-
+   subnet_ids = var.subnet_ids
+    config = yamldecode(file("${path.module}/conf.yaml"))
+      k8s_node_groups = var.k8s_node_groups
+  # Dataplane ID for resource naming
   dataplane_id = var.dataplane_id
+  security_group_id = var.security_group_id
+  # VPC CIDR block
+  eks_oidc_url = replace(aws_eks_cluster.zilliz_byoc_cluster.identity[0].oidc[0].issuer, "https://", "")
+  eks_cluster_name = aws_eks_cluster.zilliz_byoc_cluster.name
+  eks_role = aws_iam_role.eks_role
+  maintaince_role = aws_iam_role.maintaince_role
+  eks_addon_role = aws_iam_role.eks_addon_role
+  eks_cluster_oidc_issuer = aws_eks_cluster.zilliz_byoc_cluster.identity[0].oidc[0].issuer
+  bucket_id = var.s3_bucket_id
+  # Security group ingress protocols
+  # sg_ingress_protocol = ["tcp", "udp"]
 
-  // node groups
+  # # Security group egress protocols
+  # sg_egress_protocol = ["tcp", "udp"]
 
-  k8s_node_groups = var.k8s_node_groups
-
+  # # Security group egress ports for external access
+  # sg_egress_ports = [443]
+  # azs             = slice(data.aws_availability_zones.available.names, 0, 3)
   account_id        = data.aws_caller_identity.current.account_id
-  agent_config_json = jsonencode(var.agent_config)
+  // auto-generate private subnets cidr
 
+ agent_config_json = jsonencode(var.agent_config)
   boot_config = {
     EKS_CLUSTER_NAME = local.eks_cluster_name
     DATAPLANE_ID     = var.dataplane_id
@@ -48,7 +37,7 @@ locals {
     enable_private_link = var.enable_private_link
   }
 
-  security_group_id = module.my_vpc.security_group_id
+  # security_group_id = module.my_vpc.security_group_id
 
   boot_config_json = jsonencode(local.boot_config)
 
@@ -79,5 +68,5 @@ echo "zilliz init result $?"
   
   EOF
   )
-
-}
+ 
+} 

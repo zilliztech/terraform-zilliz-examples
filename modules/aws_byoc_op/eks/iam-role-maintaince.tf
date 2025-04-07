@@ -22,7 +22,7 @@ resource "aws_iam_role" "maintaince_role" {
       {
         "Effect" : "Allow",
         "Principal" : {
-          "AWS" : aws_iam_role.eks_role.arn
+          "AWS" : local.eks_role.arn
         },
         "Action" : "sts:AssumeRole",
         "Condition" : {
@@ -106,7 +106,7 @@ resource "aws_iam_policy" "maintaince_policy" {
           "iam:ListAttachedRolePolicies"
         ],
         "Resource" : [
-          "${aws_iam_role.eks_role.arn}",
+          "${local.eks_role.arn}",
           "arn:aws:iam::*:role/aws-service-role/eks-nodegroup.amazonaws.com/AWSServiceRoleForAmazonEKSNodegroup"
         ]
       },
@@ -365,4 +365,28 @@ resource "aws_iam_policy" "maintaince_policy" {
       }
     ]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "eks_assume" {
+  policy_arn = aws_iam_policy.node_assume_role_policy.arn
+  role       = local.eks_role.name
+}
+
+resource "aws_iam_policy" "node_assume_role_policy" {
+  name        = "${local.dataplane_id}-AssumeSpecificRolePolicy"
+  description = "Policy to allow assuming a specific role"
+  policy      = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "sts:AssumeRole"
+        Resource = aws_iam_role.maintaince_role.arn
+      }
+    ]
+  })
+
+  tags = {
+    "Vendor" = "zilliz-byoc"
+  }
 }

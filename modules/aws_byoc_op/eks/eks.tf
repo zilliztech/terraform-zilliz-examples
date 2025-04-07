@@ -1,10 +1,12 @@
+data "aws_caller_identity" "current" {}
+
 # aws_eks_cluster.my_cluster:
 resource "aws_eks_cluster" "zilliz_byoc_cluster" {
   bootstrap_self_managed_addons = false
   enabled_cluster_log_types = []
   name = local.dataplane_id
 
-  role_arn = aws_iam_role.eks_role.arn
+  role_arn = local.eks_role.arn
   tags = {
 
     "Vendor" = "zilliz-byoc"
@@ -35,18 +37,20 @@ resource "aws_eks_cluster" "zilliz_byoc_cluster" {
     endpoint_private_access = true
     endpoint_public_access  = var.eks_enable_public_access
     security_group_ids = [
-      aws_security_group.zilliz_byoc_sg.id
+      local.security_group_id
+      
     ]
-    subnet_ids = module.vpc.private_subnets
+    subnet_ids = local.subnet_ids
   }
 }
+
 
 
 # aws_eks_addon.kube-proxy:
 resource "aws_eks_addon" "kube-proxy" {
   addon_name    = "kube-proxy"
   # addon_version = "v1.27.6-eksbuild.2"
-  cluster_name  = aws_eks_cluster.zilliz_byoc_cluster.name
+  cluster_name  = local.eks_cluster_name
 
   depends_on = [ aws_eks_cluster.zilliz_byoc_cluster ]
   
@@ -79,18 +83,18 @@ resource "aws_eks_addon" "vpc-cni" {
 }
 
 data "aws_eks_cluster_auth" "example" {
-  name = aws_eks_cluster.zilliz_byoc_cluster.name
+  name = local.eks_cluster_name
 }
 
 
 data "tls_certificate" "eks" {
-  url = aws_eks_cluster.zilliz_byoc_cluster.identity[0].oidc[0].issuer
+  url = local.eks_cluster_oidc_issuer
 }
 
 resource "aws_iam_openid_connect_provider" "eks" {
   client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
-  url             = aws_eks_cluster.zilliz_byoc_cluster.identity[0].oidc[0].issuer
+  url             = local.eks_cluster_oidc_issuer
 
   tags = {
     "Vendor" = "zilliz-byoc"
@@ -98,9 +102,9 @@ resource "aws_iam_openid_connect_provider" "eks" {
 }
 
 resource "aws_eks_access_policy_association" "example" {
-  cluster_name  = aws_eks_cluster.zilliz_byoc_cluster.name
+  cluster_name  = local.eks_cluster_name
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  principal_arn = aws_iam_role.maintaince_role.arn
+  principal_arn = local.maintaince_role.arn
 
   access_scope {
     type       = "cluster"
@@ -109,8 +113,8 @@ resource "aws_eks_access_policy_association" "example" {
 }
 
 resource "aws_eks_access_entry" "test" {
-  cluster_name = aws_eks_cluster.zilliz_byoc_cluster.name
-  principal_arn     = aws_iam_role.maintaince_role.arn
+  cluster_name = local.eks_cluster_name
+  principal_arn     = local.maintaince_role.arn
   type  = "STANDARD"
 
   tags = {

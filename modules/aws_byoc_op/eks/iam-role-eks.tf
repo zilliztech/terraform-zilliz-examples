@@ -61,26 +61,3 @@ resource "aws_iam_role_policy_attachment" "eks_vpc_policy_attachment" {
   role       = aws_iam_role.eks_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "eks_assume" {
-  policy_arn = aws_iam_policy.node_assume_role_policy.arn
-  role       = aws_iam_role.eks_role.name
-}
-
-resource "aws_iam_policy" "node_assume_role_policy" {
-  name        = "${local.dataplane_id}-AssumeSpecificRolePolicy"
-  description = "Policy to allow assuming a specific role"
-  policy      = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = "sts:AssumeRole"
-        Resource = aws_iam_role.maintaince_role.arn
-      }
-    ]
-  })
-
-  tags = {
-    "Vendor" = "zilliz-byoc"
-  }
-}

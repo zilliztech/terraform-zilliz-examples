@@ -9,59 +9,59 @@ output "s3_bucket_ids" {
 # IAM Roles
 output "storage_role_arn" {
   description = "ARN of the storage role for S3 access"
-  value       = aws_iam_role.storage_role.arn
+  value       = local.storage_role.arn
 }
 
 output "eks_addon_role_arn" {
   description = "ARN of the EKS addon role"
-  value       = aws_iam_role.eks_addon_role.arn
+  value       = local.eks_addon_role.arn
 }
 
 output "eks_role_arn" {
   description = "ARN of the EKS cluster role"
-  value       = aws_iam_role.eks_role.arn
+  value       = local.eks_role.arn
 }
 
 output "maintaince_role_arn" {
   description = "ARN of the maintenance role for cluster administration"
-  value       = aws_iam_role.maintaince_role.arn
+  value       = local.maintaince_role.arn
 }
 
 # VPC Resources
 output "vpc_id" {
   description = "ID of the VPC"
-  value       = module.vpc.vpc_id
+  value       = module.my_vpc.vpc_id
 }
 
 output "private_subnet_ids" {
   description = "List of private subnet IDs"
-  value       = module.vpc.private_subnets
+  value       = module.my_vpc.private_subnets
 }
 
 output "public_subnet_ids" {
   description = "List of public subnet IDs"
-  value       = module.vpc.public_subnets
+  value       = module.my_vpc.public_subnets
 }
 
 # Security Group
 output "security_group_id" {
   description = "ID of the security group for the EKS cluster"
-  value       = aws_security_group.zilliz_byoc_sg.id
+  value       = module.my_vpc.security_group_id
 }
 
 # EKS Cluster
 output "eks_cluster_name" {
   description = "Name of the EKS cluster"
-  value       = aws_eks_cluster.zilliz_byoc_cluster.name
+  value       = local.eks_cluster_name
 }
 
 output "eks_cluster_endpoint" {
   description = "Endpoint for the EKS cluster"
-  value       = aws_eks_cluster.zilliz_byoc_cluster.endpoint
+  value       = module.my_eks.endpoint
 }
 
 //byoc_endpoint
 output "byoc_endpoint" {
   description = "Endpoint for the BYOC"
-  value       = var.enable_private_link ? aws_vpc_endpoint.byoc_endpoint[0].id : null
+  value       = var.enable_private_link ? module.my_private_link.endpoint_id : null
 }

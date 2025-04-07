@@ -31,45 +31,66 @@ module "aws_byoc_op" {
   external_id = data.zillizcloud_external_id.current.id
 }
 
-resource "zillizcloud_byoc_op_project_agent" "this" {
-  project_id    = zillizcloud_byoc_op_project_settings.this.project_id
-  data_plane_id = zillizcloud_byoc_op_project_settings.this.data_plane_id
+module "vpc" {
+  source = "../../modules/aws_byoc_op/vpc"
+  dataplane_id = zillizcloud_byoc_op_project_settings.this.data_plane_id
+  vpc_cidr = var.vpc_cidr
+}
 
-  depends_on = [zillizcloud_byoc_op_project_settings.this, module.aws_byoc_op]
+moved {
+  from = module.aws_byoc_op.aws_security_group.zilliz_byoc_sg
+  to   = module.vpc.aws_security_group.zilliz_byoc_security_group
+}
+
+moved {
+  from = module.aws_byoc_op.module.vpc
+  to   = module.vpc.module.vpc
 }
 
 
 
+module "private_link" {
+  source = "../../modules/aws_byoc_op/privatelink"
+  dataplane_id = zillizcloud_byoc_op_project_settings.this.data_plane_id
+  region = var.aws_region
+  enable_private_link = var.enable_private_link
+  vpc_id = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
+  security_group_ids = [module.vpc.security_group_id]
+}
 
-resource "zillizcloud_byoc_op_project" "this" {
-
-  project_id = zillizcloud_byoc_op_project_settings.this.project_id
-  data_plane_id = zillizcloud_byoc_op_project_settings.this.data_plane_id
-
-  aws = {
-    region = zillizcloud_byoc_op_project_settings.this.region
-
-    network = {
-      vpc_id             = module.aws_byoc_op.vpc_id
-      subnet_ids         = module.aws_byoc_op.private_subnet_ids
-      security_group_ids = [module.aws_byoc_op.security_group_id]
-      vpc_endpoint_id    = var.enable_private_link ? module.aws_byoc_op.byoc_endpoint : null
-    }
-    role_arn = {
-      storage       = module.aws_byoc_op.storage_role_arn
-      eks           = module.aws_byoc_op.eks_addon_role_arn
-      cross_account = module.aws_byoc_op.maintaince_role_arn
-    }
-    storage = {
-      bucket_id = module.aws_byoc_op.s3_bucket_ids
-    }
+moved {
+  from = module.aws_byoc_op.aws_vpc_endpoint.byoc_endpoint
+  to   = module.private_link.aws_vpc_endpoint.byoc_endpoint
+}
 
 
-  }
+moved {
+  from = module.aws_byoc_op.aws_route53_zone.byoc_private_zone
+  to   = module.private_link.aws_route53_zone.byoc_private_zone
+}
 
-  depends_on = [zillizcloud_byoc_op_project_settings.this, zillizcloud_byoc_op_project_agent.this, module.aws_byoc_op]
-  lifecycle {
-    ignore_changes = [data_plane_id, project_id, aws, ext_config]
+moved {
+  from = module.aws_byoc_op.aws_route53_record.byoc_endpoint_alias
+  to   = module.private_link.aws_route53_record.byoc_endpoint_alias
+}
 
-  }
+
+module "s3" {
+  source = "../../modules/aws_byoc_op/s3"
+  region = var.aws_region
+  dataplane_id = zillizcloud_byoc_op_project_settings.this.data_plane_id
+  vpc_id = module.vpc.vpc_id
+  route_table_ids = module.vpc.route_table_id
+
+}
+
+moved {
+  from = module.aws_byoc_op.module.s3_bucket
+  to   = module.s3.module.s3_bucket
+}
+
+moved {
+  from = module.aws_byoc_op.aws_vpc_endpoint.s3
+  to   = module.s3.aws_vpc_endpoint.s3
 }

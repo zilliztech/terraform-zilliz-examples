@@ -3,32 +3,47 @@ variable "aws_region" {
   type        = string
 }
 
-variable "vpc_id" {
+variable "customer_vpc_id" {
   description = "The ID of the customer VPC"
   type        = string
   nullable    = false
+
+  validation {
+    condition     = var.customer_vpc_id != ""
+    error_message = "variable customer_vpc_id cannot be empty."
+  }
 }
 
-variable "security_group_id" {
+variable "customer_security_group_id" {
   description = "The ID of the security group for the customer VPC"
   type        = string
   nullable    = false
+
+  validation {
+    condition     = var.customer_security_group_id != ""
+    error_message = "variable customer_security_group_id cannot be empty."
+  }
 }
 
-variable "subnet_ids" {
+variable "customer_subnet_ids" {
   description = "The IDs of the subnets for the customer VPC"
   type        = list(string)
   nullable    = false
+
+  validation {
+    condition     = length(var.customer_subnet_ids) > 0
+    error_message = "variable customer_subnet_ids cannot be empty."
+  }
 }
 
-variable "vpc_cidr" {
+variable "customer_vpc_cidr" {
   description = "The CIDR block for the customer VPC"
   type        = string
   nullable    = false
 
   validation {
-    condition     = var.vpc_cidr != ""
-    error_message = "variable vpc_cidr cannot be empty."
+    condition     = var.customer_vpc_cidr != ""
+    error_message = "variable customer_vpc_cidr cannot be empty."
   }
 }
 
@@ -67,4 +82,46 @@ variable "search_instance_type" {
   description = "Instance type for search VM"
   type        = string
   default     = "m6id.2xlarge"
+}
+
+variable "customer_ecr" {
+  description = "Customer ECR"
+  type        = string
+  default     = ""
+}
+
+variable "customer_bucket_id" {
+  description = "The ID of customer bucket"
+  type        = string
+  default     = ""
+}
+
+variable "customer_eks_cluster_name" {
+  description = "The name of the customer EKS cluster"
+  type        = string
+  default     = ""
+}
+
+variable "customer_storage_role_name" {
+  description = "The name of the customer storage role for S3 access"
+  type        = string
+  default     = ""
+}
+
+variable "customer_eks_addon_role_name" {
+  description = "The name of the customer EKS addon role for S3 access"
+  type        = string
+  default     = ""
+}
+
+variable "customer_eks_role_name" {
+  description = "The name of the customer EKS cluster role"
+  type        = string
+  default     = ""
+}
+
+variable "customer_maintenance_role_name" {
+  description = "The name of the customer maintenance role for cluster administration"
+  type        = string
+  default     = ""
 }

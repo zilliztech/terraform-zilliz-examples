@@ -22,8 +22,8 @@ output "eks_role" {
   value = aws_iam_role.eks_role
 }
 
-output "maintaince_role" {
-  value = aws_iam_role.maintaince_role
+output "maintenance_role" {
+  value = aws_iam_role.maintenance_role
 }
 
 output "eks_addon_role" {

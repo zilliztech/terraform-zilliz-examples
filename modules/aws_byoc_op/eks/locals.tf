@@ -7,12 +7,19 @@ locals {
   security_group_id = var.security_group_id
   # VPC CIDR block
   eks_oidc_url = replace(aws_eks_cluster.zilliz_byoc_cluster.identity[0].oidc[0].issuer, "https://", "")
-  eks_cluster_name = aws_eks_cluster.zilliz_byoc_cluster.name
   eks_role = aws_iam_role.eks_role
-  maintaince_role = aws_iam_role.maintaince_role
+  maintenance_role = aws_iam_role.maintenance_role
   eks_addon_role = aws_iam_role.eks_addon_role
   eks_cluster_oidc_issuer = aws_eks_cluster.zilliz_byoc_cluster.identity[0].oidc[0].issuer
   bucket_id = var.s3_bucket_id
+
+  // customized name
+  eks_cluster_name        = length(var.customer_eks_cluster_name) > 0? var.customer_eks_cluster_name: var.dataplane_id
+  eks_role_name           = length(var.customer_eks_role_name) > 0 ? var.customer_eks_role_name: "${local.dataplane_id}-eks-role"
+  eks_addon_role_name     = length(var.customer_eks_addon_role_name) > 0 ? var.customer_eks_addon_role_name: "${local.dataplane_id}-addon-role"
+  maintenance_role_name   = length(var.customer_maintenance_role_name) > 0 ? var.customer_maintenance_role_name: "${local.dataplane_id}-maintenance-role"
+  storage_role_name       = length(var.customer_storage_role_name) > 0 ? var.customer_storage_role_name: "${local.dataplane_id}-storage-role"
+
   # Security group ingress protocols
   # sg_ingress_protocol = ["tcp", "udp"]
 
@@ -31,7 +38,7 @@ locals {
     DATAPLANE_ID     = var.dataplane_id
     REGION           = var.aws_region
     AGENT_CONFIG     = local.agent_config_json
-    MAINTAINCE_ROLE  = local.maintaince_role.arn
+    MAINTAINCE_ROLE  = local.maintenance_role.arn
     OP_CONFIG = jsonencode(local.config)
     EXTERNAL_ID = var.external_id
     enable_private_link = var.enable_private_link

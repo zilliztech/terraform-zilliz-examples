@@ -17,6 +17,7 @@ data "zillizcloud_external_id" "current" {}
 
 
 module "my_s3" {
+  count = local.create_bucket? 1: 0
   source = "../../modules/aws_byoc_op/s3"
   region = local.aws_region
   dataplane_id = local.dataplane_id
@@ -25,6 +26,7 @@ module "my_s3" {
 }
 
 module "my_private_link" {
+  count = local.enable_private_link? 1: 0
   source = "../../modules/aws_byoc_op/privatelink"
   dataplane_id = local.dataplane_id
   region = local.aws_region
@@ -48,6 +50,13 @@ module "my_eks" {
   enable_private_link = local.enable_private_link
   k8s_node_groups = local.k8s_node_groups
   s3_bucket_id = local.s3_bucket_id
+  // eks name
+  customer_eks_cluster_name = var.customer_eks_cluster_name
+  // role names
+  customer_eks_role_name = var.customer_eks_role_name
+  customer_eks_addon_role_name = var.customer_eks_addon_role_name
+  customer_maintenance_role_name = var.customer_maintenance_role_name
+  customer_storage_role_name = var.customer_storage_role_name
 }
 
 
@@ -79,12 +88,13 @@ resource "zillizcloud_byoc_op_project" "this" {
     role_arn = {
       storage       = local.storage_role.arn
       eks           = local.eks_addon_role.arn
-      cross_account = local.maintaince_role.arn
+      cross_account = local.maintenance_role.arn
     }
     storage = {
       bucket_id = local.s3_bucket_id
     }
 
+    ext_config = local.ecr
 
   }
 

@@ -1,5 +1,5 @@
-resource "aws_iam_role" "maintaince_role" {
-  name = "${local.dataplane_id}-maintaince-role"
+resource "aws_iam_role" "maintenance_role" {
+  name = local.maintenance_role_name
 
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
@@ -42,7 +42,7 @@ resource "aws_iam_role" "maintaince_role" {
 
 resource "aws_iam_role_policy_attachment" "maintaince_policy_attachment" {
   policy_arn = aws_iam_policy.maintaince_policy.arn
-  role       = aws_iam_role.maintaince_role.name
+  role       = aws_iam_role.maintenance_role.name
 }
 
 resource "aws_iam_policy" "maintaince_policy" {
@@ -381,7 +381,7 @@ resource "aws_iam_policy" "node_assume_role_policy" {
       {
         Effect   = "Allow"
         Action   = "sts:AssumeRole"
-        Resource = aws_iam_role.maintaince_role.arn
+        Resource = aws_iam_role.maintenance_role.arn
       }
     ]
   })

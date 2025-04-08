@@ -45,7 +45,7 @@ resource "zillizcloud_byoc_op_project" "this" {
     role_arn = {
       storage       = module.aws_byoc_op.storage_role_arn
       eks           = module.aws_byoc_op.eks_addon_role_arn
-      cross_account = module.aws_byoc_op.maintaince_role_arn
+      cross_account = module.aws_byoc_op.maintenance_role_arn
     }
     storage = {
       bucket_id = module.aws_byoc_op.s3_bucket_ids

@@ -22,9 +22,9 @@ output "eks_role_arn" {
   value       = local.eks_role.arn
 }
 
-output "maintaince_role_arn" {
+output "maintenance_role_arn" {
   description = "ARN of the maintenance role for cluster administration"
-  value       = local.maintaince_role.arn
+  value       = local.maintenance_role.arn
 }
 
 # VPC Resources

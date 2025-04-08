@@ -127,3 +127,33 @@ variable "s3_bucket_id" {
   description = "S3 bucket ID"
   type        = string
 }
+
+variable "customer_eks_cluster_name" {
+  description = "The name of the customer EKS cluster"
+  type        = string
+  default     = ""
+}
+
+variable "customer_storage_role_name" {
+  description = "The name of the customer storage role for S3 access"
+  type        = string
+  default     = ""
+}
+
+variable "customer_eks_addon_role_name" {
+  description = "The name of the customer EKS addon role for S3 access"
+  type        = string
+  default     = ""
+}
+
+variable "customer_eks_role_name" {
+  description = "The name of the customer EKS cluster role"
+  type        = string
+  default     = ""
+}
+
+variable "customer_maintenance_role_name" {
+  description = "The name of the customer maintenance role for cluster administration"
+  type        = string
+  default     = ""
+}

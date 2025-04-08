@@ -117,3 +117,9 @@ variable "eks_enable_public_access" {
   default     = false
   
 }
+
+variable "custom_tags" {
+  description = "Custom tags to apply to resources"
+  type        = map(string)
+  default     = {}
+}

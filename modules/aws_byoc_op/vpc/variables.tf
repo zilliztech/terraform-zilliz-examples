@@ -9,5 +9,17 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
+variable "aws_region" {
+  description = "The region in which the resources will be created"
+  type        = string
+  default     = "us-west-2"
+  
+}
+
+variable "custom_tags" {
+  description = "Custom tags to apply to resources"
+  type        = map(string)
+  default     = {}
+}
 
 

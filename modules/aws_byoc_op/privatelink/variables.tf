@@ -32,3 +32,9 @@ variable "security_group_ids" {
   description = "Security group IDs"
   type        = list(string)
 }
+
+variable "custom_tags" {
+  description = "Custom tags to apply to resources"
+  type        = map(string)
+  default     = {}
+}

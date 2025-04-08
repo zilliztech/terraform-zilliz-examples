@@ -15,11 +15,6 @@ variable "vpc_id" {
 }
 
 
-variable "route_table_ids" {
-  description = "Route table IDs"
-  type        = list(string)
-}
-
 variable "security_group_id" {
   description = "Security group ID"
   type        = string
@@ -52,6 +47,7 @@ variable "enable_private_link" {
   type        = bool
   default     = false
 }
+
 variable "agent_config" {
   description = "Configuration for the agent including server host, auth token, and k8s token"
   type = object({
@@ -156,4 +152,10 @@ variable "customer_maintenance_role_name" {
   description = "The name of the customer maintenance role for cluster administration"
   type        = string
   default     = ""
+}
+
+variable "custom_tags" {
+  description = "Custom tags to apply to resources"
+  type        = map(string)
+  default     = {}
 }

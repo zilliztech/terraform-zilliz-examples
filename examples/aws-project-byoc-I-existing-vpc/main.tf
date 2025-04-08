@@ -4,13 +4,6 @@ resource "zillizcloud_byoc_op_project_settings" "this" {
   region         = "aws-${local.aws_region}"
   project_name   = var.name
 
-  # required
-  instances = {
-    core_vm        = var.core_instance_type
-    fundamental_vm = var.fundamental_instance_type
-    search_vm      = var.search_instance_type
-  }
-
 }
 
 data "zillizcloud_external_id" "current" {}
@@ -21,8 +14,7 @@ module "my_s3" {
   source = "../../modules/aws_byoc_op/s3"
   region = local.aws_region
   dataplane_id = local.dataplane_id
-  vpc_id = local.vpc_id
-  route_table_ids = null # TODO: module.my_vpc.route_table_id
+  custom_tags = var.custom_tags
 }
 
 module "my_private_link" {
@@ -34,6 +26,7 @@ module "my_private_link" {
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids
   security_group_ids = [local.security_group_id]
+  custom_tags = var.custom_tags
 }
 
 module "my_eks" {
@@ -42,8 +35,6 @@ module "my_eks" {
   region = local.aws_region
   security_group_id = local.security_group_id
   vpc_id = local.vpc_id
-  # route_table_ids = module.my_vpc.route_table_id
-  route_table_ids = null # TODO: module.my_vpc.route_table_id
   subnet_ids = local.subnet_ids
   external_id = local.external_id
   agent_config = local.agent_config
@@ -57,6 +48,7 @@ module "my_eks" {
   customer_eks_addon_role_name = var.customer_eks_addon_role_name
   customer_maintenance_role_name = var.customer_maintenance_role_name
   customer_storage_role_name = var.customer_storage_role_name
+  custom_tags = var.custom_tags
 }
 
 

@@ -53,8 +53,8 @@ resource "aws_security_group" "zilliz_byoc_security_group" {
     }
   }
 
-  tags = {
+  tags = merge({
     Name = "${local.dataplane_id}-sg"
     Vendor = "zilliz-byoc"
-  }
+  }, var.custom_tags)
 }

@@ -2,7 +2,7 @@ locals {
   dataplane_id = zillizcloud_byoc_op_project_settings.this.data_plane_id
   vpc_id = var.customer_vpc_id
   security_group_id = var.customer_security_group_id
-  subnet_ids = var.customer_subnet_ids
+  subnet_ids = var.customer_private_subnet_ids
   aws_region = var.aws_region
   enable_private_link = var.enable_private_link
   external_id = data.zillizcloud_external_id.current.id

@@ -30,23 +30,23 @@ output "maintaince_role_arn" {
 # VPC Resources
 output "vpc_id" {
   description = "ID of the VPC"
-  value       = module.vpc.vpc_id
+  value       = local.vpc_id
 }
 
 output "private_subnet_ids" {
   description = "List of private subnet IDs"
-  value       = module.vpc.private_subnets
+  value       = local.private_subnets
 }
 
 output "public_subnet_ids" {
   description = "List of public subnet IDs"
-  value       = module.vpc.public_subnets
+  value       = local.public_subnets
 }
 
 # Security Group
 output "security_group_id" {
   description = "ID of the security group for the EKS cluster"
-  value       = aws_security_group.zilliz_byoc_sg.id
+  value       = local.sg_id
 }
 
 # EKS Cluster

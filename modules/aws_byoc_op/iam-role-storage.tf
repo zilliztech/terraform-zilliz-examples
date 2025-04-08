@@ -1,5 +1,5 @@
 resource "aws_iam_role" "storage_role" {
-  name = "${local.dataplane_id}-storage-role"
+  name = local.storage_role_name
   tags = {
     Vendor = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn

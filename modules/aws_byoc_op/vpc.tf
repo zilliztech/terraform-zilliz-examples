@@ -7,6 +7,7 @@ data "aws_availability_zones" "available" {
 }
 
 module "vpc" {
+  count = local.create_vpc? 1 : 0
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.15.0"
 
@@ -50,10 +51,12 @@ module "vpc" {
 
 
 data "aws_prefix_list" "s3" {
+  count = local.create_vpc? 1 : 0
   name = "com.amazonaws.${local.region}.s3"
 }
 
 resource "aws_vpc_endpoint" "s3" {
+  count = local.create_vpc? 1 : 0
   vpc_id       = module.vpc.vpc_id
   service_name = "com.amazonaws.${local.region}.s3"
 

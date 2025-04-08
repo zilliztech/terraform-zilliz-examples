@@ -2,7 +2,7 @@
 resource "aws_eks_cluster" "zilliz_byoc_cluster" {
   bootstrap_self_managed_addons = false
   enabled_cluster_log_types = []
-  name = local.dataplane_id
+  name = local.eks_cluster_name
 
   role_arn = aws_iam_role.eks_role.arn
   tags = {
@@ -37,7 +37,7 @@ resource "aws_eks_cluster" "zilliz_byoc_cluster" {
     security_group_ids = [
       aws_security_group.zilliz_byoc_sg.id
     ]
-    subnet_ids = module.vpc.private_subnets
+    subnet_ids = local.create_vpc? module.vpc.private_subnets: var.private_subnets
   }
 }
 

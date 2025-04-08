@@ -1,14 +1,12 @@
-
-
 resource "aws_vpc_endpoint" "byoc_endpoint" {
   count = var.enable_private_link ? 1 : 0
 
-  vpc_id              = module.vpc.vpc_id
+  vpc_id              = local.vpc_id
   // get the vpce service id from the vpce_config
   service_name        = "com.amazonaws.vpce.${local.region}.${local.config.vpce_service_ids[local.region]}"
   vpc_endpoint_type   = "Interface"
-  subnet_ids          = module.vpc.private_subnets
-  security_group_ids  = [aws_security_group.zilliz_byoc_sg.id]
+  subnet_ids          = local.private_subnets
+  security_group_ids  = [local.sg_id]
   # private_dns_enabled = true
 
   tags = {
@@ -25,7 +23,7 @@ resource "aws_route53_zone" "byoc_private_zone" {
   # if the region is eu-central-1, the private zone name is zilliz-byoc-eu.byoc.zillizcloud.com
   name = "zilliz-byoc-${substr(local.region, 0, 2)}.${local.config.private_zone_name}"  
   vpc {
-    vpc_id = module.vpc.vpc_id
+    vpc_id = local.vpc_id
   }
   comment = "Private hosted zone for BYOC project"
 

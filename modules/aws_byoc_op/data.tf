@@ -5,9 +5,25 @@ locals {
   // available zones
   azs = slice(data.aws_availability_zones.available.names, 0, 3)
 
+  // input parameters:
+  vpc_cidr = var.vpc_cidr
+  region   = var.aws_region
+
+  dataplane_id = var.dataplane_id
+
+  // eks name and create condition generated based on input parameters
+  eks_cluster_name        = length(var.eks_cluster_name) > 0 ? var.eks_cluster_name: var.dataplane_id
+  create_vpc              = length(var.vpc_id) == 0
+  create_sg               = length(var.sg_id) == 0
+  create_bucket           = length(var.bucket_id) == 0
+  eks_role_name           = length(var.eks_role_name) > 0 ? var.eks_role_name: "${local.dataplane_id}-eks-role"
+  eks_addon_role_name     = length(var.eks_addon_role_name) > 0 ? var.eks_addon_role_name: "${local.dataplane_id}-addon-role"
+  maintenance_role_name   = length(var.maintenance_role_name) > 0 ? var.maintenance_role_name: "${local.dataplane_id}-maintaince-role"
+  storage_role_name       = length(var.storage_role_name) > 0 ? var.storage_role_name: "${local.dataplane_id}-storage-role"
+
   // auto-generate private subnets cidr
-  private_subnets = [for k, v in local.azs : cidrsubnet(var.vpc_cidr, 2, k)]
-  public_subnets  = [cidrsubnet(cidrsubnet(var.vpc_cidr, 2, 3), 6, 62)]
+  private_subnets = local.create_vpc? [for k, v in local.azs : cidrsubnet(var.vpc_cidr, 2, k)]: var.private_subnets
+  public_subnets  = local.create_vpc? [cidrsubnet(cidrsubnet(var.vpc_cidr, 2, 3), 6, 62)]: null
   // security group ingress and egress rules
   sg_egress_ports     = [443]
   sg_ingress_protocol = ["tcp", "udp"]
@@ -16,13 +32,11 @@ locals {
   // eks output
   eks_oidc_url = replace(aws_eks_cluster.zilliz_byoc_cluster.identity[0].oidc[0].issuer, "https://", "")
   // bucket output
-  bucket_id = module.s3_bucket["milvus"].s3_bucket_id
-
-  // input parameters:
-  vpc_cidr = var.vpc_cidr
-  region   = var.aws_region
-
-  dataplane_id = var.dataplane_id
+  bucket_id = local.create_bucket? module.s3_bucket["milvus"].s3_bucket_id: var.bucket_id
+  // vpc output
+  vpc_id = local.create_vpc? module.vpc.vpc_id: var.vpc_id
+  // security group output
+  sg_id = local.create_sg ? aws_security_group.zilliz_byoc_sg.id: var.sg_id
 
   // node groups
 

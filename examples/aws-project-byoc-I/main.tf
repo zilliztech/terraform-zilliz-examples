@@ -9,8 +9,24 @@ module "aws_byoc_op" {
   source     = "../../modules/aws_byoc_op"
   aws_region = trimprefix(data.zillizcloud_byoc_op_project_settings.this.region, "aws-")
 
-  vpc_cidr            = var.vpc_cidr
-  enable_private_link = var.enable_private_link
+  // network related
+  vpc_cidr             = var.vpc_cidr
+  enable_private_link  = var.enable_private_link
+  vpc_id               = var.vpc_id
+  private_subnets      = var.private_subnets
+  sg_id                = var.sg_id
+
+  // bucket related
+  bucket_id          = var.bucket_id
+
+  // eks related
+  eks_cluster_name     = var.eks_cluster_name
+
+  // role related
+  eks_addon_role_name   = var.eks_addon_role_name
+  eks_role_name         = var.eks_role_name
+  maintenance_role_name = var.maintenance_role_name
+  storage_role_name     = var.storage_role_name
   
   dataplane_id    = data.zillizcloud_byoc_op_project_settings.this.data_plane_id
   k8s_node_groups = data.zillizcloud_byoc_op_project_settings.this.node_quotas
@@ -29,9 +45,9 @@ resource "zillizcloud_byoc_op_project_agent" "this" {
 
 
 resource "zillizcloud_byoc_op_project" "this" {
-
   project_id = data.zillizcloud_byoc_op_project_settings.this.project_id
   data_plane_id = data.zillizcloud_byoc_op_project_settings.this.data_plane_id
+  ext_config = len(var.ecr) > 0 ? var.ecr : null
 
   aws = {
     region = data.zillizcloud_byoc_op_project_settings.this.region

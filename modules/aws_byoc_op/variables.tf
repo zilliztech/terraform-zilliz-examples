@@ -12,8 +12,8 @@ variable "vpc_cidr" {
   nullable    = false
 
   validation {
-    condition     = var.vpc_cidr != ""
-    error_message = "variable vpc_cidr cannot be empty."
+    condition     = (length(var.vpc_id) == 0 || length(var.sg_id) == 0) ? length(var.vpc_cidr) > 0: length(var.vpc_cidr) == 0
+    error_message = "variable vpc_cidr cannot be empty if vpc or security group is created and managed by terraform. Otherwise, leave it blank."
   }
 }
 
@@ -22,6 +22,64 @@ variable "enable_private_link" {
   description = "Enable private link for the byoc project"
   type        = bool
   default     = false
+}
+
+variable "vpc_id" {
+  description  = "The ID of the VPC if VPC created and managed outside of this terraform"
+  type         = string
+  default      = ""
+}
+
+variable "private_subnets" {
+  description  = "The private subnets of VPC if VPC created and managed outside of this terraform"
+  type         = list(string)
+  default      = []
+  validation {
+    condition = length(var.vpc_id) > 0 ? length(var.private_subnets) > 0 : length(var.private_subnets) == 0
+    error_message = "You must specify private subnet ids if VPC is created externally to this terraform. Leave it blank if created and managed by this terraform."
+  }
+}
+
+variable "sg_id" {
+  description  = "The security group ID of VPC if VPC created and managed outside of this terraform"
+  type         = string
+  default      = ""
+}
+
+variable "eks_cluster_name" {
+  description = "Specified name of EKS cluster"
+  type        = string
+  default     = ""
+}
+
+variable "bucket_id" {
+  description = "ID of bucket if bucket is created and managed outside of this terraform"
+  type        = string
+  default     = ""
+}
+
+variable "storage_role_name" {
+  description = "Specified name of the storage role for S3 access"
+  type        = string
+  default     = ""
+}
+
+variable "eks_addon_role_name" {
+  description = "Specified name of the eks addon role for S3 access"
+  type        = string
+  default     = ""
+}
+
+variable "eks_role_name" {
+  description = "Specified name of EKS cluster role"
+  type        = string
+  default     = ""
+}
+
+variable "maintenance_role_name" {
+  description = "Specified name of the maintenance role for cluster administration"
+  type        = string
+  default     = ""
 }
 
 variable "dataplane_id" {

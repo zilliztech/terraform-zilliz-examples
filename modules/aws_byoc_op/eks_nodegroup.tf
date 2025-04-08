@@ -202,7 +202,7 @@ resource "aws_eks_node_group" "search" {
   }
   node_group_name_prefix = "zilliz-byoc-search-"
   node_role_arn          = aws_iam_role.eks_role.arn
-  subnet_ids = module.vpc.private_subnets
+  subnet_ids = local.subnet_ids
   tags = {
     "Vendor" = "zilliz-byoc"
   }
@@ -250,7 +250,7 @@ resource "aws_eks_node_group" "core" {
   }
   node_group_name_prefix = "zilliz-byoc-core-"
   node_role_arn          = aws_iam_role.eks_role.arn
-  subnet_ids = module.vpc.private_subnets
+  subnet_ids = local.subnet_ids
   tags = {
     "Vendor" = "zilliz-byoc"
   }
@@ -296,7 +296,7 @@ resource "aws_eks_node_group" "index" {
   }
   node_group_name_prefix = "zilliz-byoc-index-"
   node_role_arn          = aws_iam_role.eks_role.arn
-  subnet_ids = module.vpc.private_subnets
+  subnet_ids = local.subnet_ids
   tags = {
     "Vendor" = "zilliz-byoc"
   }
@@ -343,7 +343,7 @@ resource "aws_eks_node_group" "fundamental" {
     }
     node_group_name_prefix = "zilliz-byoc-fundamental-"
     node_role_arn          = aws_iam_role.eks_role.arn
-    subnet_ids = module.vpc.private_subnets
+    subnet_ids = local.subnet_ids
     tags = {
         "Vendor" = "zilliz-byoc"
     }

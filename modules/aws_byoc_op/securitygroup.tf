@@ -1,6 +1,7 @@
 resource "aws_security_group" "zilliz_byoc_sg" {
+  count       = local.create_sg ? 1: 0
   name        = "${local.dataplane_id}-sg"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = local.vpc_id
   description = "Default security group of the VPC"
 
   dynamic "ingress" {

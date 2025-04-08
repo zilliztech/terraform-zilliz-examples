@@ -1,5 +1,5 @@
 resource "aws_iam_role" "maintaince_role" {
-  name = "${local.dataplane_id}-maintaince-role"
+  name = local.maintenance_role_name
 
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",

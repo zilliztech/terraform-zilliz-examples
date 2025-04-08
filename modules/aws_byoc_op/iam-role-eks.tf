@@ -1,5 +1,5 @@
 resource "aws_iam_role" "eks_role" {
-  name = "${local.dataplane_id}-eks-role"
+  name = local.eks_role_name
 
   tags = {
     Vendor = "zilliz-byoc"

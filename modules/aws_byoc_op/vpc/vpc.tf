@@ -41,8 +41,19 @@ module "vpc" {
     Vendor    = "zilliz-byoc"
   }
 
-  tags = {
+  tags = merge({
     Vendor    = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn
-  }
+  }, var.custom_tags)
+}
+
+data "aws_prefix_list" "s3" {
+  name = "com.amazonaws.${var.aws_region}.s3"
+}
+
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id       = module.vpc.vpc_id
+  service_name = "com.amazonaws.${var.aws_region}.s3"
+
+  route_table_ids = module.vpc.private_route_table_ids
 }

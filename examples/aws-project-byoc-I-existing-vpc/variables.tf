@@ -25,25 +25,14 @@ variable "customer_security_group_id" {
   }
 }
 
-variable "customer_subnet_ids" {
-  description = "The IDs of the subnets for the customer VPC"
+variable "customer_private_subnet_ids" {
+  description = "The IDs of the private subnets for the customer VPC"
   type        = list(string)
   nullable    = false
 
   validation {
-    condition     = length(var.customer_subnet_ids) > 0
-    error_message = "variable customer_subnet_ids cannot be empty."
-  }
-}
-
-variable "customer_vpc_cidr" {
-  description = "The CIDR block for the customer VPC"
-  type        = string
-  nullable    = false
-
-  validation {
-    condition     = var.customer_vpc_cidr != ""
-    error_message = "variable customer_vpc_cidr cannot be empty."
+    condition     = length(var.customer_private_subnet_ids) > 0
+    error_message = "variable customer_private_subnet_ids cannot be empty."
   }
 }
 
@@ -64,30 +53,13 @@ variable "enable_private_link" {
   default     = false
 }
 
-
-
-variable "core_instance_type" {
-  description = "Instance type for core VM"
-  type        = string
-  default     = "m6i.2xlarge"
-}
-
-variable "fundamental_instance_type" {
-  description = "Instance type for fundamental VM"
-  type        = string
-  default     = "m6i.2xlarge"
-}
-
-variable "search_instance_type" {
-  description = "Instance type for search VM"
-  type        = string
-  default     = "m6id.2xlarge"
-}
-
 variable "customer_ecr" {
-  description = "Customer ECR"
-  type        = string
-  default     = ""
+  description = "Customer ECR configuration containing account ID, region, and prefix"
+  type = object({
+    ecr_account_id = string
+    ecr_region     = string
+    ecr_prefix     = string
+  })
 }
 
 variable "customer_bucket_id" {
@@ -124,4 +96,10 @@ variable "customer_maintenance_role_name" {
   description = "The name of the customer maintenance role for cluster administration"
   type        = string
   default     = ""
+}
+
+variable "custom_tags" {
+  description = "Custom tags to apply to resources"
+  type        = map(string)
+  default     = {}
 }

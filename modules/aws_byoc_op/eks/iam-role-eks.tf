@@ -75,7 +75,7 @@ resource "aws_iam_policy" "node_assume_role_policy" {
       {
         Effect   = "Allow"
         Action   = "sts:AssumeRole"
-        Resource = aws_iam_role.maintaince_role.arn
+        Resource = aws_iam_role.maintenance_role.arn
       }
     ]
   })

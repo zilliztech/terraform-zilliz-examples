@@ -1,6 +1,6 @@
 locals {
    subnet_ids = var.subnet_ids
-    config = yamldecode(file("${path.module}/conf.yaml"))
+    config = yamldecode(file("${path.module}/../../conf.yaml"))
       k8s_node_groups = var.k8s_node_groups
   # Dataplane ID for resource naming
   dataplane_id = var.dataplane_id

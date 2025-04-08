@@ -1,7 +1,7 @@
 data "aws_caller_identity" "current" {}
 
 locals {
-  config = yamldecode(file("${path.module}/conf.yaml"))
+  config = yamldecode(file("${path.module}/../conf.yaml"))
   // available zones
   azs = slice(data.aws_availability_zones.available.names, 0, 3)
 

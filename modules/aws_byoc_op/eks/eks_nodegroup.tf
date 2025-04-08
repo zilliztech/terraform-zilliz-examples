@@ -76,6 +76,8 @@ resource "aws_launch_template" "core" {
       "Vendor" = "zilliz-byoc"
     }, var.custom_tags)
   }
+
+  depends_on = [ aws_iam_role_policy_attachment.maintenance_policy_attachment_2, aws_iam_role_policy_attachment.maintenance_policy_attachment_1 ]
 }
 
 

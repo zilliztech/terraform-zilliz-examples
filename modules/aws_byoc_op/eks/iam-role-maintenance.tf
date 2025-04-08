@@ -40,14 +40,19 @@ resource "aws_iam_role" "maintenance_role" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "maintenance_policy_attachment" {
-  policy_arn = aws_iam_policy.maintenance_policy.arn
+resource "aws_iam_role_policy_attachment" "maintenance_policy_attachment_1" {
+  policy_arn = aws_iam_policy.maintenance_policy_1.arn
   role       = aws_iam_role.maintenance_role.name
 }
 
-resource "aws_iam_policy" "maintenance_policy" {
-  name        = "${local.dataplane_id}-maintenance-policy"
-  description = "cross account policy for the zilliz byoc"
+resource "aws_iam_role_policy_attachment" "maintenance_policy_attachment_2" {
+  policy_arn = aws_iam_policy.maintenance_policy_2.arn
+  role       = aws_iam_role.maintenance_role.name
+}
+
+resource "aws_iam_policy" "maintenance_policy_1" {
+  name        = "${local.dataplane_id}-maintenance-policy-1"
+  description = "cross account policy for the zilliz byoc (part 1)"
   tags = {
     Vendor = "zilliz-byoc"
   }
@@ -230,7 +235,20 @@ resource "aws_iam_policy" "maintenance_policy" {
         "Resource" : [
           "*"
         ]
-      },
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "maintenance_policy_2" {
+  name        = "${local.dataplane_id}-maintenance-policy-2"
+  description = "cross account policy for the zilliz byoc (part 2)"
+  tags = {
+    Vendor = "zilliz-byoc"
+  }
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
       {
         "Sid" : "EKSCreate",
         "Effect" : "Allow",

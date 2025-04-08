@@ -3,32 +3,36 @@ variable "aws_region" {
   type        = string
 }
 
-variable "vpc_id" {
+variable "customer_vpc_id" {
   description = "The ID of the customer VPC"
-  type        = string
-  nullable    = false
-}
-
-variable "security_group_id" {
-  description = "The ID of the security group for the customer VPC"
-  type        = string
-  nullable    = false
-}
-
-variable "subnet_ids" {
-  description = "The IDs of the subnets for the customer VPC"
-  type        = list(string)
-  nullable    = false
-}
-
-variable "vpc_cidr" {
-  description = "The CIDR block for the customer VPC"
   type        = string
   nullable    = false
 
   validation {
-    condition     = var.vpc_cidr != ""
-    error_message = "variable vpc_cidr cannot be empty."
+    condition     = var.customer_vpc_id != ""
+    error_message = "variable customer_vpc_id cannot be empty."
+  }
+}
+
+variable "customer_security_group_id" {
+  description = "The ID of the security group for the customer VPC"
+  type        = string
+  nullable    = false
+
+  validation {
+    condition     = var.customer_security_group_id != ""
+    error_message = "variable customer_security_group_id cannot be empty."
+  }
+}
+
+variable "customer_private_subnet_ids" {
+  description = "The IDs of the private subnets for the customer VPC"
+  type        = list(string)
+  nullable    = false
+
+  validation {
+    condition     = length(var.customer_private_subnet_ids) > 0
+    error_message = "variable customer_private_subnet_ids cannot be empty."
   }
 }
 
@@ -49,22 +53,53 @@ variable "enable_private_link" {
   default     = false
 }
 
-
-
-variable "core_instance_type" {
-  description = "Instance type for core VM"
-  type        = string
-  default     = "m6i.2xlarge"
+variable "customer_ecr" {
+  description = "Customer ECR configuration containing account ID, region, and prefix"
+  type = object({
+    ecr_account_id = string
+    ecr_region     = string
+    ecr_prefix     = string
+  })
 }
 
-variable "fundamental_instance_type" {
-  description = "Instance type for fundamental VM"
+variable "customer_bucket_id" {
+  description = "The ID of customer bucket"
   type        = string
-  default     = "m6i.2xlarge"
+  default     = ""
 }
 
-variable "search_instance_type" {
-  description = "Instance type for search VM"
+variable "customer_eks_cluster_name" {
+  description = "The name of the customer EKS cluster"
   type        = string
-  default     = "m6id.2xlarge"
+  default     = ""
+}
+
+variable "customer_storage_role_name" {
+  description = "The name of the customer storage role for S3 access"
+  type        = string
+  default     = ""
+}
+
+variable "customer_eks_addon_role_name" {
+  description = "The name of the customer EKS addon role for S3 access"
+  type        = string
+  default     = ""
+}
+
+variable "customer_eks_role_name" {
+  description = "The name of the customer EKS cluster role"
+  type        = string
+  default     = ""
+}
+
+variable "customer_maintenance_role_name" {
+  description = "The name of the customer maintenance role for cluster administration"
+  type        = string
+  default     = ""
+}
+
+variable "custom_tags" {
+  description = "Custom tags to apply to resources"
+  type        = map(string)
+  default     = {}
 }

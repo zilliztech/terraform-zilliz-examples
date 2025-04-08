@@ -1,4 +1,3 @@
-
 resource "aws_vpc_endpoint" "byoc_endpoint" {
   count = var.enable_private_link ? 1 : 0
 
@@ -10,11 +9,11 @@ resource "aws_vpc_endpoint" "byoc_endpoint" {
   security_group_ids  = var.security_group_ids
   # private_dns_enabled = true
 
-  tags = {
+  tags = merge({
     Name   = "${var.dataplane_id}-endpoint"
     Vendor = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn
-  }
+  }, var.custom_tags)
 }
 
 
@@ -28,10 +27,10 @@ resource "aws_route53_zone" "byoc_private_zone" {
   }
   comment = "Private hosted zone for BYOC project"
 
-  tags = {
+  tags = merge({
     Vendor = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn
-  }
+  }, var.custom_tags)
 }
 
 resource "aws_route53_record" "byoc_endpoint_alias" {

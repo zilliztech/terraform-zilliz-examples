@@ -18,7 +18,7 @@ locals {
   eks_cluster_name = module.my_eks.eks_cluster_name
   eks_cluster_oidc_issuer = module.my_eks.eks_cluster_oidc_issuer
   eks_role = module.my_eks.eks_role
-  maintaince_role = module.my_eks.maintaince_role
+  maintenance_role = module.my_eks.maintenance_role
   eks_addon_role = module.my_eks.eks_addon_role
   storage_role = module.my_eks.storage_role
   // bucket output

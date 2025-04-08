@@ -1,5 +1,5 @@
-resource "aws_iam_role" "maintaince_role" {
-  name = "${local.dataplane_id}-maintaince-role"
+resource "aws_iam_role" "maintenance_role" {
+  name = local.maintenance_role_name
 
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
@@ -40,13 +40,13 @@ resource "aws_iam_role" "maintaince_role" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "maintaince_policy_attachment" {
-  policy_arn = aws_iam_policy.maintaince_policy.arn
-  role       = aws_iam_role.maintaince_role.name
+resource "aws_iam_role_policy_attachment" "maintenance_policy_attachment" {
+  policy_arn = aws_iam_policy.maintenance_policy.arn
+  role       = aws_iam_role.maintenance_role.name
 }
 
-resource "aws_iam_policy" "maintaince_policy" {
-  name        = "${local.dataplane_id}-maintaince-policy"
+resource "aws_iam_policy" "maintenance_policy" {
+  name        = "${local.dataplane_id}-maintenance-policy"
   description = "cross account policy for the zilliz byoc"
   tags = {
     Vendor = "zilliz-byoc"
@@ -117,23 +117,13 @@ resource "aws_iam_policy" "maintaince_policy" {
           "iam:PassRole"
         ],
         "Resource" : [
-          "arn:*:iam::*:role/zilliz-*"
+          aws_iam_role.eks_role.arn
         ],
         "Condition" : {
           "StringEquals" : {
             "iam:PassedToService" : "eks.amazonaws.com"
           }
         }
-      },
-      {
-        "Sid" : "IAMUpdateTrustPolicyForEKSRole",
-        "Effect" : "Allow",
-        "Action" : [
-          "iam:UpdateAssumeRolePolicy"
-        ],
-        "Resource" : [
-          "arn:*:iam::*:role/zilliz-*"
-        ]
       },
       {
         "Sid" : "EC2Create",
@@ -252,12 +242,12 @@ resource "aws_iam_policy" "maintaince_policy" {
           "eks:CreatePodIdentityAssociation"
         ],
         "Resource" : [
-          "arn:aws:eks:*:*:cluster/zilliz-*",
-          "arn:aws:eks:*:*:addon/zilliz-*/*/*",
-          "arn:aws:eks:*:*:nodegroup/zilliz-*/zilliz*/*",
-          "arn:aws:eks:*:*:podidentityassociation/zilliz-*/*",
-          "arn:aws:eks::aws:access-entry/zilliz-*/*/*/*/*",
-          "arn:aws:eks::aws:access-policy/zilliz-*/*"
+          "arn:aws:eks:*:*:cluster/${local.eks_cluster_name}",
+          "arn:aws:eks:*:*:addon/${local.eks_cluster_name}/*/*",
+          "arn:aws:eks:*:*:nodegroup/${local.eks_cluster_name}/zilliz*/*",
+          "arn:aws:eks:*:*:podidentityassociation/${local.eks_cluster_name}/*",
+          "arn:aws:eks:*:*:access-entry/${local.eks_cluster_name}/*/*/*/*",
+          "arn:aws:eks:*:*:access-policy/${local.eks_cluster_name}/*"
         ],
         "Condition" : {
           "StringEquals" : {
@@ -279,12 +269,12 @@ resource "aws_iam_policy" "maintaince_policy" {
           "eks:UpdatePodIdentityAssociation"
         ],
         "Resource" : [
-          "arn:aws:eks:*:*:cluster/zilliz-*",
-          "arn:aws:eks:*:*:addon/zilliz-*/*/*",
-          "arn:aws:eks:*:*:nodegroup/zilliz-*/zilliz*/*",
-          "arn:aws:eks:*:*:podidentityassociation/zilliz-*/*",
-          "arn:aws:eks::aws:access-entry/zilliz-*/*/*/*/*",
-          "arn:aws:eks::aws:access-policy/zilliz-*/*"
+          "arn:aws:eks:*:*:cluster/${local.eks_cluster_name}",
+          "arn:aws:eks:*:*:addon/${local.eks_cluster_name}/*/*",
+          "arn:aws:eks:*:*:nodegroup/${local.eks_cluster_name}/zilliz*/*",
+          "arn:aws:eks:*:*:podidentityassociation/${local.eks_cluster_name}/*",
+          "arn:aws:eks:*:*:access-entry/${local.eks_cluster_name}/*/*/*/*",
+          "arn:aws:eks:*:*:access-policy/${local.eks_cluster_name}/*"
         ],
         "Condition" : {
           "StringEquals" : {
@@ -299,11 +289,11 @@ resource "aws_iam_policy" "maintaince_policy" {
           "eks:TagResource"
         ],
         "Resource" : [
-          "arn:aws:eks:*:*:cluster/zilliz-*",
-          "arn:aws:eks:*:*:addon/zilliz-*/*/*",
-          "arn:aws:eks:*:*:nodegroup/zilliz-*/zilliz*/*",
-          "arn:aws:eks:*:*:podidentityassociation/zilliz-*/*",
-          "arn:aws:eks::aws:access-entry/zilliz-*/*/*/*/*"
+          "arn:aws:eks:*:*:cluster/${local.eks_cluster_name}",
+          "arn:aws:eks:*:*:addon/${local.eks_cluster_name}/*/*",
+          "arn:aws:eks:*:*:nodegroup/${local.eks_cluster_name}/zilliz*/*",
+          "arn:aws:eks:*:*:podidentityassociation/${local.eks_cluster_name}/*",
+          "arn:aws:eks:*:*:access-entry/${local.eks_cluster_name}/*/*/*/*"
         ]
       },
       {
@@ -327,24 +317,24 @@ resource "aws_iam_policy" "maintaince_policy" {
           "eks:ListTagsForResource"
         ],
         "Resource" : [
-          "arn:aws:eks:*:*:cluster/zilliz-*",
-          "arn:aws:eks:*:*:addon/zilliz-*/*/*",
-          "arn:aws:eks:*:*:nodegroup/zilliz-*/zilliz*/*",
-          "arn:aws:eks:*:*:podidentityassociation/zilliz-*/*",
-          "arn:aws:eks::aws:access-entry/zilliz-*/*/*/*/*",
-          "arn:aws:eks::aws:access-policy/zilliz-*/*"
+          "arn:aws:eks:*:*:cluster/${local.eks_cluster_name}",
+          "arn:aws:eks:*:*:addon/${local.eks_cluster_name}/*/*",
+          "arn:aws:eks:*:*:nodegroup/${local.eks_cluster_name}/zilliz*/*",
+          "arn:aws:eks:*:*:podidentityassociation/${local.eks_cluster_name}/*",
+          "arn:aws:eks:*:*:access-entry/${local.eks_cluster_name}/*/*/*/*",
+          "arn:aws:eks:*:*:access-policy/${local.eks_cluster_name}/*"
         ]
       },
       {
         "Sid" : "EkSDelete",
         "Effect" : "Allow",
         "Resource" : [
-          "arn:aws:eks:*:*:cluster/zilliz-*",
-          "arn:aws:eks:*:*:addon/zilliz-*/*/*",
-          "arn:aws:eks:*:*:nodegroup/zilliz-*/zilliz*/*",
-          "arn:aws:eks:*:*:podidentityassociation/zilliz-*/*",
-          "arn:aws:eks::aws:access-entry/zilliz-*/*/*/*/*",
-          "arn:aws:eks::aws:access-policy/zilliz-*/*"
+          "arn:aws:eks:*:*:cluster/${local.eks_cluster_name}",
+          "arn:aws:eks:*:*:addon/${local.eks_cluster_name}/*/*",
+          "arn:aws:eks:*:*:nodegroup/${local.eks_cluster_name}/zilliz*/*",
+          "arn:aws:eks:*:*:podidentityassociation/${local.eks_cluster_name}/*",
+          "arn:aws:eks:*:*:access-entry/${local.eks_cluster_name}/*/*/*/*",
+          "arn:aws:eks:*:*:access-policy/${local.eks_cluster_name}/*"
         ],
         "Action" : [
           "eks:DeleteAccessEntry",
@@ -361,7 +351,7 @@ resource "aws_iam_policy" "maintaince_policy" {
         "Action" : [
           "s3:GetBucketLocation"
         ],
-        "Resource" : "arn:aws:s3:::{var.bucketName}"
+        "Resource" : "arn:aws:s3:::${local.bucket_id}"
       }
     ]
   })
@@ -381,7 +371,7 @@ resource "aws_iam_policy" "node_assume_role_policy" {
       {
         Effect   = "Allow"
         Action   = "sts:AssumeRole"
-        Resource = aws_iam_role.maintaince_role.arn
+        Resource = aws_iam_role.maintenance_role.arn
       }
     ]
   })

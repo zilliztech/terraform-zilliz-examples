@@ -17,6 +17,4 @@ provider "aws" {
 }
 
 provider "zillizcloud" {
-  api_key = "xxx"
-  host_address = "http://localhost:8080/v2"
 }

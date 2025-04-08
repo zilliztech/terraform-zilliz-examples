@@ -4,19 +4,17 @@ data "aws_caller_identity" "current" {}
 resource "aws_eks_cluster" "zilliz_byoc_cluster" {
   bootstrap_self_managed_addons = false
   enabled_cluster_log_types = []
-  name = local.dataplane_id
+  name = local.eks_cluster_name
 
   role_arn = local.eks_role.arn
-  tags = {
-
+  tags = merge({
     "Vendor" = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn
-  }
-  tags_all = {
-
+  }, var.custom_tags)
+  tags_all = merge({
     "Vendor" = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn
-  }
+  }, var.custom_tags)
   # version = "1.31"
 
   access_config {
@@ -54,14 +52,12 @@ resource "aws_eks_addon" "kube-proxy" {
 
   depends_on = [ aws_eks_cluster.zilliz_byoc_cluster ]
   
-  tags = {
-
+  tags = merge({
     "Vendor" = "zilliz-byoc"
-  }
-  tags_all = {
-
+  }, var.custom_tags)
+  tags_all = merge({
     "Vendor" = "zilliz-byoc"
-  }
+  }, var.custom_tags)
 }
 
 # aws_eks_addon.vpc-cni:
@@ -72,14 +68,12 @@ resource "aws_eks_addon" "vpc-cni" {
   
   depends_on = [ aws_eks_cluster.zilliz_byoc_cluster ]
 
-  tags = {
-
+  tags = merge({
     "Vendor" = "zilliz-byoc"
-  }
-  tags_all = {
-
+  }, var.custom_tags)
+  tags_all = merge({
     "Vendor" = "zilliz-byoc"
-  }
+  }, var.custom_tags)
 }
 
 data "aws_eks_cluster_auth" "example" {
@@ -96,15 +90,15 @@ resource "aws_iam_openid_connect_provider" "eks" {
   thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
   url             = local.eks_cluster_oidc_issuer
 
-  tags = {
+  tags = merge({
     "Vendor" = "zilliz-byoc"
-  }
+  }, var.custom_tags)
 }
 
 resource "aws_eks_access_policy_association" "example" {
   cluster_name  = local.eks_cluster_name
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  principal_arn = local.maintaince_role.arn
+  principal_arn = local.maintenance_role.arn
 
   access_scope {
     type       = "cluster"
@@ -114,10 +108,10 @@ resource "aws_eks_access_policy_association" "example" {
 
 resource "aws_eks_access_entry" "test" {
   cluster_name = local.eks_cluster_name
-  principal_arn     = local.maintaince_role.arn
+  principal_arn     = local.maintenance_role.arn
   type  = "STANDARD"
 
-  tags = {
+  tags = merge({
     "Vendor" = "zilliz-byoc"
-  }
+  }, var.custom_tags)
 }

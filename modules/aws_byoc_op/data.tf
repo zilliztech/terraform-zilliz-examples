@@ -42,7 +42,7 @@ locals {
     DATAPLANE_ID     = var.dataplane_id
     REGION           = var.aws_region
     AGENT_CONFIG     = local.agent_config_json
-    MAINTAINCE_ROLE  = local.maintaince_role.arn
+    MAINTAINCE_ROLE  = local.maintenance_role.arn
     OP_CONFIG = jsonencode(local.config)
     EXTERNAL_ID = var.external_id
     enable_private_link = var.enable_private_link

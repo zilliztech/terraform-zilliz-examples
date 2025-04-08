@@ -17,11 +17,14 @@ locals {
   project_id = zillizcloud_byoc_op_project_settings.this.project_id
   data_plane_id = zillizcloud_byoc_op_project_settings.this.data_plane_id
   s3_bucket_id = local.create_bucket? module.my_s3.s3_bucket_id: var.customer_bucket_id
-  ecr = length(var.customer_ecr) > 0 ? var.customer_ecr : null
   eks_role = module.my_eks.eks_role
   maintenance_role = module.my_eks.maintenance_role
   eks_addon_role = module.my_eks.eks_addon_role
   storage_role = module.my_eks.storage_role
   byoc_endpoint = var.enable_private_link ? module.my_private_link.endpoint_id : null
-}
 
+  ext_config = {
+    eks_cluster_name = var.customer_eks_cluster_name
+    ecr = var.customer_ecr
+  }
+}

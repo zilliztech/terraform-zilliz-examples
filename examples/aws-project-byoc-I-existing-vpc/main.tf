@@ -4,6 +4,12 @@ resource "zillizcloud_byoc_op_project_settings" "this" {
   region         = "aws-${local.aws_region}"
   project_name   = var.name
 
+  # required
+  instances = {
+    core_vm        = var.core_instance_type
+    fundamental_vm = var.fundamental_instance_type
+    search_vm      = var.search_instance_type
+  }
 }
 
 data "zillizcloud_external_id" "current" {}
@@ -86,14 +92,12 @@ resource "zillizcloud_byoc_op_project" "this" {
       bucket_id = local.s3_bucket_id
     }
 
-    ext_config = local.ecr
-
-  }
-
   depends_on = [zillizcloud_byoc_op_project_settings.this, zillizcloud_byoc_op_project_agent.this, module.my_eks]
   lifecycle {
     ignore_changes = [data_plane_id, project_id, aws, ext_config]
 
   }
+
+  ext_config = base64encode(local.ext_config)
 }
   

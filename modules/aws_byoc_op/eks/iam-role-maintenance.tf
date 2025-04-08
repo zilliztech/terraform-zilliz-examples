@@ -357,26 +357,3 @@ resource "aws_iam_policy" "maintenance_policy" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "eks_assume" {
-  policy_arn = aws_iam_policy.node_assume_role_policy.arn
-  role       = local.eks_role.name
-}
-
-resource "aws_iam_policy" "node_assume_role_policy" {
-  name        = "${local.dataplane_id}-AssumeSpecificRolePolicy"
-  description = "Policy to allow assuming a specific role"
-  policy      = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = "sts:AssumeRole"
-        Resource = aws_iam_role.maintenance_role.arn
-      }
-    ]
-  })
-
-  tags = {
-    "Vendor" = "zilliz-byoc"
-  }
-}

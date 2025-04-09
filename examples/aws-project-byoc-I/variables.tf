@@ -22,9 +22,3 @@ variable "vpc_cidr" {
   }
 }
 
-variable "enable_private_link" {
-  description = "Enable private link for the byoc project"
-  type        = bool
-  default     = true
-}
-

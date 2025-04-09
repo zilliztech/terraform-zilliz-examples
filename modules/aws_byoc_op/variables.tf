@@ -68,7 +68,7 @@ variable "k8s_node_groups" {
       min_size       = 0
       max_size       = 100
       desired_size   = 0
-      instance_types = "m6i.2xlarge"
+      instance_types = "m6id.4xlarge"
       capacity_type  = "SPOT"
     }
     fundamental = {

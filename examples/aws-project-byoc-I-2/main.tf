@@ -6,9 +6,14 @@ resource "zillizcloud_byoc_op_project_settings" "this" {
   # required
   instances = {
     core_vm        = var.core_instance_type
+    core_vm_min_count = var.core_vm_min_count
     fundamental_vm = var.fundamental_instance_type
+    fundamental_vm_min_count = var.fundamental_vm_min_count
     search_vm      = var.search_instance_type
+    search_vm_min_count = var.search_vm_min_count
   }
+
+  private_link_enabled = var.enable_private_link
 
 }
 
@@ -19,7 +24,7 @@ module "aws_byoc_op" {
   aws_region = trimprefix(zillizcloud_byoc_op_project_settings.this.region, "aws-")
 
   vpc_cidr            = var.vpc_cidr
-  enable_private_link = var.enable_private_link
+  enable_private_link = zillizcloud_byoc_op_project_settings.this.private_link_enabled
   
   dataplane_id    = zillizcloud_byoc_op_project_settings.this.data_plane_id
   k8s_node_groups = zillizcloud_byoc_op_project_settings.this.node_quotas

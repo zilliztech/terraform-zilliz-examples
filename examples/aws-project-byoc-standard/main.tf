@@ -51,8 +51,11 @@ resource "zillizcloud_byoc_project" "this" {
 
     instances = {
       core_vm        = var.core_instance_type
+      core_vm_min_count = var.core_vm_min_count
       fundamental_vm = var.fundamental_instance_type
+      fundamental_vm_min_count = var.fundamental_vm_min_count
       search_vm      = var.search_instance_type
+      search_vm_min_count = var.search_vm_min_count
     }
   }
 

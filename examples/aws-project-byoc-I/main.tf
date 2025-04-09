@@ -10,8 +10,7 @@ module "aws_byoc_op" {
   aws_region = trimprefix(data.zillizcloud_byoc_op_project_settings.this.region, "aws-")
 
   vpc_cidr            = var.vpc_cidr
-  enable_private_link = var.enable_private_link
-  
+  enable_private_link = data.zillizcloud_byoc_op_project_settings.this.private_link_enabled 
   dataplane_id    = data.zillizcloud_byoc_op_project_settings.this.data_plane_id
   k8s_node_groups = data.zillizcloud_byoc_op_project_settings.this.node_quotas
   agent_config = {

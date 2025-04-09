@@ -204,7 +204,7 @@ resource "aws_eks_node_group" "search" {
   }
   node_group_name_prefix = "zilliz-byoc-search-"
   node_role_arn          = local.eks_role.arn
-  subnet_ids             = local.subnet_ids
+  subnet_ids             = local.k8s_node_group_subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
@@ -252,7 +252,7 @@ resource "aws_eks_node_group" "core" {
   }
   node_group_name_prefix = "zilliz-byoc-core-"
   node_role_arn          = local.eks_role.arn
-  subnet_ids             = local.subnet_ids
+  subnet_ids             = local.k8s_node_group_subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
@@ -298,7 +298,7 @@ resource "aws_eks_node_group" "index" {
   }
   node_group_name_prefix = "zilliz-byoc-index-"
   node_role_arn          = local.eks_role.arn
-  subnet_ids             = local.subnet_ids
+  subnet_ids             = local.k8s_node_group_subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
@@ -344,7 +344,7 @@ resource "aws_eks_node_group" "fundamental" {
   }
   node_group_name_prefix = "zilliz-byoc-fundamental-"
   node_role_arn          = local.eks_role.arn
-  subnet_ids             = local.subnet_ids
+  subnet_ids             = local.k8s_node_group_subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)

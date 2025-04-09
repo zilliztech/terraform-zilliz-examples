@@ -3,6 +3,7 @@ locals {
   vpc_id = var.customer_vpc_id
   security_group_id = var.customer_security_group_id
   subnet_ids = var.customer_private_subnet_ids
+  node_group_subnet_ids = var.customer_node_group_private_subnet_ids
   aws_region = var.aws_region
   enable_private_link = var.enable_private_link
   external_id = data.zillizcloud_external_id.current.id

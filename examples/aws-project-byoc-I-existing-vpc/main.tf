@@ -16,10 +16,10 @@ data "zillizcloud_external_id" "current" {}
 
 
 module "my_s3" {
-  count = local.create_bucket? 1: 0
   source = "../../modules/aws_byoc_op/s3"
   region = local.aws_region
   dataplane_id = local.dataplane_id
+  customer_bucket_name = var.customer_bucket_name
   custom_tags = var.custom_tags
 }
 
@@ -71,7 +71,7 @@ resource "zillizcloud_byoc_op_project_agent" "this" {
 
 resource "zillizcloud_byoc_op_project" "this" {
 
-  project_id = local.project_id
+  project_id    = local.project_id
   data_plane_id = local.data_plane_id
 
   aws = {
@@ -91,13 +91,20 @@ resource "zillizcloud_byoc_op_project" "this" {
     storage = {
       bucket_id = local.s3_bucket_id
     }
+  }
 
   depends_on = [zillizcloud_byoc_op_project_settings.this, zillizcloud_byoc_op_project_agent.this, module.my_eks]
   lifecycle {
-    ignore_changes = [data_plane_id, project_id, aws, ext_config]
-
+     ignore_changes = [data_plane_id, project_id, aws, ext_config]
   }
 
-  ext_config = base64encode(local.ext_config)
+  ext_config = base64encode(jsonencode(local.ext_config))
 }
-  
+
+output "data_plane_id" {
+  value = local.dataplane_id
+}
+
+output "project_id" {
+  value = local.project_id
+}

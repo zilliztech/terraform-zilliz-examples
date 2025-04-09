@@ -62,8 +62,8 @@ variable "customer_ecr" {
   })
 }
 
-variable "customer_bucket_id" {
-  description = "The ID of customer bucket"
+variable "customer_bucket_name" {
+  description = "The name of the customer bucket"
   type        = string
   default     = ""
 }
@@ -104,21 +104,20 @@ variable "custom_tags" {
   default     = {}
 }
 
-
 variable "core_instance_type" {
-  description = "Instance type for core VM"
+  description = "Instance type used for the core virtual machine, which hosts Milvus Operators, Zilliz Cloud Agent, and Milvus dependencies, such as Prometheus, Etcd, Pulsar, etc. "
   type        = string
   default     = "m6i.2xlarge"
 }
 
 variable "fundamental_instance_type" {
-  description = "Instance type for fundamental VM"
+  description = "Instance type used for the fundamental virtual machine, which hosts Milvus components other than the query nodes, including the proxy, datanode, index pool, and coordinators. "
   type        = string
   default     = "m6i.2xlarge"
 }
 
 variable "search_instance_type" {
-  description = "Instance type for search VM"
+  description = "Instance type used for the search virtual machine, which hosts the query nodes."
   type        = string
-  default     = "m6id.2xlarge"
+  default     = "m6id.4xlarge"
 }

@@ -14,3 +14,9 @@ variable "custom_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "customer_bucket_name" {
+  description = "Bucket name"
+  type        = string
+  default     = ""
+}

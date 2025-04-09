@@ -11,17 +11,15 @@ locals {
     tag        = zillizcloud_byoc_op_project_settings.this.op_config.agent_image_url
   }
 
-  create_bucket = length(var.customer_bucket_id) == 0
-
   k8s_node_groups = zillizcloud_byoc_op_project_settings.this.node_quotas
   project_id = zillizcloud_byoc_op_project_settings.this.project_id
   data_plane_id = zillizcloud_byoc_op_project_settings.this.data_plane_id
-  s3_bucket_id = local.create_bucket? module.my_s3.s3_bucket_id: var.customer_bucket_id
+  s3_bucket_id = module.my_s3.s3_bucket_id
   eks_role = module.my_eks.eks_role
   maintenance_role = module.my_eks.maintenance_role
   eks_addon_role = module.my_eks.eks_addon_role
   storage_role = module.my_eks.storage_role
-  byoc_endpoint = var.enable_private_link ? module.my_private_link.endpoint_id : null
+  byoc_endpoint = var.enable_private_link ? module.my_private_link[0].endpoint_id : null
 
   ext_config = {
     eks_cluster_name = var.customer_eks_cluster_name

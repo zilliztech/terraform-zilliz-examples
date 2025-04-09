@@ -4,8 +4,7 @@ module "s3_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "3.15.1"
 
-  for_each = toset(["milvus"])
-  bucket   = "${var.dataplane_id}-${each.key}"
+  bucket   = local.bucket_name
   acl      = "private"
 
   control_object_ownership = true

@@ -1,9 +1,9 @@
 resource "aws_iam_role" "storage_role" {
   name = local.storage_role_name
-  tags = {
+  tags = merge({
     Vendor = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn
-  }
+  }, var.custom_tags)
 
   lifecycle {
     ignore_changes = [

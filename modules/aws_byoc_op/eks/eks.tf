@@ -64,7 +64,7 @@ resource "aws_eks_addon" "kube-proxy" {
 resource "aws_eks_addon" "vpc-cni" {
   addon_name    = "vpc-cni"
   # addon_version = "v1.15.3-eksbuild.1"
-  cluster_name  = local.dataplane_id
+  cluster_name  = local.eks_cluster_name
   
   depends_on = [ aws_eks_cluster.zilliz_byoc_cluster ]
 

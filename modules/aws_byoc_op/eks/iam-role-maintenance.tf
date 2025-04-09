@@ -34,10 +34,10 @@ resource "aws_iam_role" "maintenance_role" {
     ]
   })
 
-  tags = {
+  tags = merge({
     Vendor = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn
-  }
+  }, var.custom_tags)
 }
 
 resource "aws_iam_role_policy_attachment" "maintenance_policy_attachment_1" {

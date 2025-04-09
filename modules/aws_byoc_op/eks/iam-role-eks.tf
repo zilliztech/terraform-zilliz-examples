@@ -1,10 +1,10 @@
 resource "aws_iam_role" "eks_role" {
   name = local.eks_role_name
 
-  tags = {
+  tags = merge({
     Vendor = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn
-  }
+  }, var.custom_tags)
   
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",

@@ -42,6 +42,7 @@ module "my_eks" {
   security_group_id = local.security_group_id
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids
+  eks_control_plane_subnet_ids = local.eks_control_plane_subnet_ids
   external_id = local.external_id
   agent_config = local.agent_config
   enable_private_link = local.enable_private_link
@@ -93,7 +94,9 @@ resource "zillizcloud_byoc_op_project" "this" {
     }
   }
 
-  depends_on = [zillizcloud_byoc_op_project_settings.this, zillizcloud_byoc_op_project_agent.this, module.my_eks]
+  // depend on private link to establish agent tunnel connection
+  depends_on = [zillizcloud_byoc_op_project_settings.this, zillizcloud_byoc_op_project_agent.this,
+    module.my_eks, module.my_private_link]
   lifecycle {
      ignore_changes = [data_plane_id, project_id, aws, ext_config]
   }

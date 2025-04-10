@@ -1,6 +1,7 @@
 variable "aws_region" {
   description = "The region where zilliz operations will take place. Examples are us-east-1, us-west-2, etc."
   type        = string
+  nullable    = false
 }
 
 variable "customer_vpc_id" {
@@ -34,6 +35,12 @@ variable "customer_private_subnet_ids" {
     condition     = length(var.customer_private_subnet_ids) > 0
     error_message = "variable customer_private_subnet_ids cannot be empty."
   }
+}
+
+variable "customer_eks_control_plane_private_subnet_ids" {
+  description = "The IDs of the private subnets for the customer's EKS control plane, default to use customer_private_subnet_ids if not provided"
+  type        = list(string)
+  default     = []
 }
 
 variable "name" {

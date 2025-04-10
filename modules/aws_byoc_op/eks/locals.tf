@@ -1,7 +1,8 @@
 locals {
-   subnet_ids = var.subnet_ids
-    config = yamldecode(file("${path.module}/../../conf.yaml"))
-      k8s_node_groups = var.k8s_node_groups
+  subnet_ids = var.subnet_ids
+  eks_control_plane_subnet_ids = coalescelist(var.eks_control_plane_subnet_ids, var.subnet_ids)
+  config = yamldecode(file("${path.module}/../../conf.yaml"))
+  k8s_node_groups = var.k8s_node_groups
   # Dataplane ID for resource naming
   dataplane_id = var.dataplane_id
   security_group_id = var.security_group_id

@@ -42,6 +42,7 @@ module "my_eks" {
   security_group_id = local.security_group_id
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids
+  eks_control_plane_subnet_ids = local.eks_control_plane_subnet_ids
   external_id = local.external_id
   agent_config = local.agent_config
   enable_private_link = local.enable_private_link

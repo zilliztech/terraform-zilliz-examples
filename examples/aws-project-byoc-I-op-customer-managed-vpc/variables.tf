@@ -26,7 +26,7 @@ variable "customer_security_group_id" {
 }
 
 variable "customer_private_subnet_ids" {
-  description = "The IDs of the private subnets for the customer VPC, excluding EKS node group VPC"
+  description = "The IDs of the private subnets for the customer VPC"
   type        = list(string)
   nullable    = false
 
@@ -36,15 +36,10 @@ variable "customer_private_subnet_ids" {
   }
 }
 
-variable "customer_node_group_private_subnet_ids" {
-  description = "The IDs of the private subnets for the customer's EKS node group VPC."
+variable "customer_eks_control_plane_private_subnet_ids" {
+  description = "The IDs of the private subnets for the customer's EKS control plane, default to use customer_private_subnet_ids if not provided"
   type        = list(string)
-  nullable    = false
-
-  validation {
-    condition     = length(var.customer_node_group_private_subnet_ids) > 0
-    error_message = "variable customer_node_group_private_subnet_ids cannot be empty."
-  }
+  default     = []
 }
 
 variable "name" {

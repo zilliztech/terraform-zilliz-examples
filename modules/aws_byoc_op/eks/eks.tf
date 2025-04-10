@@ -38,7 +38,7 @@ resource "aws_eks_cluster" "zilliz_byoc_cluster" {
       local.security_group_id
       
     ]
-    subnet_ids = local.subnet_ids
+    subnet_ids = local.eks_control_plane_subnet_ids
   }
 }
 

@@ -25,8 +25,8 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
-variable "node_group_subnet_ids" {
-  description = "Subnet IDs for K8s node group; default to subnet_ids if not provided"
+variable "eks_control_plane_subnet_ids" {
+  description = "Subnet IDs for eks control plane; default to subnet_ids if not provided"
   type        = list(string)
 }
 

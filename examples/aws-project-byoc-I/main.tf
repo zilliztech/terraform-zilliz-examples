@@ -10,9 +10,9 @@ module "aws_byoc_op" {
   aws_region = trimprefix(data.zillizcloud_byoc_op_project_settings.this.region, "aws-")
 
   vpc_cidr            = var.vpc_cidr
-  enable_private_link = data.zillizcloud_byoc_op_project_settings.this.private_link_enabled 
-  dataplane_id    = data.zillizcloud_byoc_op_project_settings.this.data_plane_id
-  k8s_node_groups = data.zillizcloud_byoc_op_project_settings.this.node_quotas
+  enable_private_link = data.zillizcloud_byoc_op_project_settings.this.private_link_enabled
+  dataplane_id        = data.zillizcloud_byoc_op_project_settings.this.data_plane_id
+  k8s_node_groups     = data.zillizcloud_byoc_op_project_settings.this.node_quotas
   agent_config = {
     auth_token = data.zillizcloud_byoc_op_project_settings.this.op_config.token
     tag        = data.zillizcloud_byoc_op_project_settings.this.op_config.agent_image_url
@@ -29,7 +29,7 @@ resource "zillizcloud_byoc_op_project_agent" "this" {
 
 resource "zillizcloud_byoc_op_project" "this" {
 
-  project_id = data.zillizcloud_byoc_op_project_settings.this.project_id
+  project_id    = data.zillizcloud_byoc_op_project_settings.this.project_id
   data_plane_id = data.zillizcloud_byoc_op_project_settings.this.data_plane_id
 
   aws = {
@@ -39,7 +39,7 @@ resource "zillizcloud_byoc_op_project" "this" {
       vpc_id             = module.aws_byoc_op.vpc_id
       subnet_ids         = module.aws_byoc_op.private_subnet_ids
       security_group_ids = [module.aws_byoc_op.security_group_id]
-      vpc_endpoint_id    = var.enable_private_link ? module.aws_byoc_op.byoc_endpoint : null
+      vpc_endpoint_id    = data.zillizcloud_byoc_op_project_settings.this.private_link_enabled ? module.aws_byoc_op.byoc_endpoint : null
     }
     role_arn = {
       storage       = module.aws_byoc_op.storage_role_arn

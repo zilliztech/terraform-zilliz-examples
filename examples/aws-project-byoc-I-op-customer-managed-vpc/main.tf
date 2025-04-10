@@ -56,6 +56,8 @@ module "my_eks" {
   customer_maintenance_role_name = var.customer_maintenance_role_name
   customer_storage_role_name = var.customer_storage_role_name
   custom_tags = var.custom_tags
+  // ecr
+  customer_ecr = var.customer_ecr
 }
 
 

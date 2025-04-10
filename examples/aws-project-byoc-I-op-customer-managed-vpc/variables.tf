@@ -66,7 +66,18 @@ variable "customer_ecr" {
     ecr_account_id = string
     ecr_region     = string
     ecr_prefix     = string
-  })
+    }
+  )
+  validation {
+    condition     = var.customer_ecr.ecr_prefix != "" && var.customer_ecr.ecr_account_id != "" && var.customer_ecr.ecr_region != ""
+    error_message = "ECR prefix, account ID and region cannot be empty"
+  }
+
+  default = {
+    ecr_account_id = "965570967084"
+    ecr_region     = "us-west-2"
+    ecr_prefix     = "zilliz-byoc"
+  }
 }
 
 variable "customer_bucket_name" {

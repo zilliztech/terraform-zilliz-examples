@@ -48,5 +48,23 @@ variable "fundamental_instance_type" {
 variable "search_instance_type" {
   description = "Instance type for search VM"
   type        = string
-  default     = "m6id.2xlarge"
+  default     = "m6id.4xlarge"
+}
+
+variable "core_vm_min_count" {
+  description = "Minimum number of core VMs"
+  type        = number
+  default     = 3
+}
+
+variable "fundamental_vm_min_count" {
+  description = "Minimum number of fundamental VMs"
+  type        = number
+  default     = 0
+}
+
+variable "search_vm_min_count" {
+  description = "Minimum number of search VMs"
+  type        = number
+  default     = 0
 }

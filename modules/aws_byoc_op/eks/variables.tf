@@ -1,33 +1,39 @@
 variable "region" {
   description = "Region"
   type        = string
+  nullable    = false
 }
 
 
 variable "dataplane_id" {
   description = "Dataplane ID"
   type        = string
+  nullable    = false
 }
 
 variable "vpc_id" {
   description = "VPC ID"
   type        = string
+  default     = ""
 }
 
 
 variable "security_group_id" {
   description = "Security group ID"
   type        = string
+  default     = ""
 }
 
 variable "subnet_ids" {
   description = "Subnet IDs"
   type        = list(string)
+  default     = []
 }
 
 variable "eks_control_plane_subnet_ids" {
   description = "Subnet IDs for eks control plane; default to subnet_ids if not provided"
   type        = list(string)
+  default     = []
 }
 
 variable "eks_enable_public_access" {
@@ -39,14 +45,15 @@ variable "eks_enable_public_access" {
 variable "external_id" {
   description = "External ID"
   type        = string
+  nullable    = false
 }
 
 variable "aws_region" {
   description = "The region in which the resources will be created"
   type        = string
   default     = "us-west-2"
-  
 }
+
 variable "enable_private_link" {
   description = "Enable private link for the byoc project"
   type        = bool
@@ -127,6 +134,7 @@ variable "k8s_node_groups" {
 variable "s3_bucket_id" {
   description = "S3 bucket ID"
   type        = string
+  default     = ""
 }
 
 variable "customer_eks_cluster_name" {

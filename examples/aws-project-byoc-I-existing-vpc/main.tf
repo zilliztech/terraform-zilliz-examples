@@ -93,7 +93,9 @@ resource "zillizcloud_byoc_op_project" "this" {
     }
   }
 
-  depends_on = [zillizcloud_byoc_op_project_settings.this, zillizcloud_byoc_op_project_agent.this, module.my_eks]
+  // depend on private link to establish agent tunnel connection
+  depends_on = [zillizcloud_byoc_op_project_settings.this, zillizcloud_byoc_op_project_agent.this,
+    module.my_eks, module.my_private_link]
   lifecycle {
      ignore_changes = [data_plane_id, project_id, aws, ext_config]
   }

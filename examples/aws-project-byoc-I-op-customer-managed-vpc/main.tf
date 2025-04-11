@@ -10,6 +10,8 @@ resource "zillizcloud_byoc_op_project_settings" "this" {
     fundamental_vm = var.fundamental_instance_type
     search_vm      = var.search_instance_type
   }
+
+  private_link_enabled = var.enable_private_link
 }
 
 data "zillizcloud_external_id" "current" {}

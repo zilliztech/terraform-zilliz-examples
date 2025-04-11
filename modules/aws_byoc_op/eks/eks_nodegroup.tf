@@ -230,6 +230,8 @@ resource "aws_eks_node_group" "search" {
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
   }
+
+  depends_on = [aws_eks_addon.vpc-cni]
 }
 
 # aws_eks_node_group.core:
@@ -326,6 +328,7 @@ resource "aws_eks_node_group" "index" {
     ignore_changes = [scaling_config[0].desired_size]
   }
 
+  depends_on = [aws_eks_addon.vpc-cni]
 }
 
 # aws_eks_node_group.fundamental
@@ -372,4 +375,5 @@ resource "aws_eks_node_group" "fundamental" {
     ignore_changes = [scaling_config[0].desired_size]
   }
 
+  depends_on = [aws_eks_addon.vpc-cni]
 }

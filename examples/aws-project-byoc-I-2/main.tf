@@ -20,7 +20,7 @@ resource "zillizcloud_byoc_op_project_settings" "this" {
 data "zillizcloud_external_id" "current" {}
 
 module "aws_byoc_op" {
-  source     = "../../modules/aws_byoc_op"
+  source     = "../../modules/aws_byoc_I"
   aws_region = trimprefix(zillizcloud_byoc_op_project_settings.this.region, "aws-")
 
   vpc_cidr            = var.vpc_cidr

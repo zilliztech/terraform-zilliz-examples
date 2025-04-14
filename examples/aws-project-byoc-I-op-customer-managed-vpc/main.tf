@@ -18,7 +18,7 @@ data "zillizcloud_external_id" "current" {}
 
 
 module "my_s3" {
-  source = "../../modules/aws_byoc_op/s3"
+  source = "../../modules/aws_byoc_i/s3"
   region = local.aws_region
   dataplane_id = local.dataplane_id
   customer_bucket_name = var.customer_bucket_name
@@ -27,7 +27,7 @@ module "my_s3" {
 
 module "my_private_link" {
   count = local.enable_private_link? 1: 0
-  source = "../../modules/aws_byoc_op/privatelink"
+  source = "../../modules/aws_byoc_i/privatelink"
   dataplane_id = local.dataplane_id
   region = local.aws_region
   enable_private_link = local.enable_private_link
@@ -38,7 +38,7 @@ module "my_private_link" {
 }
 
 module "my_eks" {
-  source = "../../modules/aws_byoc_op/eks"
+  source = "../../modules/aws_byoc_i/eks"
   dataplane_id = local.dataplane_id
   region = local.aws_region
   security_group_id = local.security_group_id

@@ -38,7 +38,7 @@ variable "customer_private_subnet_ids" {
 }
 
 variable "customer_eks_control_plane_private_subnet_ids" {
-  description = "The IDs of the private subnets for the customer's EKS control plane, default to use customer_private_subnet_ids if not provided"
+  description = "The IDs of the private subnets for the customer's EKS control plane, must be in at least two different availability zones. Default to use customer_private_subnet_ids if not provided"
   type        = list(string)
   default     = []
 }

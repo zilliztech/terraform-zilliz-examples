@@ -1,3 +1,9 @@
+
+variable "prefix_name" {
+  description = "Prefix name"
+  type        = string
+}
+
 variable "dataplane_id" {
   description = "Unique identifier for the dataplane"
   type        = string

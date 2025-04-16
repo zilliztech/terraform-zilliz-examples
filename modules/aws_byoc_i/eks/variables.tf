@@ -1,3 +1,9 @@
+
+variable "prefix_name" {
+  description = "Prefix name"
+  type        = string
+}
+
 variable "region" {
   description = "Region"
   type        = string

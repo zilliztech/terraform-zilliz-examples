@@ -1,3 +1,7 @@
+variable "prefix_name" {
+  description = "Prefix name"
+  type        = string
+}
 
 variable "enable_private_link" {
   description = "Enable private link"

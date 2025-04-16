@@ -200,7 +200,7 @@ resource "aws_eks_node_group" "search" {
     "node-role/milvus"     = "true"
     "node-role/nvme-quota" = "200"
   }
-  node_group_name_prefix = "zilliz-byoc-search-"
+  node_group_name_prefix = "${local.prefix_name}-search-"
   node_role_arn          = aws_iam_role.eks_role.arn
   subnet_ids = module.vpc.private_subnets
   tags = {

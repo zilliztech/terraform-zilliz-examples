@@ -1,4 +1,6 @@
+
 locals {
+  prefix_name = var.prefix_name
   subnet_ids                   = var.subnet_ids
   eks_control_plane_subnet_ids = coalescelist(var.eks_control_plane_subnet_ids, var.subnet_ids)
   config                       = yamldecode(file("${path.module}/../../conf.yaml"))
@@ -15,11 +17,11 @@ locals {
   bucket_id               = var.s3_bucket_id
 
   // customized name
-  eks_cluster_name      = length(var.customer_eks_cluster_name) > 0 ? var.customer_eks_cluster_name : var.dataplane_id
-  eks_role_name         = length(var.customer_eks_role_name) > 0 ? var.customer_eks_role_name : "${local.dataplane_id}-eks-role"
-  eks_addon_role_name   = length(var.customer_eks_addon_role_name) > 0 ? var.customer_eks_addon_role_name : "${local.dataplane_id}-addon-role"
-  maintenance_role_name = length(var.customer_maintenance_role_name) > 0 ? var.customer_maintenance_role_name : "${local.dataplane_id}-maintenance-role"
-  storage_role_name     = length(var.customer_storage_role_name) > 0 ? var.customer_storage_role_name : "${local.dataplane_id}-storage-role"
+  eks_cluster_name      = length(var.customer_eks_cluster_name) > 0 ? var.customer_eks_cluster_name : "${local.prefix_name}-eks"
+  eks_role_name         = length(var.customer_eks_role_name) > 0 ? var.customer_eks_role_name : "${local.prefix_name}-eks-role"
+  eks_addon_role_name   = length(var.customer_eks_addon_role_name) > 0 ? var.customer_eks_addon_role_name : "${local.prefix_name}-addon-role"
+  maintenance_role_name = length(var.customer_maintenance_role_name) > 0 ? var.customer_maintenance_role_name : "${local.prefix_name}-maintenance-role"
+  storage_role_name     = length(var.customer_storage_role_name) > 0 ? var.customer_storage_role_name : "${local.prefix_name}-storage-role"
 
   # Security group ingress protocols
   # sg_ingress_protocol = ["tcp", "udp"]

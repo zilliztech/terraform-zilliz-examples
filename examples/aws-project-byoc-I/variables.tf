@@ -46,7 +46,8 @@ variable "customer_eks_control_plane_private_subnet_ids" {
 variable "enable_private_link" {
   description = "Enable private link for the byoc project"
   type        = bool
-  default     = false
+  default = null
+  nullable = true
 }
 
 variable "customer_ecr" {

@@ -11,7 +11,7 @@ locals {
   subnet_ids =  local.is_existing_vpc ? var.customer_private_subnet_ids : module.my_vpc[0].private_subnets
   eks_control_plane_subnet_ids = local.is_existing_vpc ? var.customer_eks_control_plane_private_subnet_ids : module.my_vpc[0].private_subnets
   aws_region = replace(data.zillizcloud_byoc_op_project_settings.this.region, "aws-", "")
-  enable_private_link = var.enable_private_link
+  enable_private_link = var.enable_private_link != null ? var.enable_private_link : data.zillizcloud_byoc_op_project_settings.this.private_link_enabled
   external_id = data.zillizcloud_external_id.current.id
   agent_config = {
     auth_token = data.zillizcloud_byoc_op_project_settings.this.op_config.token
@@ -26,7 +26,7 @@ locals {
   maintenance_role = module.my_eks.maintenance_role
   eks_addon_role = module.my_eks.eks_addon_role
   storage_role = module.my_eks.storage_role
-  byoc_endpoint = var.enable_private_link ? module.my_private_link[0].endpoint_id : null
+  byoc_endpoint = local.enable_private_link ? module.my_private_link[0].endpoint_id : null
 
   ext_config = {
     eks_cluster_name = module.my_eks.eks_cluster_name

@@ -59,7 +59,7 @@ resource "aws_iam_role_policy_attachment" "aws_lb_controller_policy_attachment" 
 
 # https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#full-cluster-autoscaler-features-policy-recommended
 resource "aws_iam_policy" "cluster_autoscaler_policy" {
-  name        = "${local.dataplane_id}-cluster-autoscaler-policy"
+  name        = "${local.prefix_name}-cluster-autoscaler-policy"
   description = "cluster-autoscaler policy for the zilliz byoc"
   tags = {
     Vendor = "zilliz-byoc"
@@ -101,7 +101,7 @@ resource "aws_iam_role_policy_attachment" "cluster_autoscaler_policy_attachment"
 
 # https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/docs/install/iam_policy.json
 resource "aws_iam_policy" "aws_lb_controller_policy" {
-  name        = "${local.dataplane_id}-aws-lb-controller-policy"
+  name        = "${local.prefix_name}-aws-lb-controller-policy"
   description = "policy for aws load balancer controller"
   tags = {
     Vendor = "zilliz-byoc"
@@ -360,7 +360,7 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_controller_policy_attachment"
 
 # https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/example-iam-policy.json
 resource "aws_iam_policy" "aws_ebs_csi_controller_policy" {
-  name        = "${local.dataplane_id}-ebs-csi-controller-policy"
+  name        = "${local.prefix_name}-ebs-csi-controller-policy"
   description = "policy for ebs csi controller"
   tags = {
     Vendor = "zilliz-byoc"

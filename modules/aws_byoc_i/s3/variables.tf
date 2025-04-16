@@ -4,6 +4,10 @@ variable "region" {
 }
 
 
+variable "prefix_name" {
+  description = "Prefix name"
+  type        = string
+}
 variable "dataplane_id" {
   description = "Dataplane ID"
   type        = string

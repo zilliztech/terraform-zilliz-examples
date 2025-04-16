@@ -36,7 +36,7 @@ resource "aws_iam_role" "storage_role" {
 }
 
 resource "aws_iam_policy" "storage_policy" {
-  name        = "${local.dataplane_id}-storage-policy"
+  name        = "${local.prefix_name}-storage-policy"
   description = "Policy for storage role"
   tags = {
     Vendor = "zilliz-byoc"

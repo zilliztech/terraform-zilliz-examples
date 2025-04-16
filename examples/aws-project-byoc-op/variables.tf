@@ -1,40 +1,39 @@
-variable "aws_region" {
-  description = "The region where zilliz operations will take place. Examples are us-east-1, us-west-2, etc."
+variable "project_id" {
+  description = "The ID of the byoc project"
   type        = string
   nullable    = false
+}
+
+
+variable "dataplane_id" {
+  description = "The ID of the data plane"
+  type        = string
+  nullable    = false
+}
+
+variable "vpc_cidr" {
+  description = "The CIDR block for the customer VPC"
+  type        = string
+  default     = "10.0.0.0/16"
 }
 
 variable "customer_vpc_id" {
   description = "The ID of the customer VPC"
   type        = string
-  nullable    = false
+  default     = ""
 
-  validation {
-    condition     = var.customer_vpc_id != ""
-    error_message = "variable customer_vpc_id cannot be empty."
-  }
 }
 
 variable "customer_security_group_id" {
   description = "The ID of the security group for the customer VPC"
   type        = string
-  nullable    = false
-
-  validation {
-    condition     = var.customer_security_group_id != ""
-    error_message = "variable customer_security_group_id cannot be empty."
-  }
+  default     = ""
 }
 
 variable "customer_private_subnet_ids" {
   description = "The IDs of the private subnets for the customer VPC"
   type        = list(string)
-  nullable    = false
-
-  validation {
-    condition     = length(var.customer_private_subnet_ids) > 0
-    error_message = "variable customer_private_subnet_ids cannot be empty."
-  }
+  default     = []
 }
 
 variable "customer_eks_control_plane_private_subnet_ids" {
@@ -43,16 +42,6 @@ variable "customer_eks_control_plane_private_subnet_ids" {
   default     = []
 }
 
-variable "name" {
-  description = "The name of the byoc project"
-  type        = string
-  nullable    = false
-
-  validation {
-    condition     = var.name != ""
-    error_message = "variable name cannot be empty."
-  }
-}
 
 variable "enable_private_link" {
   description = "Enable private link for the byoc project"

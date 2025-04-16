@@ -1,4 +1,5 @@
 locals {
+  prefix_name = var.prefix_name
   # Dataplane ID for resource naming
   dataplane_id = var.dataplane_id
 

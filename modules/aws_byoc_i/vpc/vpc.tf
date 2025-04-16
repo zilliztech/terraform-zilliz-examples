@@ -9,7 +9,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.15.0"
 
-  name = "${local.dataplane_id}-vpc"
+  name = "${var.prefix_name}-vpc"
   cidr = var.vpc_cidr
 
   azs             = local.azs
@@ -17,11 +17,11 @@ module "vpc" {
   private_subnets = local.private_subnets
   public_subnets  = local.public_subnets
   private_subnet_names = [
-    "${local.dataplane_id}-vpc-${local.azs[0]}",
-    "${local.dataplane_id}-vpc-${local.azs[1]}",
-    "${local.dataplane_id}-vpc-${local.azs[2]}"
+    "${var.prefix_name}-vpc-${local.azs[0]}",
+    "${var.prefix_name}-vpc-${local.azs[1]}",
+    "${var.prefix_name}-vpc-${local.azs[2]}"
   ]
-  public_subnet_names = ["${local.dataplane_id}-vpc-public-${local.azs[0]}"]
+  public_subnet_names = ["${var.prefix_name}-vpc-public-${local.azs[0]}"]
 
   enable_dns_hostnames = true
   enable_dns_support   = true

@@ -5,7 +5,7 @@ module "s3_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "3.15.1"
 
-  bucket   = "${var.prefix_name}-bucket"
+  bucket   = "${local.bucket_name}"
   acl      = "private"
 
   control_object_ownership = true

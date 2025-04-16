@@ -6,7 +6,7 @@ locals {
   short_project_id = substr(data.zillizcloud_byoc_op_project_settings.this.id, 0, 10)
   prefix_name = "zilliz-${local.short_project_id}-${random_id.short_uuid.hex}"
   dataplane_id = data.zillizcloud_byoc_op_project_settings.this.data_plane_id
-  vpc_id = var.customer_vpc_id
+  vpc_id = local.is_existing_vpc ? var.customer_vpc_id :module.my_vpc[0].vpc_id
   security_group_id = local.is_existing_vpc ? var.customer_security_group_id : module.my_vpc[0].security_group_id
   subnet_ids =  local.is_existing_vpc ? var.customer_private_subnet_ids : module.my_vpc[0].private_subnets
   eks_control_plane_subnet_ids = local.is_existing_vpc ? var.customer_eks_control_plane_private_subnet_ids : module.my_vpc[0].private_subnets

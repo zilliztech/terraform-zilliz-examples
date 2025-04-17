@@ -114,3 +114,15 @@ output "data_plane_id" {
 output "project_id" {
   value = local.project_id
 }
+
+output "destroy_info" {
+  value = <<EOT
+To destroy this infrastructure, run the following command:
+
+ZILLIZCLOUD_API_KEY=<api_key> terraform destroy \
+  -var="dataplane_id=${local.dataplane_id}" \
+  -var="project_id=${local.project_id}"
+
+Note: Replace <api_key> with your actual Zilliz Cloud API key.
+EOT
+}

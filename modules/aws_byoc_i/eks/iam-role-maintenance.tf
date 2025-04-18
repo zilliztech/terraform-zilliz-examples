@@ -51,7 +51,7 @@ resource "aws_iam_role_policy_attachment" "maintenance_policy_attachment_2" {
 }
 
 resource "aws_iam_policy" "maintenance_policy_1" {
-  name        = "${local.dataplane_id}-maintenance-policy-1"
+  name        = "${local.prefix_name}-maintenance-policy-1"
   description = "cross account policy for the zilliz byoc (part 1)"
   tags = {
     Vendor = "zilliz-byoc"
@@ -241,7 +241,7 @@ resource "aws_iam_policy" "maintenance_policy_1" {
 }
 
 resource "aws_iam_policy" "maintenance_policy_2" {
-  name        = "${local.dataplane_id}-maintenance-policy-2"
+  name        = "${local.prefix_name}-maintenance-policy-2"
   description = "cross account policy for the zilliz byoc (part 2)"
   tags = {
     Vendor = "zilliz-byoc"

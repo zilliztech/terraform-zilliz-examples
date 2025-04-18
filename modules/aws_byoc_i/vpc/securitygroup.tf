@@ -1,5 +1,5 @@
 resource "aws_security_group" "zilliz_byoc_security_group" {
-  name        = "${local.dataplane_id}-sg"
+  name        = "${local.prefix_name}-sg"
   vpc_id      = module.vpc.vpc_id
   description = "Default security group of the VPC"
 
@@ -54,7 +54,7 @@ resource "aws_security_group" "zilliz_byoc_security_group" {
   }
 
   tags = merge({
-    Name = "${local.dataplane_id}-sg"
+    Name = "${local.prefix_name}-sg"
     Vendor = "zilliz-byoc"
   }, var.custom_tags)
 }

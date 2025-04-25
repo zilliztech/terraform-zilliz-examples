@@ -278,9 +278,6 @@ resource "google_container_node_pool" "core" {
     service_account       = var.biz_sa_email
     spot                  = false
     tags                  = ["zilliz-byoc","core"]
-    ephemeral_storage_local_ssd_config {
-      local_ssd_count = 4
-    }
     linux_node_config {
       cgroup_mode = null
       sysctls = {
@@ -333,7 +330,11 @@ resource "google_container_node_pool" "search" {
     "node-role/milvus"     = "true"
     "node-role/nvme-quota" = "200"
     }
+
     local_ssd_count = 0
+    ephemeral_storage_local_ssd_config {
+      local_ssd_count = 4
+    }
     logging_variant = "DEFAULT"
     machine_type    = var.k8s_node_groups.search.instance_types
     metadata = {

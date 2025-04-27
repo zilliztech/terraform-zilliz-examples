@@ -110,7 +110,6 @@ resource "google_container_node_pool" "fundamentals" {
   project = var.gcp_project_id
   name    = "fundamentals"
   cluster = google_container_cluster.gke_cluster.id
-  initial_node_count = 1
   max_pods_per_node  = 32
 
   management {
@@ -123,7 +122,7 @@ resource "google_container_node_pool" "fundamentals" {
     pod_range            = "${var.pod_subnet_range_name}"
   }
   autoscaling {
-    location_policy      = "BALANCED"
+    location_policy      = "ANY"
     total_max_node_count       = var.k8s_node_groups.fundamentals.max_size
     total_min_node_count       = var.k8s_node_groups.fundamentals.min_size
   }
@@ -169,7 +168,6 @@ resource "google_container_node_pool" "fundamentals" {
 resource "google_container_node_pool" "index" {
   project = var.gcp_project_id
   cluster = google_container_cluster.gke_cluster.id
-  initial_node_count = 1
   max_pods_per_node  = 32
   name               = "index"
   name_prefix        = null
@@ -226,7 +224,6 @@ resource "google_container_node_pool" "index" {
 
 resource "google_container_node_pool" "core" { 
   project = var.gcp_project_id
-  initial_node_count = 1
   max_pods_per_node  = 32
   name               = "core"
   name_prefix        = null
@@ -303,7 +300,6 @@ resource "google_container_node_pool" "search" {
   max_pods_per_node  = 110
   name               = "search"
   name_prefix        = null
-  node_count         = 1
   autoscaling {
     location_policy      = "ANY"
     total_max_node_count = var.k8s_node_groups.search.max_size

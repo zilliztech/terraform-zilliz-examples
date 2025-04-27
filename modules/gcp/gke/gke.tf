@@ -124,10 +124,8 @@ resource "google_container_node_pool" "fundamentals" {
   }
   autoscaling {
     location_policy      = "BALANCED"
-    max_node_count       = var.k8s_node_groups.fundamentals.max_size
-    min_node_count       = var.k8s_node_groups.fundamentals.min_size
-    # total_max_node_count = 0
-    # total_min_node_count = 0
+    total_max_node_count       = var.k8s_node_groups.fundamentals.max_size
+    total_min_node_count       = var.k8s_node_groups.fundamentals.min_size
   }
 
   node_config {
@@ -177,10 +175,8 @@ resource "google_container_node_pool" "index" {
   name_prefix        = null
   autoscaling {
     location_policy      = "ANY"
-    max_node_count       = var.k8s_node_groups.index.max_size
-    min_node_count       = var.k8s_node_groups.index.min_size
-    # total_max_node_count = var.k8s_node_groups.index.max_size
-    # total_min_node_count = var.k8s_node_groups.index.min_size
+    total_max_node_count = var.k8s_node_groups.index.max_size
+    total_min_node_count = var.k8s_node_groups.index.min_size
   }
   management {
     auto_repair  = true
@@ -237,10 +233,8 @@ resource "google_container_node_pool" "core" {
   cluster = google_container_cluster.gke_cluster.id
   autoscaling {
     location_policy      = "ANY"
-    max_node_count       = var.k8s_node_groups.core.max_size
-    min_node_count       = var.k8s_node_groups.core.min_size
-    # total_max_node_count = 0
-    # total_min_node_count = 0
+    total_max_node_count = var.k8s_node_groups.core.max_size
+    total_min_node_count = var.k8s_node_groups.core.min_size
   }
   management {
     auto_repair  = true
@@ -310,6 +304,11 @@ resource "google_container_node_pool" "search" {
   name               = "search"
   name_prefix        = null
   node_count         = 1
+  autoscaling {
+    location_policy      = "ANY"
+    total_max_node_count = var.k8s_node_groups.search.max_size
+    total_min_node_count = var.k8s_node_groups.search.min_size
+  }
   management {
     auto_repair  = true
     auto_upgrade = false

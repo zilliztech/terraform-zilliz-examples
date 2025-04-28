@@ -110,7 +110,6 @@ resource "google_container_node_pool" "fundamentals" {
   project = var.gcp_project_id
   name    = "fundamentals"
   cluster = google_container_cluster.gke_cluster.id
-  initial_node_count = 1
   max_pods_per_node  = 32
 
   management {
@@ -123,11 +122,9 @@ resource "google_container_node_pool" "fundamentals" {
     pod_range            = "${var.pod_subnet_range_name}"
   }
   autoscaling {
-    location_policy      = "BALANCED"
-    max_node_count       = var.k8s_node_groups.fundamentals.max_size
-    min_node_count       = var.k8s_node_groups.fundamentals.min_size
-    # total_max_node_count = 0
-    # total_min_node_count = 0
+    location_policy      = "ANY"
+    total_max_node_count       = var.k8s_node_groups.fundamentals.max_size
+    total_min_node_count       = var.k8s_node_groups.fundamentals.min_size
   }
 
   node_config {
@@ -171,16 +168,13 @@ resource "google_container_node_pool" "fundamentals" {
 resource "google_container_node_pool" "index" {
   project = var.gcp_project_id
   cluster = google_container_cluster.gke_cluster.id
-  initial_node_count = 1
   max_pods_per_node  = 32
   name               = "index"
   name_prefix        = null
   autoscaling {
     location_policy      = "ANY"
-    max_node_count       = var.k8s_node_groups.index.max_size
-    min_node_count       = var.k8s_node_groups.index.min_size
-    # total_max_node_count = var.k8s_node_groups.index.max_size
-    # total_min_node_count = var.k8s_node_groups.index.min_size
+    total_max_node_count = var.k8s_node_groups.index.max_size
+    total_min_node_count = var.k8s_node_groups.index.min_size
   }
   management {
     auto_repair  = true
@@ -230,17 +224,14 @@ resource "google_container_node_pool" "index" {
 
 resource "google_container_node_pool" "core" { 
   project = var.gcp_project_id
-  initial_node_count = 1
   max_pods_per_node  = 32
   name               = "core"
   name_prefix        = null
   cluster = google_container_cluster.gke_cluster.id
   autoscaling {
     location_policy      = "ANY"
-    max_node_count       = var.k8s_node_groups.core.max_size
-    min_node_count       = var.k8s_node_groups.core.min_size
-    # total_max_node_count = 0
-    # total_min_node_count = 0
+    total_max_node_count = var.k8s_node_groups.core.max_size
+    total_min_node_count = var.k8s_node_groups.core.min_size
   }
   management {
     auto_repair  = true
@@ -278,9 +269,6 @@ resource "google_container_node_pool" "core" {
     service_account       = var.biz_sa_email
     spot                  = false
     tags                  = ["zilliz-byoc","core"]
-    ephemeral_storage_local_ssd_config {
-      local_ssd_count = 4
-    }
     linux_node_config {
       cgroup_mode = null
       sysctls = {
@@ -312,7 +300,11 @@ resource "google_container_node_pool" "search" {
   max_pods_per_node  = 110
   name               = "search"
   name_prefix        = null
-  node_count         = 1
+  autoscaling {
+    location_policy      = "ANY"
+    total_max_node_count = var.k8s_node_groups.search.max_size
+    total_min_node_count = var.k8s_node_groups.search.min_size
+  }
   management {
     auto_repair  = true
     auto_upgrade = false
@@ -333,7 +325,11 @@ resource "google_container_node_pool" "search" {
     "node-role/milvus"     = "true"
     "node-role/nvme-quota" = "200"
     }
+
     local_ssd_count = 0
+    ephemeral_storage_local_ssd_config {
+      local_ssd_count = 4
+    }
     logging_variant = "DEFAULT"
     machine_type    = var.k8s_node_groups.search.instance_types
     metadata = {
@@ -359,9 +355,4 @@ resource "google_container_node_pool" "search" {
     max_unavailable = 0
     strategy        = "SURGE"
   }
-}
-
-provider "google" {
-  project = var.gcp_project_id
-  region  = var.gcp_region
 }

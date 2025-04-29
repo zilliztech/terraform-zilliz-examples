@@ -1,0 +1,98 @@
+terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 6.32.0"
+    }
+  }
+}
+
+provider "google" {
+  project = var.gcp_project_id
+  region  = var.gcp_region
+}
+
+# VPC Module
+module "vpc" {
+  source = "../../modules/gcp/vpc"
+
+  gcp_project_id = var.gcp_project_id
+  gcp_region     = var.gcp_region
+  gcp_vpc_name   = var.gcp_vpc_name
+  gcp_vpc_cidr   = var.gcp_vpc_cidr
+  gcp_zones      = var.gcp_zones
+
+  k8s_short_cluster_name = var.k8s_short_cluster_name
+
+  primary_subnet = {
+    name = var.primary_subnet_name
+    cidr = var.primary_subnet_cidr
+  }
+
+  pod_subnet = {
+    name = var.pod_subnet_name
+    cidr = var.pod_subnet_cidr
+  }
+
+  service_subnet = {
+    name = var.service_subnet_name
+    cidr = var.service_subnet_cidr
+  }
+
+  lb_subnet = {
+    name = var.lb_subnet_name
+    cidr = var.lb_subnet_cidr
+  }
+}
+
+# # GCS Module
+module "gcs" {
+  source = "../../modules/gcp/gcs"
+
+  gcp_project_id      = var.gcp_project_id
+  gcp_region          = var.gcp_region
+  storage_bucket_name = var.storage_bucket_name
+}
+
+# # GKE Module
+module "gke" {
+  source = "../../modules/gcp/gke"
+
+  gcp_project_id           = var.gcp_project_id
+  gcp_region               = var.gcp_region
+  gcp_vpc_name            = module.vpc.gcp_vpc_name
+  gcp_subnetwork_name     = var.primary_subnet_name
+  pod_subnet_range_name   = var.pod_subnet_name
+  service_subnet_range_name = var.service_subnet_name
+  k8s_short_cluster_name  = var.k8s_short_cluster_name
+  k8s_node_groups         = var.k8s_node_groups
+  k8s_access_cidrs        = var.k8s_access_cidrs
+  gcp_zones               = var.gcp_zones
+  biz_sa_email            = var.biz_sa_email
+  buckets                 = var.buckets
+  csp                     = var.csp
+  registrykey             = var.registrykey
+}
+
+# Private Link Module
+module "private_link" {
+  source = "../../modules/gcp/private-link"
+
+  gcp_project_id      = var.gcp_project_id
+  gcp_region          = var.gcp_region
+  gcp_vpc_name        = module.vpc.gcp_vpc_name
+  service_subnet_name = var.primary_subnet_name
+  prefix_name         = var.k8s_short_cluster_name
+}
+
+# IAM Module
+module "iam" {
+  source = "../../modules/gcp/iam"
+
+  gcp_project_id              = var.gcp_project_id
+  gcp_region                  = var.gcp_region
+  create_storage_sa           = var.create_storage_sa
+  storage_service_account_name = var.storage_service_account_name
+  storage_bucket_name         = var.storage_bucket_name
+  gke_cluster_name           = var.k8s_short_cluster_name
+}

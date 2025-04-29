@@ -52,3 +52,8 @@ variable "gke_node_service_account_name" {
   type        = string
   nullable    = false
 }
+
+variable "delegate_from" {
+  type = string
+  description = "The service account that can impersonate the customer service account"
+}

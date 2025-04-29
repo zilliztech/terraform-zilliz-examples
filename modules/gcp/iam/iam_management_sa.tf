@@ -29,4 +29,15 @@ resource "google_project_iam_member" "management-storage-binding" {
   }
 }
 
+
+# Allow zilliz service account to impersonate customer service account
+resource "google_service_account_iam_binding" "impersonate" {
+  service_account_id = google_service_account.management-sa.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+
+  members = [
+    "serviceAccount:${var.delegate_from}"
+  ]
+}
+
 // TODO: impersonate

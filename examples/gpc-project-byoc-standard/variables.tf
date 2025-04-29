@@ -30,7 +30,7 @@ variable "storage_service_account_name" {
   description = "The name of the storage service account."
   type        = string
   default     = "storage-sa"
-} 
+}
 
 
 variable "k8s_short_cluster_name" {
@@ -42,4 +42,22 @@ variable "k8s_short_cluster_name" {
 variable "storage_bucket_name" {
   description = "The name of the GCS bucket."
   type        = string
+}
+
+
+variable "management_service_account_name" {
+  description = "The name of the management service account."
+  type        = string
+  nullable    = false
+}
+
+variable "gke_node_service_account_name" {
+  description = "The name of the gke node service account."
+  type        = string
+  nullable    = false
+}
+
+variable "delegate_from" {
+  type        = string
+  description = "The service account that can impersonate the customer service account"
 }

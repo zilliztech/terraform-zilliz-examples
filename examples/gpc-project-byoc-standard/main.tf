@@ -11,12 +11,21 @@ module "private_link" {
 
 # IAM Module
 module "iam" {
-  source = "../../modules/gcp/iam"
+  source                          = "../../modules/gcp/iam"
+  gcp_project_id                  = var.gcp_project_id
+  gcp_region                      = var.gcp_region
+  storage_service_account_name    = var.storage_service_account_name
+  storage_bucket_name             = var.storage_bucket_name
+  gke_cluster_name                = var.k8s_short_cluster_name
+  management_service_account_name = var.management_service_account_name
+  gke_node_service_account_name   = var.gke_node_service_account_name
+  delegate_from                   = var.delegate_from
+}
 
-  gcp_project_id              = var.gcp_project_id
-  gcp_region                  = var.gcp_region
-  create_storage_sa           = var.create_storage_sa
-  storage_service_account_name = var.storage_service_account_name
-  storage_bucket_name         = var.storage_bucket_name
-  gke_cluster_name           = var.k8s_short_cluster_name
+output "iam_module_output" {
+  value = module.iam
+}
+
+output "private_link_module_output" {
+  value = module.private_link
 }

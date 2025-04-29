@@ -11,12 +11,6 @@ variable "gcp_region" {
   nullable    = false
 }
 
-variable "create_storage_sa" {
-  description = "Whether to create the storage service account."
-  type        = bool
-  default     = false
-}
-
 variable "storage_service_account_name" {
   description = "The name of the storage service account."
   type        = string
@@ -45,4 +39,16 @@ variable "gke_cluster_name" {
     error_message = "variable gke_cluster_name cannot be empty."
   }
   
+}
+
+variable "management_service_account_name" {
+  description = "The name of the management service account."
+  type        = string
+  nullable    = false
+}
+
+variable "gke_node_service_account_name" {
+  description = "The name of the gke node service account."
+  type        = string
+  nullable    = false
 }

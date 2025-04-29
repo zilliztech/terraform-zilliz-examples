@@ -5,7 +5,7 @@ resource "google_service_account" "management-sa" {
   
 }
 
-resource "google_project_iam_member" "management-binding" {
+resource "google_project_iam_member" "management-container-binding" {
   project = var.gcp_project_id
   role    = "roles/container.clusterAdmin"
   member  = "serviceAccount:${google_service_account.management-sa.email}"
@@ -17,10 +17,16 @@ resource "google_project_iam_member" "management-binding" {
   }
 }
 
-# should after gke cluster created
-// TODO: replace with impersonate
-resource "google_service_account_iam_member" "management-cluster-workload-identity" {
-  service_account_id = google_service_account.management-sa.name
-  role    = "roles/iam.workloadIdentityUser"
-  member  = "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${var.gcp_project_id}.svc.id.goog/kubernetes.cluster/https://container.googleapis.com/v1/projects/${var.gcp_project_id}/locations/${var.gcp_region}/clusters/${var.gke_cluster_name}"
+resource "google_project_iam_member" "management-storage-binding" {
+  project = var.gcp_project_id
+  role    = "roles/storage.bucketViewer"
+  member  = "serviceAccount:${google_service_account.management-sa.email}"
+  
+  condition {
+    title       = "zilliz_byoc_gcs_bucket_viewer"
+    description = "zilliz byoc gcs bucket viewer for gcs bucket"
+    expression  = "resource.name.startsWith(\"projects/_/buckets/${var.storage_bucket_name}\")"
+  }
 }
+
+// TODO: impersonate

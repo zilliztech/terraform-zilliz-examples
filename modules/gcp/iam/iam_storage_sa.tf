@@ -5,7 +5,7 @@ resource "google_service_account" "storage-sa" {
   
 }
 
-resource "google_project_iam_member" "storage-binding" {
+resource "google_project_iam_member" "storage-object-admin-binding" {
   project = var.gcp_project_id
   role    = "roles/storage.objectAdmin"
   member  = "serviceAccount:${google_service_account.storage-sa.email}"
@@ -17,7 +17,18 @@ resource "google_project_iam_member" "storage-binding" {
   }
 }
 
-# should after gke cluster created
+resource "google_project_iam_member" "storage-bucket-viewer-binding" {
+  project = var.gcp_project_id
+  role    = "roles/storage.bucketViewer"
+  member  = "serviceAccount:${google_service_account.storage-sa.email}"
+  
+  condition {
+    title       = "zilliz_byoc_gcs_bucket_viewer"
+    description = "zilliz byoc gcs bucket viewer for gcs bucket"
+    expression  = "resource.name.startsWith(\"projects/_/buckets/${var.storage_bucket_name}\")"
+  }
+}
+
 resource "google_service_account_iam_member" "cluster-workload-identity" {
   service_account_id = google_service_account.storage-sa.name
   role    = "roles/iam.workloadIdentityUser"

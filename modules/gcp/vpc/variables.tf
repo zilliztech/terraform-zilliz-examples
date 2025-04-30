@@ -18,17 +18,6 @@ variable "gcp_vpc_name" {
   default     = "k8s_short_cluster_name-vpc"
 }
 
-variable "k8s_short_cluster_name" {
-  description = "The name of the GKE cluster"
-  type        = string
-  nullable    = false
-
-  validation {
-    condition     = var.k8s_short_cluster_name != ""
-    error_message = "variable k8s_short_cluster_name cannot be empty."
-  }
-}
-
 variable "gcp_vpc_cidr" {
   description = "The CIDR block for the customer VPC, cidr x/16"
   type        = string
@@ -85,4 +74,20 @@ variable "lb_subnet" {
     cidr = string
   })
   nullable = false
+}
+
+variable "nat_name" {
+  description = "The name of the NAT gateway."
+  type        = string
+  nullable    = false
+  default     = "nat-gateway"
+  
+}
+
+variable "router_name" {
+  description = "The name of the router."
+  type        = string
+  nullable    = false
+  default     = "nat-router"
+  
 }

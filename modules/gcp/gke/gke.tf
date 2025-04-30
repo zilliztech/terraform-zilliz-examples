@@ -1,11 +1,11 @@
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_cluster
 resource "google_container_cluster" "gke_cluster" {
-  name                        = var.k8s_short_cluster_name
+  name                        = var.gke_cluster_name
   location                    = var.gcp_region
   remove_default_node_pool    = true
-  initial_node_count          = 1
+  initial_node_count = 1
   network                     = "projects/${var.gcp_project_id}/global/networks/${var.gcp_vpc_name}"
-  subnetwork                  = "projects/${var.gcp_project_id}/regions/${var.gcp_region}/subnetworks/${var.gcp_subnetwork_name}"
+  subnetwork                  = "projects/${var.gcp_project_id}/regions/${var.gcp_region}/subnetworks/${var.gke_subnetwork_name}"
   logging_service             = "none"
   monitoring_service          = "none"
   networking_mode             = "VPC_NATIVE"
@@ -102,13 +102,13 @@ resource "google_container_cluster" "gke_cluster" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_service_account
-data "google_service_account" "zilliz-byoc-client-sa" {
-  account_id = var.biz_sa_email
+data "google_service_account" "zilliz-byoc-node-sa" {
+  account_id = var.gke_node_sa
 }
 
-resource "google_container_node_pool" "fundamentals" {
+resource "google_container_node_pool" "fundamental" {
   project = var.gcp_project_id
-  name    = "fundamentals"
+  name    = "fundamental"
   cluster = google_container_cluster.gke_cluster.id
   max_pods_per_node  = 32
 
@@ -123,8 +123,8 @@ resource "google_container_node_pool" "fundamentals" {
   }
   autoscaling {
     location_policy      = "ANY"
-    total_max_node_count       = var.k8s_node_groups.fundamentals.max_size
-    total_min_node_count       = var.k8s_node_groups.fundamentals.min_size
+    total_max_node_count       = var.k8s_node_groups.fundamental.max_size
+    total_min_node_count       = var.k8s_node_groups.fundamental.min_size
   }
 
   node_config {
@@ -139,7 +139,7 @@ resource "google_container_node_pool" "fundamentals" {
     }
     local_ssd_count = 0
     logging_variant = "DEFAULT"
-    machine_type    = var.k8s_node_groups.fundamentals.instance_types
+    machine_type    = var.k8s_node_groups.fundamental.instance_types
     metadata = {
       disable-legacy-endpoints = "true"
     }
@@ -147,9 +147,9 @@ resource "google_container_node_pool" "fundamentals" {
     node_group            = null
     oauth_scopes          = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
     preemptible           = false
-    service_account       = var.biz_sa_email
-    spot                  = false
-    tags                  = ["zilliz-byoc", "fundamentals"]
+    service_account       = data.google_service_account.zilliz-byoc-node-sa.email
+    spot                  = var.k8s_node_groups.fundamental.spot
+    tags                  = ["zilliz-byoc", "fundamental"]
     shielded_instance_config {
       enable_integrity_monitoring = true
       enable_secure_boot          = false
@@ -163,6 +163,8 @@ resource "google_container_node_pool" "fundamentals" {
     max_unavailable = 0
     strategy        = "SURGE"
   }
+
+  
 }
 
 resource "google_container_node_pool" "index" {
@@ -204,8 +206,8 @@ resource "google_container_node_pool" "index" {
     node_group            = null
     oauth_scopes          = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
     preemptible           = false
-    service_account       = var.biz_sa_email
-    spot                  = false
+    service_account       = data.google_service_account.zilliz-byoc-node-sa.email
+    spot                  = var.k8s_node_groups.index.spot
     tags                  = ["zilliz-byoc","index-pool"]
     shielded_instance_config {
       enable_integrity_monitoring = true
@@ -220,86 +222,16 @@ resource "google_container_node_pool" "index" {
     max_unavailable = 0
     strategy        = "SURGE"
   }
-}
 
-resource "google_container_node_pool" "core" { 
-  project = var.gcp_project_id
-  max_pods_per_node  = 32
-  name               = "core"
-  name_prefix        = null
-  cluster = google_container_cluster.gke_cluster.id
-  autoscaling {
-    location_policy      = "ANY"
-    total_max_node_count = var.k8s_node_groups.core.max_size
-    total_min_node_count = var.k8s_node_groups.core.min_size
-  }
-  management {
-    auto_repair  = true
-    auto_upgrade = false
-  }
-  network_config {
-    create_pod_range     = false
-    enable_private_nodes = true
-    pod_range            = "${var.pod_subnet_range_name}"
-  }
-  node_config {
-    boot_disk_kms_key = null
-    disk_size_gb      = 200
-    disk_type         = "pd-balanced"
-    image_type        = "COS_CONTAINERD"
-    labels = {
-    "zilliz-group-name"     = "core"
-    "node-role/etcd"        = "true"
-    "node-role/pulsar"      = "true"
-    "node-role/infra"       = "true",
-    "node-role/vdc"         = "true",
-    "node-role/milvus-tool" = "true",
-    "capacity-type"         = "ON_DEMAND"
-    }
-    local_ssd_count = 0
-    logging_variant = "DEFAULT"
-    machine_type    = var.k8s_node_groups.core.instance_types
-    metadata = {
-      disable-legacy-endpoints = "true"
-    }
-    min_cpu_platform      = "Intel Ice Lake"
-    node_group            = null
-    oauth_scopes          = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
-    preemptible           = false
-    service_account       = var.biz_sa_email
-    spot                  = false
-    tags                  = ["zilliz-byoc","core"]
-    linux_node_config {
-      cgroup_mode = null
-      sysctls = {
-        "net.core.somaxconn" = "4096"
-        "net.ipv4.tcp_rmem"  = "4096 131072  6291456"
-        "net.ipv4.tcp_wmem"  = "4096 20480  4194304"
-      }
-    }
-    shielded_instance_config {
-      enable_integrity_monitoring = true
-      enable_secure_boot          = false
-    }
-    workload_metadata_config {
-      mode = "GKE_METADATA"
-    }
-  }
-  upgrade_settings {
-    max_surge       = 1
-    max_unavailable = 0
-    strategy        = "SURGE"
-  }
-
+  
 }
 
 resource "google_container_node_pool" "search" { 
   project = var.gcp_project_id
-  cluster = google_container_cluster.gke_cluster.id
-  # initial_node_count = var.k8s_node_groups.search.desired_size
-  max_pods_per_node  = 110
+  max_pods_per_node  = 32
   name               = "search"
   name_prefix        = null
+  cluster = google_container_cluster.gke_cluster.id
   autoscaling {
     location_policy      = "ANY"
     total_max_node_count = var.k8s_node_groups.search.max_size
@@ -325,23 +257,31 @@ resource "google_container_node_pool" "search" {
     "node-role/milvus"     = "true"
     "node-role/nvme-quota" = "200"
     }
-
+    
     local_ssd_count = 0
-    ephemeral_storage_local_ssd_config {
-      local_ssd_count = 4
-    }
     logging_variant = "DEFAULT"
     machine_type    = var.k8s_node_groups.search.instance_types
     metadata = {
       disable-legacy-endpoints = "true"
     }
-    min_cpu_platform      = null
+    min_cpu_platform      = "Intel Ice Lake"
     node_group            = null
     oauth_scopes          = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
     preemptible           = false
-    service_account       = var.biz_sa_email
-    spot                  = false
+    service_account       = data.google_service_account.zilliz-byoc-node-sa.email
+    spot                  = var.k8s_node_groups.search.spot
     tags                  = ["zilliz-byoc","search"]
+    ephemeral_storage_local_ssd_config {
+      local_ssd_count = 4
+    }
+    linux_node_config {
+      cgroup_mode = null
+      sysctls = {
+        "net.core.somaxconn" = "4096"
+        "net.ipv4.tcp_rmem"  = "4096 131072  6291456"
+        "net.ipv4.tcp_wmem"  = "4096 20480  4194304"
+      }
+    }
     shielded_instance_config {
       enable_integrity_monitoring = true
       enable_secure_boot          = false
@@ -355,4 +295,71 @@ resource "google_container_node_pool" "search" {
     max_unavailable = 0
     strategy        = "SURGE"
   }
+
+  
+}
+
+resource "google_container_node_pool" "core" { 
+  project = var.gcp_project_id
+  cluster = google_container_cluster.gke_cluster.id
+
+  max_pods_per_node  = 110
+  name               = "core"
+  name_prefix        = null
+  autoscaling {
+    location_policy      = "ANY"
+    total_max_node_count = var.k8s_node_groups.core.max_size
+    total_min_node_count = var.k8s_node_groups.core.min_size
+  }
+  management {
+    auto_repair  = true
+    auto_upgrade = false
+  }
+  network_config {
+    create_pod_range     = false
+    enable_private_nodes = true
+    pod_range            = "${var.pod_subnet_range_name}"
+  }
+  node_config {
+    boot_disk_kms_key = null
+    disk_size_gb      = 100
+    disk_type         = "pd-balanced"
+    image_type        = "COS_CONTAINERD"
+    labels = {
+    "zilliz-group-name"     = "core"
+    "node-role/etcd"        = "true"
+    "node-role/pulsar"      = "true"
+    "node-role/infra"       = "true",
+    "node-role/vdc"         = "true",
+    "node-role/milvus-tool" = "true",
+    "capacity-type"         = "ON_DEMAND"
+    }
+
+    local_ssd_count = 0
+    logging_variant = "DEFAULT"
+    machine_type    = var.k8s_node_groups.core.instance_types
+    metadata = {
+      disable-legacy-endpoints = "true"
+    }
+    min_cpu_platform      = null
+    node_group            = null
+    oauth_scopes          = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
+    preemptible           = false
+    service_account       = data.google_service_account.zilliz-byoc-node-sa.email
+    spot                  = var.k8s_node_groups.core.spot
+    tags                  = ["zilliz-byoc","core"]
+    shielded_instance_config {
+      enable_integrity_monitoring = true
+      enable_secure_boot          = false
+    }
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+  }
+  upgrade_settings {
+    max_surge       = 1
+    max_unavailable = 0
+    strategy        = "SURGE"
+  }
+
 }

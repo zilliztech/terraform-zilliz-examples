@@ -102,9 +102,9 @@ resource "google_container_cluster" "gke_cluster" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_service_account
-data "google_service_account" "zilliz-byoc-node-sa" {
-  account_id = var.gke_node_sa
-}
+# data "google_service_account" "zilliz-byoc-node-sa" {
+#   account_id = var.gke_node_sa
+# }
 
 resource "google_container_node_pool" "fundamental" {
   project = var.gcp_project_id
@@ -147,8 +147,8 @@ resource "google_container_node_pool" "fundamental" {
     node_group            = null
     oauth_scopes          = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
     preemptible           = false
-    service_account       = data.google_service_account.zilliz-byoc-node-sa.email
     spot                  = var.k8s_node_groups.fundamental.spot
+    service_account       = var.gke_node_sa
     tags                  = ["zilliz-byoc", "fundamental"]
     shielded_instance_config {
       enable_integrity_monitoring = true
@@ -206,7 +206,7 @@ resource "google_container_node_pool" "index" {
     node_group            = null
     oauth_scopes          = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
     preemptible           = false
-    service_account       = data.google_service_account.zilliz-byoc-node-sa.email
+    service_account       = var.gke_node_sa
     spot                  = var.k8s_node_groups.index.spot
     tags                  = ["zilliz-byoc","index-pool"]
     shielded_instance_config {
@@ -268,7 +268,7 @@ resource "google_container_node_pool" "search" {
     node_group            = null
     oauth_scopes          = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
     preemptible           = false
-    service_account       = data.google_service_account.zilliz-byoc-node-sa.email
+    service_account       = var.gke_node_sa
     spot                  = var.k8s_node_groups.search.spot
     tags                  = ["zilliz-byoc","search"]
     ephemeral_storage_local_ssd_config {
@@ -345,7 +345,7 @@ resource "google_container_node_pool" "core" {
     node_group            = null
     oauth_scopes          = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
     preemptible           = false
-    service_account       = data.google_service_account.zilliz-byoc-node-sa.email
+    service_account       = var.gke_node_sa
     spot                  = var.k8s_node_groups.core.spot
     tags                  = ["zilliz-byoc","core"]
     shielded_instance_config {

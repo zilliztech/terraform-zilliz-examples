@@ -39,7 +39,7 @@ resource "aws_iam_role_policy_attachment" "cross_account_policy_attachment" {
   policy_arn = aws_iam_policy.cross_account_policy.arn
   role       = aws_iam_role.cross_account_role.name
 }
-
+# TODO: need to merge with byoc-i mode's maintainance role
 resource "aws_iam_policy" "cross_account_policy" {
   name        = "zilliz-byoc-${var.name}-cross-account-policy"
   description = "cross account policy for the zilliz byoc"
@@ -251,8 +251,8 @@ resource "aws_iam_policy" "cross_account_policy" {
           "arn:aws:eks:*:*:addon/zilliz-byoc-*/*/*",
           "arn:aws:eks:*:*:nodegroup/zilliz-byoc-*/zilliz*/*",
           "arn:aws:eks:*:*:podidentityassociation/zilliz-byoc-*/*",
-          "arn:aws:eks::aws:access-entry/zilliz-byoc-*/*/*/*/*",
-          "arn:aws:eks::aws:access-policy/zilliz-byoc-*/*"
+          "arn:aws:eks:*:*:access-entry/zilliz-byoc-*/*/*/*/*",
+          "arn:aws:eks:*:*:access-policy/zilliz-byoc-*/*"
         ],
         "Condition" : {
           "StringEquals" : {
@@ -278,8 +278,8 @@ resource "aws_iam_policy" "cross_account_policy" {
           "arn:aws:eks:*:*:addon/zilliz-byoc-*/*/*",
           "arn:aws:eks:*:*:nodegroup/zilliz-byoc-*/zilliz*/*",
           "arn:aws:eks:*:*:podidentityassociation/zilliz-byoc-*/*",
-          "arn:aws:eks::aws:access-entry/zilliz-byoc-*/*/*/*/*",
-          "arn:aws:eks::aws:access-policy/zilliz-byoc-*/*"
+          "arn:aws:eks:*:*:access-entry/zilliz-byoc-*/*/*/*/*",
+          "arn:aws:eks:*:*:access-policy/zilliz-byoc-*/*"
         ],
         "Condition" : {
           "StringEquals" : {
@@ -298,7 +298,7 @@ resource "aws_iam_policy" "cross_account_policy" {
           "arn:aws:eks:*:*:addon/zilliz-byoc-*/*/*",
           "arn:aws:eks:*:*:nodegroup/zilliz-byoc-*/zilliz*/*",
           "arn:aws:eks:*:*:podidentityassociation/zilliz-byoc-*/*",
-          "arn:aws:eks::aws:access-entry/zilliz-byoc-*/*/*/*/*"
+          "arn:aws:eks:*:*:access-entry/zilliz-byoc-*/*/*/*/*"
         ]
       },
       {
@@ -326,8 +326,8 @@ resource "aws_iam_policy" "cross_account_policy" {
           "arn:aws:eks:*:*:addon/zilliz-byoc-*/*/*",
           "arn:aws:eks:*:*:nodegroup/zilliz-byoc-*/zilliz*/*",
           "arn:aws:eks:*:*:podidentityassociation/zilliz-byoc-*/*",
-          "arn:aws:eks::aws:access-entry/zilliz-byoc-*/*/*/*/*",
-          "arn:aws:eks::aws:access-policy/zilliz-byoc-*/*"
+          "arn:aws:eks:*:*:access-entry/zilliz-byoc-*/*/*/*/*",
+          "arn:aws:eks:*:*:access-policy/zilliz-byoc-*/*"
         ]
       },
       {
@@ -338,8 +338,8 @@ resource "aws_iam_policy" "cross_account_policy" {
           "arn:aws:eks:*:*:addon/zilliz-byoc-*/*/*",
           "arn:aws:eks:*:*:nodegroup/zilliz-byoc-*/zilliz*/*",
           "arn:aws:eks:*:*:podidentityassociation/zilliz-byoc-*/*",
-          "arn:aws:eks::aws:access-entry/zilliz-byoc-*/*/*/*/*",
-          "arn:aws:eks::aws:access-policy/zilliz-byoc-*/*"
+          "arn:aws:eks:*:*:access-entry/zilliz-byoc-*/*/*/*/*",
+          "arn:aws:eks:*:*:access-policy/zilliz-byoc-*/*"
         ],
         "Action" : [
           "eks:DeleteAccessEntry",
@@ -356,7 +356,7 @@ resource "aws_iam_policy" "cross_account_policy" {
         "Action" : [
           "s3:GetBucketLocation"
         ],
-        "Resource" : "arn:aws:s3:::{var.bucketName}"
+        "Resource" : "arn:aws:s3:::${var.bucketName}"
       }
     ]
   })

@@ -27,10 +27,7 @@ variable "gcp_zones" {
   default     = ["us-west2-a", "us-west2-b", "us-west2-c"]
 }
 
-variable "k8s_short_cluster_name" {
-  description = "The name of the GKE cluster"
-  type        = string
-}
+
 
 variable "primary_subnet_name" {
   description = "The name of the primary subnet"

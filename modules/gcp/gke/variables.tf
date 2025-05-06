@@ -104,6 +104,12 @@ variable "gke_node_sa" {
   
 }
 
+variable "gke_management_sa" {
+  description = "The GKE management service account."
+  type        = string
+  nullable    = false
+}
+
 variable "gke_cluster_name" {
   description = "The name of the GKE cluster."
   type        = string

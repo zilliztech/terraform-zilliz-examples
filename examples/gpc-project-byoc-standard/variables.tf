@@ -9,6 +9,14 @@ variable "gcp_region" {
   default     = "us-west2"
 }
 
+variable "gcp_zones" { 
+  description = "The GCP zones for the GKE cluster."
+  type        = list(string)
+  default     = ["us-west1-a", "us-west1-b", "us-west1-c"]
+  nullable    = false
+}
+
+
 variable "gcp_vpc_name" {
   description = "The VPC name of the Google Cloud Platform project."
   type        = string

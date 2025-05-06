@@ -22,8 +22,6 @@ module "vpc" {
   gcp_vpc_cidr   = var.gcp_vpc_cidr
   gcp_zones      = var.gcp_zones
 
-  k8s_short_cluster_name = var.k8s_short_cluster_name
-
   primary_subnet = {
     name = var.primary_subnet_name
     cidr = var.primary_subnet_cidr

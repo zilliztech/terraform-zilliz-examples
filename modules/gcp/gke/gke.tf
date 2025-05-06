@@ -123,8 +123,8 @@ resource "google_container_node_pool" "fundamental" {
   }
   autoscaling {
     location_policy      = "ANY"
-    total_max_node_count       = var.k8s_node_groups.fundamental.max_size
-    total_min_node_count       = var.k8s_node_groups.fundamental.min_size
+    total_max_node_count       = var.k8s_node_groups.fundamentals.max_size
+    total_min_node_count       = var.k8s_node_groups.fundamentals.min_size
   }
 
   node_config {
@@ -139,7 +139,7 @@ resource "google_container_node_pool" "fundamental" {
     }
     local_ssd_count = 0
     logging_variant = "DEFAULT"
-    machine_type    = var.k8s_node_groups.fundamental.instance_types
+    machine_type    = var.k8s_node_groups.fundamentals.instance_types
     metadata = {
       disable-legacy-endpoints = "true"
     }
@@ -147,8 +147,8 @@ resource "google_container_node_pool" "fundamental" {
     node_group            = null
     oauth_scopes          = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
     preemptible           = false
-    spot                  = var.k8s_node_groups.fundamental.spot
     service_account       = var.gke_node_sa
+    spot                  = var.k8s_node_groups.fundamentals.spot
     tags                  = ["zilliz-byoc", "fundamental"]
     shielded_instance_config {
       enable_integrity_monitoring = true

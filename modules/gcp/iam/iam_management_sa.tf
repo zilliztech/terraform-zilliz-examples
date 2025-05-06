@@ -10,12 +10,6 @@ resource "google_project_iam_member" "management-container-binding" {
   project = var.gcp_project_id
   role    = "roles/container.clusterAdmin"
   member  = "serviceAccount:${google_service_account.management-sa.email}"
-  
-  condition {
-    title       = "zilliz_byoc_cluster_admin"
-    description = "zilliz byoc cluster admin for container"
-    expression  = "resource.name.startsWith(\"projects/${var.gcp_project_id}/locations/${var.gcp_region}/clusters/${var.gke_cluster_name}\")"
-  }
 }
 
 // Role 2: To be able to read the bucket. https://cloud.google.com/iam/docs/understanding-roles#storage.bucketViewer
@@ -31,20 +25,7 @@ resource "google_project_iam_member" "management-storage-binding" {
   }
 }
 
-// Role 3: To be able to set a service account on nodes. https://cloud.google.com/iam/docs/understanding-roles#container.admin
-resource "google_project_iam_member" "management-service-account-user-binding" {
-  project = var.gcp_project_id
-  role    = "roles/iam.serviceAccountUser"
-  member  = "serviceAccount:${google_service_account.management-sa.email}"
-  
-  condition {
-    title       = "zilliz_byoc_service_account_user"
-    description = "zilliz byoc service account user for gke node"
-    expression  = "resource.name.startsWith(\"projects/${var.gcp_project_id}/serviceAccounts/${google_service_account.gke-node-sa.unique_id}\")"
-  }
-}
-
-// Role 4: To be able to get the instance group manager. https://cloud.google.com/iam/docs/understanding-roles#iam.serviceAccountUser
+// Role 3: To be able to get the instance group manager. https://cloud.google.com/iam/docs/understanding-roles#iam.serviceAccountUser
 // Generate a random id to avoid role id collision. GCP custom roles have soft-delete behavior, whose name remains locked for 30 more days. During this period, creating a role with the same name may cause confusing behavior between undelete and update operations.
 resource "random_id" "short_uuid" {
   byte_length = 3 

@@ -10,6 +10,9 @@ resource "google_container_cluster" "gke_cluster" {
   monitoring_service          = "none"
   networking_mode             = "VPC_NATIVE"
   node_locations              = var.gcp_zones
+  node_config {
+    service_account = var.gke_node_sa
+  }
   # for terraform destroy
   deletion_protection         = false
   resource_labels             = {

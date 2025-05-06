@@ -57,3 +57,10 @@ variable "delegate_from" {
   type = string
   description = "The service account that can impersonate the customer service account"
 }
+
+variable "gcp_zones" { 
+  description = "The GCP zones for the GKE cluster."
+  type        = list(string)
+  default     = ["us-west1-a", "us-west1-b", "us-west1-c"]
+  nullable    = false
+}

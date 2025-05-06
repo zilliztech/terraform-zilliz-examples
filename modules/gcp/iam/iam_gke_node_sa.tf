@@ -16,3 +16,9 @@ resource "google_project_iam_member" "gke-node-binding" {
     expression  = "resource.name.startsWith(\"projects/${var.gcp_project_id}/locations/${var.gcp_region}/clusters/${var.gke_cluster_name}\")"
   }
 }
+
+resource "google_service_account_iam_member" "impersonate" {
+  service_account_id = google_service_account.gke-node-sa.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.management-sa.email}"
+}

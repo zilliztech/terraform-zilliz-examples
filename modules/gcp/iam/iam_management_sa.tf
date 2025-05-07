@@ -53,6 +53,13 @@ resource "google_project_iam_member" "management-gke-minimum-additional-role-bin
   }
 }
 
+// Role 4: Allow management service account to use the gke node service account. https://cloud.google.com/iam/docs/understanding-roles#iam.serviceAccountUser
+resource "google_service_account_iam_member" "management-gke-node-binding" {
+  service_account_id = google_service_account.gke-node-sa.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.management-sa.email}"
+}
+
 # Allow zilliz service account to impersonate customer service account
 resource "google_service_account_iam_binding" "impersonate" {
   service_account_id = google_service_account.management-sa.name

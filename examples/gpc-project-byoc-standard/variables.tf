@@ -28,12 +28,6 @@ variable "primary_subnet_name" {
   type        = string
   default     = "primary-subnet"
 }
-variable "create_storage_sa" {
-  description = "Whether to create the storage service account."
-  type        = bool
-  default     = true
-}
-
 variable "storage_service_account_name" {
   description = "The name of the storage service account."
   type        = string

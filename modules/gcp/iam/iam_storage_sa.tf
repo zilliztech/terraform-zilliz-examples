@@ -30,7 +30,7 @@ resource "google_project_iam_member" "storage-bucket-viewer-binding" {
 }
 
 resource "google_iam_workload_identity_pool" "gke_pool" {
-  workload_identity_pool_id = var.gcp_project_id
+  workload_identity_pool_id = "${var.gcp_project_id}-${random_id.short_uuid.hex}"
   display_name              = "GKE Workload Identity Pool"
   description              = "Identity pool for GKE workload identity"
   project                  = var.gcp_project_id

@@ -10,14 +10,19 @@ output "zones" {
   value = local.azs
 }
 
-output "gcp_subnetwork_name" {
+output "primary_subnet_name" {
   value = google_compute_subnetwork.gcp_vpc_subnet.name
 }
 
-output "gcp_lb_subnet_name" {
+output "load_balancer_subnet_name" {
   value = google_compute_subnetwork.lb_subnet.name
 }
 
-output "gcp_nat_ip" {
-  value = google_compute_address.nat.address
+
+output "secondary_subnet_range_name_pods" {
+  value = local.pod_subnet_name
+}
+
+output "secondary_subnet_range_name_services" {
+  value = local.service_subnet_name
 }

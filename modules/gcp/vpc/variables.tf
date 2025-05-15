@@ -30,14 +30,9 @@ variable "gcp_vpc_cidr" {
 }
 
 variable "gcp_zones" {
-  description = "The list of GCP zones to be used."
+  description = "List of GCP zones to use. If not provided, all available zones in the region will be used."
   type        = list(string)
-  nullable    = false
-
-  validation {
-    condition     = length(var.gcp_zones) > 0
-    error_message = "variable gcp_zones must contain at least one zone."
-  }
+  default     = null
 }
 
 variable "primary_subnet" {
@@ -55,7 +50,10 @@ variable "pod_subnet" {
     name = string
     cidr = string
   })
-  nullable = false
+  default = {
+    name = ""
+    cidr = ""
+  }
 }
 
 variable "service_subnet" {
@@ -64,7 +62,10 @@ variable "service_subnet" {
     name = string
     cidr = string
   })
-  nullable = false
+  default = {
+    name = ""
+    cidr = ""
+  }
 }
 
 variable "lb_subnet" {
@@ -73,14 +74,18 @@ variable "lb_subnet" {
     name = string
     cidr = string
   })
-  nullable = false
+  default = {
+    name = ""
+    cidr = ""
+  }
+
 }
 
 variable "nat_name" {
   description = "The name of the NAT gateway."
   type        = string
   nullable    = false
-  default     = "nat-gateway"
+  default     = ""
   
 }
 
@@ -88,6 +93,6 @@ variable "router_name" {
   description = "The name of the router."
   type        = string
   nullable    = false
-  default     = "nat-router"
+  default     = ""
   
 }

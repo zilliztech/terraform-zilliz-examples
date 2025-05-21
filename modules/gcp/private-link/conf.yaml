@@ -1,0 +1,2 @@
+service_attachment_ids:
+  us-west1: projects/vdc-dev-test/regions/us-west1/serviceAttachments/zilliz-byoc-psc

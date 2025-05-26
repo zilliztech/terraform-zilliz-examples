@@ -69,3 +69,27 @@ resource "google_service_account_iam_binding" "impersonate" {
     "serviceAccount:${var.delegate_from}"
   ]
 }
+
+resource "google_project_iam_custom_role" "service_account_policy_setter" {
+  role_id     = "serviceAccountPolicySetter"
+  title       = "Service Account Policy Setter"
+  permissions = [
+    "iam.serviceAccounts.getIamPolicy",
+    "iam.serviceAccounts.setIamPolicy"
+  ]
+  project     = var.gcp_project_id
+  stage       = "GA"
+}
+
+resource "google_service_account_iam_member" "service_account_policy_setter_binding" {
+  service_account_id = google_service_account.storage-sa.name
+  # project = var.gcp_project_id
+  role    = google_project_iam_custom_role.service_account_policy_setter.id
+  member             = "serviceAccount:${google_service_account.management-sa.email}"
+  
+  condition {
+    title       = "LimitedRoleGranting"
+    description = "Can only grant workload identity user role"
+    expression  = "api.getAttribute(\"iam.googleapis.com/modifiedGrantsByRole\", []).hasOnly([\"roles/iam.workloadIdentityUser\"])"
+  }
+}

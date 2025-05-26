@@ -6,8 +6,8 @@ variable "gcp_project_id" {
 
 variable "gcp_region" {
   description = "The GCP region of the Google Cloud Platform project."
-  type    = string
-  default = "us-west1"
+  type        = string
+  default     = "us-west1"
   nullable    = false
 }
 
@@ -26,7 +26,7 @@ variable "storage_bucket_name" {
     condition     = var.storage_bucket_name != ""
     error_message = "variable storage_bucket_name cannot be empty."
   }
-  
+
 }
 
 variable "gke_cluster_name" {
@@ -38,7 +38,7 @@ variable "gke_cluster_name" {
     condition     = var.gke_cluster_name != ""
     error_message = "variable gke_cluster_name cannot be empty."
   }
-  
+
 }
 
 variable "management_service_account_name" {
@@ -54,12 +54,12 @@ variable "gke_node_service_account_name" {
 }
 
 variable "delegate_from" {
-  type = string
+  type        = string
   description = "The service account that can impersonate the customer service account"
-    nullable    = false
+  nullable    = false
 }
 
-variable "gcp_zones" { 
+variable "gcp_zones" {
   description = "The GCP zones for the GKE cluster."
   type        = list(string)
   default     = ["us-west1-a", "us-west1-b", "us-west1-c"]

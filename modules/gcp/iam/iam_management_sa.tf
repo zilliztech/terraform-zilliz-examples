@@ -8,7 +8,7 @@ resource "google_service_account" "management-sa" {
 // Role 1: To be able to manage a cluster. https://cloud.google.com/iam/docs/understanding-roles#container.clusterAdmin
 resource "google_project_iam_member" "management-container-binding" {
   project = var.gcp_project_id
-  role    = "roles/container.clusterAdmin"
+  role    = "roles/container.admin"
   member  = "serviceAccount:${google_service_account.management-sa.email}"
 }
 

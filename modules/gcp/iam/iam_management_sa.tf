@@ -2,7 +2,7 @@ resource "google_service_account" "management-sa" {
   account_id   = var.management_service_account_name
   display_name = "Zilliz management service account"
   project      = var.gcp_project_id
-  
+
 }
 
 // Role 1: To be able to manage a cluster. https://cloud.google.com/iam/docs/understanding-roles#container.clusterAdmin
@@ -17,7 +17,7 @@ resource "google_project_iam_member" "management-storage-binding" {
   project = var.gcp_project_id
   role    = "roles/storage.bucketViewer"
   member  = "serviceAccount:${google_service_account.management-sa.email}"
-  
+
   condition {
     title       = "zilliz_byoc_gcs_bucket_viewer"
     description = "zilliz byoc gcs bucket viewer for gcs bucket"
@@ -28,7 +28,7 @@ resource "google_project_iam_member" "management-storage-binding" {
 // Role 3: To be able to get the instance group manager. https://cloud.google.com/iam/docs/understanding-roles#iam.serviceAccountUser
 // Generate a random id to avoid role id collision. GCP custom roles have soft-delete behavior, whose name remains locked for 30 more days. During this period, creating a role with the same name may cause confusing behavior between undelete and update operations.
 resource "random_id" "short_uuid" {
-  byte_length = 3 
+  byte_length = 3
 }
 
 resource "google_project_iam_custom_role" "zilliz-byoc-gke-minimum-additional-role" {
@@ -45,7 +45,7 @@ resource "google_project_iam_member" "management-gke-minimum-additional-role-bin
   project = var.gcp_project_id
   role    = google_project_iam_custom_role.zilliz-byoc-gke-minimum-additional-role.id
   member  = "serviceAccount:${google_service_account.management-sa.email}"
-  
+
   condition {
     title       = "zilliz_byoc_gke_minimum"
     description = "zilliz byoc gke minimum permissions"
@@ -68,4 +68,29 @@ resource "google_service_account_iam_binding" "impersonate" {
   members = [
     "serviceAccount:${var.delegate_from}"
   ]
+}
+
+// custom role to set iam policy on service account
+resource "google_project_iam_custom_role" "service_account_policy_setter" {
+  role_id = "serviceAccountPolicySetter"
+  title   = "Service Account Policy Setter"
+  permissions = [
+    "iam.serviceAccounts.getIamPolicy",
+    "iam.serviceAccounts.setIamPolicy"
+  ]
+  project = var.gcp_project_id
+  stage   = "GA"
+}
+
+// allow management service account to set roles/iam.workloadIdentityUser  on storage service account
+resource "google_service_account_iam_member" "service_account_policy_setter_binding" {
+  service_account_id = google_service_account.storage-sa.name
+  role               = google_project_iam_custom_role.service_account_policy_setter.id
+  member             = "serviceAccount:${google_service_account.management-sa.email}"
+
+  condition {
+    title       = "LimitedRoleGranting"
+    description = "Can only grant workload identity user role"
+    expression  = "api.getAttribute(\"iam.googleapis.com/modifiedGrantsByRole\", []).hasOnly([\"roles/iam.workloadIdentityUser\"])"
+  }
 }

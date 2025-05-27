@@ -4,7 +4,7 @@
 terraform {
   required_providers {
     google = {
-      source = "hashicorp/google"
+      source  = "hashicorp/google"
       version = "6.32.0"
     }
   }
@@ -12,8 +12,8 @@ terraform {
 
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/provider_reference
 provider "google" {
-  project                                       = var.gcp_project_id
-  region                                        = var.gcp_region
+  project = var.gcp_project_id
+  region  = var.gcp_region
 
   default_labels = {
     terraform = "true"

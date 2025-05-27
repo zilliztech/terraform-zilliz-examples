@@ -78,20 +78,28 @@ module "iam" {
 }
 
 
-output "network_settings" {
-  value = module.vpc
+
+output "output" {
+  value = {
+    "1.Google Cloud Platform Project ID" = var.gcp_project_id
+    "2.Storage Settings" = {
+      "1.GCS Bucket Name" = local.bucket_name
+      "2.Service Account Email" = module.iam.storage_service_account_email
+    }
+    "3.GKE Settings" = {
+      "1.GKE Cluster Name" = local.customer_gke_cluster_name
+      "2.GKE Node Service Account Name" = module.iam.gke_service_account_email
+    }
+    "4.Cross-Account Settings" = {
+      "1.Service Account Email" = module.iam.cross_project_service_account_email
+    }
+    "5.VPC Settings" = {
+      "1.VPC Name" = module.vpc.gcp_vpc_name
+      "2.Primary Subnet Name" = module.vpc.primary_subnet_name
+      "3.Secondary Subnet Range Name(Pods)" = module.vpc.secondary_subnet_range_name_pods
+      "4.Secondary Subnet Range Name(Services)" = module.vpc.secondary_subnet_range_name_services
+      "5.Load Balance Subnet Name" = module.vpc.load_balancer_subnet_name
+      "6.Private Service Connect" = var.enable_private_link ? module.private_link[0].byoc_endpoint_ip : null
+    }
+  }
 }
-
-output "credential_settings" {
-  value = module.iam
-}
-
-output "private_service_connection" {
-  value = var.enable_private_link ? module.private_link[0].byoc_endpoint_ip : null
-}
-
-output "bucket_name" {
-  value = local.bucket_name
-}
-
-

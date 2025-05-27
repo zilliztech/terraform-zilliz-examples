@@ -72,7 +72,7 @@ resource "google_service_account_iam_binding" "impersonate" {
 
 // custom role to set iam policy on service account
 resource "google_project_iam_custom_role" "service_account_policy_setter" {
-  role_id = "serviceAccountPolicySetter"
+  role_id = "serviceAccountPolicySetter${random_id.short_uuid.hex}"
   title   = "Service Account Policy Setter"
   permissions = [
     "iam.serviceAccounts.getIamPolicy",

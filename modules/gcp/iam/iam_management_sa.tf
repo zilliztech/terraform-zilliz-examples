@@ -94,3 +94,15 @@ resource "google_service_account_iam_member" "service_account_policy_setter_bind
     expression  = "api.getAttribute(\"iam.googleapis.com/modifiedGrantsByRole\", []).hasOnly([\"roles/iam.workloadIdentityUser\"])"
   }
 }
+
+data "google_compute_default_service_account" "default" {
+}
+
+// Grants the management service account the ability to impersonate 
+// the default compute service account( <project_number>-compute@developer.gserviceaccount.com)
+// This is required for the management service account to perform creating gke on behalf of the default service account
+resource "google_service_account_iam_member" "management-default-sa-binding" {
+  service_account_id = data.google_compute_default_service_account.default.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.management-sa.email}"
+}

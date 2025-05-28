@@ -36,7 +36,8 @@ resource "google_project_iam_custom_role" "zilliz-byoc-gke-minimum-additional-ro
   title       = "Zilliz BYOC GKE Minimum Additional Role"
   description = "Custom role for Zilliz BYOC with minimum required permissions for GKE node management"
   permissions = [
-    "compute.instanceGroupManagers.get"
+    "compute.instanceGroupManagers.get",
+    "compute.instanceGroupManagers.list",
   ]
   project = var.gcp_project_id
 }

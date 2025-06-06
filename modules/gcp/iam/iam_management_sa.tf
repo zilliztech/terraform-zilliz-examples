@@ -37,7 +37,7 @@ resource "google_project_iam_custom_role" "zilliz-byoc-gke-minimum-additional-ro
   description = "Custom role for Zilliz BYOC with minimum required permissions for GKE node management"
   permissions = [
     "compute.instanceGroupManagers.get",
-    "compute.instanceGroupManagers.list",
+    "compute.instanceGroupManagers.update",
   ]
   project = var.gcp_project_id
 }
@@ -46,6 +46,16 @@ resource "google_project_iam_member" "management-gke-minimum-additional-role-bin
   project = var.gcp_project_id
   role    = google_project_iam_custom_role.zilliz-byoc-gke-minimum-additional-role.id
   member  = "serviceAccount:${google_service_account.management-sa.email}"
+
+  condition {
+    title       = "zilliz_byoc_gke_minimum"
+    description = "zilliz byoc gke minimum permissions"
+    expression  = <<-EOT
+      resource.name.extract("projects/{name}").startsWith("${var.gcp_project_id}") &&
+      resource.name.extract("zones/{name}").startsWith("${var.gcp_region}") &&
+      resource.name.extract("instanceGroupManagers/{name}").startsWith("gke-${var.gke_cluster_name}")
+    EOT
+  }
 }
 
 // Role 4: Allow management service account to use the gke node service account. https://cloud.google.com/iam/docs/understanding-roles#iam.serviceAccountUser

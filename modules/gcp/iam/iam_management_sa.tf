@@ -37,7 +37,7 @@ resource "google_project_iam_custom_role" "zilliz-byoc-gke-minimum-additional-ro
   description = "Custom role for Zilliz BYOC with minimum required permissions for GKE node management"
   permissions = [
     "compute.instanceGroupManagers.get",
-    "compute.instanceGroupManagers.list",
+    "compute.instanceGroupManagers.update",
   ]
   project = var.gcp_project_id
 }
@@ -50,7 +50,11 @@ resource "google_project_iam_member" "management-gke-minimum-additional-role-bin
   condition {
     title       = "zilliz_byoc_gke_minimum"
     description = "zilliz byoc gke minimum permissions"
-    expression  = join(" || ", [for zone in var.gcp_zones : "resource.name.startsWith(\"projects/${var.gcp_project_id}/zones/${zone}/instanceGroupManagers/gke-${var.gke_cluster_name}\")"])
+    expression  = <<-EOT
+      resource.name.extract("projects/{name}").startsWith("zilli-byoc-user-prj2") &&
+      resource.name.extract("zones/{name}").startsWith("us-west1") &&
+      resource.name.extract("instanceGroupManagers/{name}").startsWith("gke-zilliz-byoc-gke-xx")
+    EOT
   }
 }
 

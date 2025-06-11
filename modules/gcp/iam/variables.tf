@@ -41,8 +41,8 @@ variable "gke_cluster_name" {
 
 }
 
-variable "management_service_account_name" {
-  description = "The name of the management service account."
+variable "cross-acount_service_account_name" {
+  description = "The name of the cross-acount service account."
   type        = string
   nullable    = false
 }

@@ -49,7 +49,7 @@ variable "customer_bucket_name" {
 }
 
 
-variable "customer_management_service_account_name" {
+variable "customer_cross-account_service_account_name" {
   description = "The name of the management service account."
   type        = string
   default     = ""

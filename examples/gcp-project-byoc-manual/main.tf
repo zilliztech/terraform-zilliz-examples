@@ -8,7 +8,7 @@ locals {
   prefix_name                              = var.customer_vpc_name
   customer_gke_cluster_name                = var.customer_gke_cluster_name != "" ? var.customer_gke_cluster_name : "${var.customer_vpc_name}-gke"
   customer_storage_service_account_name    = var.customer_storage_service_account_name != "" ? var.customer_storage_service_account_name : "${var.customer_vpc_name}-storage-sa"
-  customer_management_service_account_name = var.customer_management_service_account_name != "" ? var.customer_management_service_account_name : "${var.customer_vpc_name}-management-sa"
+  customer_cross-account_service_account_name = var.customer_cross-account_service_account_name != "" ? var.customer_cross-account_service_account_name : "${var.customer_vpc_name}-cross-account-sa"
   customer_gke_node_service_account_name   = var.customer_gke_node_service_account_name != "" ? var.customer_gke_node_service_account_name : "${var.customer_vpc_name}-gke-node-sa"
 }
 
@@ -72,7 +72,7 @@ module "iam" {
   storage_bucket_name             = local.bucket_name
   gke_cluster_name                = local.customer_gke_cluster_name
   storage_service_account_name    = local.customer_storage_service_account_name
-  management_service_account_name = local.customer_management_service_account_name
+  cross-acount_service_account_name = local.customer_cross-account_service_account_name
   gke_node_service_account_name   = local.customer_gke_node_service_account_name
   delegate_from                   = var.zilliz_service_account
 }

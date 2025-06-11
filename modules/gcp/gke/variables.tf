@@ -104,8 +104,8 @@ variable "gke_node_sa" {
   
 }
 
-variable "gke_management_sa" {
-  description = "The GKE management service account."
+variable "gke_cross-acount_sa" {
+  description = "The GKE cross-acount service account."
   type        = string
   nullable    = false
 }

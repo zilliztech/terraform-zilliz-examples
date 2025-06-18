@@ -1,7 +1,7 @@
 module "aws_bucket" {
   source = "../../modules/aws_bucket"
 
-  aws_region      = var.aws_region
+  region      = var.region
   name            = var.name
   s3_bucket_names = ["milvus"]
 }
@@ -20,7 +20,7 @@ module "aws_iam" {
 module "aws_vpc" {
   source = "../../modules/aws_vpc"
 
-  aws_region          = var.aws_region
+  region          = var.region
   vpc_cidr            = var.vpc_cidr
   name                = var.name
   enable_private_link = var.enable_private_link
@@ -32,7 +32,7 @@ resource "zillizcloud_byoc_project" "this" {
   status = "RUNNING"
 
   aws = {
-    region = "aws-${var.aws_region}"
+    region = "aws-${var.region}"
 
     network = {
       vpc_id             = module.aws_vpc.vpc_id

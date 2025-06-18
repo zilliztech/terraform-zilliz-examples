@@ -10,7 +10,7 @@ locals {
   security_group_id = local.is_existing_vpc ? var.customer_security_group_id : module.my_vpc[0].security_group_id
   subnet_ids =  local.is_existing_vpc ? var.customer_private_subnet_ids : module.my_vpc[0].private_subnets
   eks_control_plane_subnet_ids = local.is_existing_vpc ? var.customer_eks_control_plane_private_subnet_ids : module.my_vpc[0].private_subnets
-  aws_region = replace(data.zillizcloud_byoc_i_project_settings.this.region, "aws-", "")
+  region = replace(data.zillizcloud_byoc_i_project_settings.this.region, "aws-", "")
   enable_private_link = var.enable_private_link != null ? var.enable_private_link : data.zillizcloud_byoc_i_project_settings.this.private_link_enabled
   external_id = data.zillizcloud_external_id.current.id
   agent_config = {

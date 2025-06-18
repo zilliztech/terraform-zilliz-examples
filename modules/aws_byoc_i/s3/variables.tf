@@ -1,9 +1,3 @@
-variable "region" {
-  description = "Region"
-  type        = string
-}
-
-
 variable "prefix_name" {
   description = "Prefix name"
   type        = string

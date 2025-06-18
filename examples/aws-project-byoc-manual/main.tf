@@ -1,7 +1,7 @@
 module "aws_bucket" {
   source = "../../modules/aws_bucket"
 
-  aws_region      = var.aws_region
+  region      = var.region
   name            = var.name
   s3_bucket_names = ["milvus"]
 }
@@ -18,7 +18,7 @@ module "aws_iam" {
 module "aws_vpc" {
   source = "../../modules/aws_vpc"
 
-  aws_region = var.aws_region
+  region = var.region
   vpc_cidr   = var.vpc_cidr
   name       = var.name
 

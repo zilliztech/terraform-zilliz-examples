@@ -11,12 +11,12 @@ module "my_vpc" {
   dataplane_id = local.dataplane_id
   vpc_cidr = var.vpc_cidr
   custom_tags = var.custom_tags
+  region = local.region
 }
 
 module "my_s3" {
   source = "../../modules/aws_byoc_i/s3"
   prefix_name = local.prefix_name
-  region = local.aws_region
   dataplane_id = local.dataplane_id
   customer_bucket_name = var.customer_bucket_name
   custom_tags = var.custom_tags
@@ -27,7 +27,7 @@ module "my_private_link" {
   source = "../../modules/aws_byoc_i/privatelink"
   prefix_name = local.prefix_name
   dataplane_id = local.dataplane_id
-  region = local.aws_region
+  region = local.region
   enable_private_link = local.enable_private_link
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids
@@ -39,7 +39,7 @@ module "my_eks" {
   source = "../../modules/aws_byoc_i/eks"
   prefix_name = local.prefix_name
   dataplane_id = local.dataplane_id
-  region = local.aws_region
+  region = local.region
   security_group_id = local.security_group_id
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids

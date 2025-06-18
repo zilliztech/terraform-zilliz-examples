@@ -4,7 +4,7 @@ data "zillizcloud_byoc_i_project_settings" "this" {
 }
 data "zillizcloud_external_id" "current" {}
 
-module "my_vpc" {
+module "vpc" {
   count = local.is_existing_vpc ? 0 : 1
   source = "../../modules/aws_byoc_i/vpc"
   prefix_name = local.prefix_name
@@ -14,7 +14,7 @@ module "my_vpc" {
   region = local.region
 }
 
-module "my_s3" {
+module "s3" {
   source = "../../modules/aws_byoc_i/s3"
   prefix_name = local.prefix_name
   dataplane_id = local.dataplane_id
@@ -22,7 +22,7 @@ module "my_s3" {
   custom_tags = var.custom_tags
 }
 
-module "my_private_link" {
+module "private_link" {
   count = local.enable_private_link? 1: 0
   source = "../../modules/aws_byoc_i/privatelink"
   prefix_name = local.prefix_name
@@ -35,7 +35,7 @@ module "my_private_link" {
   custom_tags = var.custom_tags
 }
 
-module "my_eks" {
+module "eks" {
   source = "../../modules/aws_byoc_i/eks"
   prefix_name = local.prefix_name
   dataplane_id = local.dataplane_id
@@ -67,7 +67,7 @@ resource "zillizcloud_byoc_i_project_agent" "this" {
   project_id    = local.project_id
   data_plane_id = local.data_plane_id
 
-  depends_on = [module.my_eks]
+  depends_on = [module.eks]
 }
 
 
@@ -99,7 +99,7 @@ resource "zillizcloud_byoc_i_project" "this" {
 
   // depend on private link to establish agent tunnel connection
   depends_on = [zillizcloud_byoc_i_project_agent.this,
-    module.my_eks, module.my_private_link, module.my_vpc]
+    module.eks, module.private_link, module.vpc]
   lifecycle {
      ignore_changes = [data_plane_id, project_id, aws, ext_config]
   }

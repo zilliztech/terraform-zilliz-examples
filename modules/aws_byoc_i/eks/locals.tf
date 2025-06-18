@@ -43,7 +43,7 @@ locals {
   boot_config = {
     EKS_CLUSTER_NAME    = local.eks_cluster_name
     DATAPLANE_ID        = var.dataplane_id
-    REGION              = var.aws_region
+    REGION              = var.region
     AGENT_CONFIG        = local.agent_config_json
     MAINTAINCE_ROLE     = local.maintenance_role.arn
     OP_CONFIG           = jsonencode(local.config)

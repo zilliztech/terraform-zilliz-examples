@@ -54,12 +54,6 @@ variable "external_id" {
   nullable    = false
 }
 
-variable "aws_region" {
-  description = "The region in which the resources will be created"
-  type        = string
-  default     = "us-west-2"
-}
-
 variable "enable_private_link" {
   description = "Enable private link for the byoc project"
   type        = bool

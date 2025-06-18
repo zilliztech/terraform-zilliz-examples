@@ -1,4 +1,4 @@
-variable "aws_region" {
+variable "region" {
   description = "The region where zilliz operations will take place. Examples are us-east-1, us-west-2, etc."
   type        = string
 }

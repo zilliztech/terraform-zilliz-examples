@@ -67,6 +67,13 @@ Content-Type: text/x-shellscript; charset="us-ascii"
 set -e
 echo "zilliz init start"
 
+systemctl restart containerd
+
+until ctr --namespace k8s.io images ls >/dev/null 2>&1; do
+  echo "waiting for ctr to be ready"
+  sleep 3
+done
+
 DEFAULT_TAG=$(aws ecr describe-images \
   --registry-id 965570967084 \
   --region us-west-2 \

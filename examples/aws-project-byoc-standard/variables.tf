@@ -32,37 +32,52 @@ variable "enable_private_link" {
   default     = false
 }
 
-variable "core_instance_type" {
-  description = "Instance type for core VM"
-  type        = string
-  default     = "m6i.2xlarge"
-}
-
-variable "fundamental_instance_type" {
-  description = "Instance type for fundamental VM"
-  type        = string
-  default     = "m6i.2xlarge"
-}
-
-variable "search_instance_type" {
-  description = "Instance type for search VM"
-  type        = string
-  default     = "m6id.4xlarge"
-}
-variable "core_vm_min_count" {
-  description = "Minimum number of core VMs"
-  type        = number
-  default     = 3
-}
-
-variable "fundamental_vm_min_count" {
-  description = "Minimum number of fundamental VMs"
-  type        = number
-  default     = 0
-}
-
-variable "search_vm_min_count" {
-  description = "Minimum number of search VMs"
-  type        = number
-  default     = 0
+variable "instances" {
+  description = "Instance configuration for the BYOC project"
+  type = object({
+    core = object({
+      vm    = string
+      count = number
+    })
+    fundamental = object({
+      vm        = string
+      min_count = number
+      max_count = number
+    })
+    search = object({
+      vm        = string
+      min_count = number
+      max_count = number
+    })
+    index = object({
+      vm        = string
+      min_count = number
+      max_count = number
+    })
+    auto_scaling = bool
+    arch         = string
+  })
+  default = {
+    core = {
+      vm    = "m6i.2xlarge"
+      count = 3
+    }
+    fundamental = {
+      vm        = "m6i.2xlarge"
+      min_count = 1
+      max_count = 2
+    }
+    search = {
+      vm        = "m6id.4xlarge"
+      min_count = 1
+      max_count = 2
+    }
+    index = {
+      vm        = "m6i.2xlarge"
+      min_count = 1
+      max_count = 2
+    }
+    auto_scaling = true
+    arch         = "X86"
+  }
 }

@@ -189,7 +189,7 @@ resource "aws_launch_template" "diskann" {
 
 # aws_eks_node_group.milvus:
 resource "aws_eks_node_group" "search" {
-  ami_type      = "AL2_x86_64"
+  ami_type      = "AL2023_x86_64_STANDARD"
   capacity_type = local.k8s_node_groups.search.capacity_type
   cluster_name  = local.eks_cluster_name
 
@@ -218,7 +218,7 @@ resource "aws_eks_node_group" "search" {
   }
 
   scaling_config {
-    desired_size = local.k8s_node_groups.search.desired_size
+    desired_size = local.k8s_node_groups.search.min_size
     max_size     = local.k8s_node_groups.search.max_size
     min_size     = local.k8s_node_groups.search.min_size
   }
@@ -236,7 +236,7 @@ resource "aws_eks_node_group" "search" {
 
 # aws_eks_node_group.core:
 resource "aws_eks_node_group" "core" {
-  ami_type      = "AL2_x86_64"
+  ami_type      = "AL2023_x86_64_STANDARD"
   capacity_type = local.k8s_node_groups.core.capacity_type
   cluster_name  = local.eks_cluster_name
 
@@ -269,7 +269,7 @@ resource "aws_eks_node_group" "core" {
   }
 
   scaling_config {
-    desired_size = local.k8s_node_groups.core.desired_size
+    desired_size = local.k8s_node_groups.core.min_size
     max_size     = local.k8s_node_groups.core.max_size
     min_size     = local.k8s_node_groups.core.min_size
   }
@@ -287,7 +287,7 @@ resource "aws_eks_node_group" "core" {
 
 # aws_eks_node_group.index:
 resource "aws_eks_node_group" "index" {
-  ami_type      = "AL2_x86_64"
+  ami_type      = "AL2023_x86_64_STANDARD"
   capacity_type = local.k8s_node_groups.index.capacity_type
   cluster_name  = local.eks_cluster_name
 
@@ -315,7 +315,7 @@ resource "aws_eks_node_group" "index" {
   }
 
   scaling_config {
-    desired_size = local.k8s_node_groups.index.desired_size
+    desired_size = local.k8s_node_groups.index.min_size
     max_size     = local.k8s_node_groups.index.max_size
     min_size     = local.k8s_node_groups.index.min_size
   }
@@ -333,7 +333,7 @@ resource "aws_eks_node_group" "index" {
 
 # aws_eks_node_group.fundamental
 resource "aws_eks_node_group" "fundamental" {
-  ami_type      = "AL2_x86_64"
+  ami_type      = "AL2023_x86_64_STANDARD"
   capacity_type = local.k8s_node_groups.fundamental.capacity_type
   cluster_name  = local.eks_cluster_name
 
@@ -362,7 +362,7 @@ resource "aws_eks_node_group" "fundamental" {
   }
 
   scaling_config {
-    desired_size = local.k8s_node_groups.fundamental.desired_size
+    desired_size = local.k8s_node_groups.fundamental.min_size
     max_size     = local.k8s_node_groups.fundamental.max_size
     min_size     = local.k8s_node_groups.fundamental.min_size
   }

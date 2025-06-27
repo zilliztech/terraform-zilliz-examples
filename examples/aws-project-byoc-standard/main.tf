@@ -31,6 +31,8 @@ resource "zillizcloud_byoc_project" "this" {
   name = var.name
   status = "RUNNING"
 
+
+
   aws = {
     region = "aws-${var.aws_region}"
 
@@ -49,15 +51,32 @@ resource "zillizcloud_byoc_project" "this" {
       bucket_id = module.aws_bucket.s3_bucket_ids
     }
 
-    instances = {
-      core_vm        = var.core_instance_type
-      core_vm_min_count = var.core_vm_min_count
-      fundamental_vm = var.fundamental_instance_type
-      fundamental_vm_min_count = var.fundamental_vm_min_count
-      search_vm      = var.search_instance_type
-      search_vm_min_count = var.search_vm_min_count
-    }
+   
   }
+
+   instances = {
+    core = {
+      vm = var.instances.core.vm
+      count = var.instances.core.count
+    }
+    fundamental = {
+      vm = var.instances.fundamental.vm
+      min_count = var.instances.fundamental.min_count
+      max_count = var.instances.fundamental.max_count
+    }
+    search = {
+      vm = var.instances.search.vm
+      min_count = var.instances.search.min_count
+      max_count = var.instances.search.max_count
+    }
+    index = {
+      vm = var.instances.index.vm
+      min_count = var.instances.index.min_count
+      max_count = var.instances.index.max_count
+    }
+    auto_scaling = var.instances.auto_scaling
+    arch = var.instances.arch
+   }
 
   depends_on = [module.aws_vpc, module.aws_bucket, module.aws_iam]
 }

@@ -1,7 +1,7 @@
 data aws_caller_identity "current" {}
 
 locals {
-  config = yamldecode(file("${path.module}/conf.yaml"))
+  config = yamldecode(file("${path.module}/../conf.yaml"))
 }
 
 resource "aws_vpc_endpoint" "byoc_endpoint" {

@@ -14,7 +14,7 @@ resource "aws_iam_role" "maintenance_role" {
           "StringLike" : {
             "${local.eks_oidc_url}:aud" : "sts.amazonaws.com",
             "${local.eks_oidc_url}:sub" : [
-              "system:serviceaccount:kube-system:cluster-admin-sa"
+              "system:serviceaccount:infra:infra-agent-sa"
             ]
           }
         }

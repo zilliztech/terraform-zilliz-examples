@@ -4,11 +4,11 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "5.82.1"
+      version = "5.89.0"
     }
     zillizcloud = {
       source  = "zilliztech/zillizcloud"
-      version = "~> 0.4.10"
+      version = "~> 0.6.0"
     }
   }
 }

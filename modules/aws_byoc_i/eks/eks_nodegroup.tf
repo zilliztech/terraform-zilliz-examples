@@ -187,9 +187,23 @@ resource "aws_launch_template" "diskann" {
   }
 }
 
+
+# Determine AMI type based on instance architecture
+locals {
+  # Map instance types to their appropriate AMI types
+  # ARM instances typically have 'g' in their generation identifier (e.g., m6g, c7g, t4g)
+  # This regex matches instance types with 'g' after the number, which indicates ARM architecture
+  ami_types = {
+    search      = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.search.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
+    core        = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.core.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
+    index       = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.index.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
+    fundamental = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.fundamental.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
+  }
+}
+
 # aws_eks_node_group.milvus:
 resource "aws_eks_node_group" "search" {
-  ami_type      = "AL2023_x86_64_STANDARD"
+  ami_type      = local.ami_types.search
   capacity_type = local.k8s_node_groups.search.capacity_type
   cluster_name  = local.eks_cluster_name
 
@@ -236,7 +250,7 @@ resource "aws_eks_node_group" "search" {
 
 # aws_eks_node_group.core:
 resource "aws_eks_node_group" "core" {
-  ami_type      = "AL2023_x86_64_STANDARD"
+  ami_type      = local.ami_types.core
   capacity_type = local.k8s_node_groups.core.capacity_type
   cluster_name  = local.eks_cluster_name
 
@@ -287,7 +301,7 @@ resource "aws_eks_node_group" "core" {
 
 # aws_eks_node_group.index:
 resource "aws_eks_node_group" "index" {
-  ami_type      = "AL2023_x86_64_STANDARD"
+  ami_type      = local.ami_types.index
   capacity_type = local.k8s_node_groups.index.capacity_type
   cluster_name  = local.eks_cluster_name
 
@@ -333,7 +347,7 @@ resource "aws_eks_node_group" "index" {
 
 # aws_eks_node_group.fundamental
 resource "aws_eks_node_group" "fundamental" {
-  ami_type      = "AL2023_x86_64_STANDARD"
+  ami_type      = local.ami_types.fundamental
   capacity_type = local.k8s_node_groups.fundamental.capacity_type
   cluster_name  = local.eks_cluster_name
 

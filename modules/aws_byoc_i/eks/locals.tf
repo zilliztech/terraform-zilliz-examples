@@ -2,6 +2,7 @@
 locals {
   prefix_name = var.prefix_name
   subnet_ids                   = var.subnet_ids
+  customer_pod_subnet_ids      = var.customer_pod_subnet_ids
   eks_control_plane_subnet_ids = coalescelist(var.eks_control_plane_subnet_ids, var.subnet_ids)
   config                       = yamldecode(file("${path.module}/../../conf.yaml"))
   k8s_node_groups              = var.k8s_node_groups
@@ -105,4 +106,76 @@ echo "zilliz init result $?"
   EOF
   )
 
+  init_user_data = base64encode(<<-EOF
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
+
+--==MYBOUNDARY==
+Content-Type: text/x-shellscript; charset="us-ascii"
+
+#!/bin/bash
+set -e
+echo "zilliz init eni start"
+
+systemctl restart containerd
+
+until ctr --namespace k8s.io images ls >/dev/null 2>&1; do
+  echo "waiting for ctr to be ready"
+  sleep 3
+done
+
+DEFAULT_TAG=$(aws ecr describe-images \
+  --registry-id 965570967084 \
+  --region us-west-2 \
+  --repository-name zilliz-byoc/infra/byoc-booter \
+  --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
+  --output text)
+
+DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.us-west-2.amazonaws.com/zilliz-byoc/infra/byoc-booter:$DEFAULT_TAG
+
+TAG=$(aws ecr describe-images \
+  --registry-id ${local.ecr_account_id} \
+  --region ${local.ecr_region} \
+  --repository-name ${local.ecr_prefix}/infra/byoc-booter \
+  --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
+  --output text)
+
+if [[ -z "$TAG" || "$TAG" == "None" ]]; then
+  ZILLIZ_BYOC_IMAGE=$DEFAULT_ZILLIZ_BYOC_IMAGE
+else
+  ZILLIZ_BYOC_IMAGE=${local.ecr_account_id}.dkr.ecr.${local.ecr_region}.amazonaws.com/${local.ecr_prefix}/infra/byoc-booter:$TAG
+fi
+
+K8S_SG_ID=$(aws eks describe-cluster --name ${local.eks_cluster_name} --query cluster.resourcesVpcConfig.clusterSecurityGroupId --output text)
+
+# for each the subnets in var.customer_pod_subnet_ids to get the availability zone list
+SUBNET_IDS='${join(" ", var.customer_pod_subnet_ids)}'
+SUBNET_AZS=""
+if [ -z "$SUBNET_IDS" ]; then
+  echo "No pod subnets provided, exiting."
+  exit 0
+fi
+
+for subnet_id in $SUBNET_IDS; do
+  # Remove quotes if present
+  subnet_id=$(echo $subnet_id | tr -d '"')
+  # Get the availability zone for this subnet
+  az=$(aws ec2 describe-subnets --subnet-ids $subnet_id --region '${var.region}' --query 'Subnets[0].AvailabilityZone' --output text)
+  # Add to SUBNET_AZS string
+  if [ -z "$SUBNET_AZS" ]; then
+    SUBNET_AZS="$az"
+  else
+    SUBNET_AZS="$SUBNET_AZS $az"
+  fi
+done
+
+
+ctr image pull --user AWS:$(aws ecr get-login-password --region us-west-2)  $ZILLIZ_BYOC_IMAGE
+ctr run --rm --net-host --privileged --env BOOT_CONFIG='${local.boot_config_json}' --env IS_INIT=true --env POD_SUBNET_IDS="$SUBNET_IDS" --env K8S_SG_ID="$K8S_SG_ID" --env SUBNET_AZS="$SUBNET_AZS" $ZILLIZ_BYOC_IMAGE zilliz-bootstrap
+echo "zilliz init eni result $?"
+
+--==MYBOUNDARY==--
+  
+  EOF
+  )
 }

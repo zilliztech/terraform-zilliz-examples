@@ -8,9 +8,6 @@ module "s3_bucket" {
   bucket   = "${local.bucket_name}"
   acl      = "private"
 
-  control_object_ownership = true
-  object_ownership         = "ObjectWriter"
-
   tags = merge({
     Vendor = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn

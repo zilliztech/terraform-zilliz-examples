@@ -448,7 +448,7 @@ resource "aws_eks_node_group" "fundamental" {
 resource "time_sleep" "wait" {
   depends_on = [aws_eks_node_group.init]
 
-  create_duration = "3m"
+  create_duration = "30s"
 }
 
 resource "aws_eks_node_group" "init" {

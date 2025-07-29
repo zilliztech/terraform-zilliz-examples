@@ -114,7 +114,7 @@ Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
 Content-Type: text/x-shellscript; charset="us-ascii"
 
 #!/bin/bash
-set -e
+set -ex
 echo "zilliz init eni start"
 
 systemctl restart containerd
@@ -146,7 +146,7 @@ else
   ZILLIZ_BYOC_IMAGE=${local.ecr_account_id}.dkr.ecr.${local.ecr_region}.amazonaws.com/${local.ecr_prefix}/infra/byoc-booter:$TAG
 fi
 
-K8S_SG_ID=$(aws eks describe-cluster --name ${local.eks_cluster_name} --query cluster.resourcesVpcConfig.clusterSecurityGroupId --output text)
+K8S_SG_ID="${aws_eks_cluster.zilliz_byoc_cluster.vpc_config[0].cluster_security_group_id}"
 
 # for each the subnets in var.customer_pod_subnet_ids to get the availability zone list
 SUBNET_IDS='${join(" ", var.customer_pod_subnet_ids)}'

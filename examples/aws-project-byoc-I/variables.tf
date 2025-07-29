@@ -17,6 +17,12 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
+variable "customer_pod_subnet_ids" {
+  description = "The IDs of the pod subnets for the customer VPC"
+  type        = list(string)
+  default     = []
+}
+
 variable "customer_vpc_id" {
   description = "The ID of the customer VPC"
   type        = string
@@ -128,4 +134,10 @@ variable "search_instance_type" {
   description = "Instance type used for the search virtual machine, which hosts the query nodes."
   type        = string
   default     = "m6id.4xlarge"
+}
+
+variable "enable_endpoint" {
+  description = "Enable endpoint"
+  type        = bool
+  default     = false
 }

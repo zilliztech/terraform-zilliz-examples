@@ -27,4 +27,8 @@ variable "custom_tags" {
   default     = {}
 }
 
-
+variable "enable_endpoint" {
+  description = "Enable endpoint"
+  type        = bool
+  default     = false
+}

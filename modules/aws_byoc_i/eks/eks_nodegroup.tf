@@ -82,6 +82,59 @@ resource "aws_launch_template" "core" {
 
 
 # aws_launch_template.default:
+resource "aws_launch_template" "init" {
+  description             = "Init launch template for zilliz-byoc-pulsar EKS managed node group"
+  disable_api_stop        = false
+  disable_api_termination = false
+  name_prefix             = "zilliz-byoc-init-"
+  tags = merge({
+    "Vendor" = "zilliz-byoc"
+  }, var.custom_tags)
+  tags_all = merge({
+    "Vendor" = "zilliz-byoc"
+  }, var.custom_tags)
+  vpc_security_group_ids = [
+    local.security_group_id
+  ]
+
+  user_data = local.init_user_data
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_put_response_hop_limit = 2
+    http_tokens                 = "required"
+  }
+
+  monitoring {
+    enabled = true
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = merge({
+      "Name"   = "zilliz-byoc-init"
+      "Vendor" = "zilliz-byoc"
+    }, var.custom_tags)
+  }
+  tag_specifications {
+    resource_type = "network-interface"
+    tags = merge({
+      "Name"   = "zilliz-byoc-init"
+      "Vendor" = "zilliz-byoc"
+    }, var.custom_tags)
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = merge({
+      "Name"   = "zilliz-byoc-init"
+      "Vendor" = "zilliz-byoc"
+    }, var.custom_tags)
+  }
+
+  depends_on = [ aws_iam_role_policy_attachment.maintenance_policy_attachment_2, aws_iam_role_policy_attachment.maintenance_policy_attachment_1 ]
+}
+
+
+# aws_launch_template.default:
 resource "aws_launch_template" "default" {
   description             = "Custom launch template for zilliz-byoc-pulsar EKS managed node group"
   disable_api_stop        = false
@@ -245,7 +298,7 @@ resource "aws_eks_node_group" "search" {
     ignore_changes = [scaling_config[0].desired_size]
   }
 
-  depends_on = [aws_eks_addon.vpc-cni]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
 }
 
 # aws_eks_node_group.core:
@@ -296,7 +349,7 @@ resource "aws_eks_node_group" "core" {
     ignore_changes = [scaling_config[0].desired_size]
   }
 
-  depends_on = [aws_eks_addon.vpc-cni]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
 }
 
 # aws_eks_node_group.index:
@@ -342,7 +395,7 @@ resource "aws_eks_node_group" "index" {
     ignore_changes = [scaling_config[0].desired_size]
   }
 
-  depends_on = [aws_eks_addon.vpc-cni]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
 }
 
 # aws_eks_node_group.fundamental
@@ -379,6 +432,57 @@ resource "aws_eks_node_group" "fundamental" {
     desired_size = local.k8s_node_groups.fundamental.min_size
     max_size     = local.k8s_node_groups.fundamental.max_size
     min_size     = local.k8s_node_groups.fundamental.min_size
+  }
+
+  update_config {
+    max_unavailable_percentage = 33
+  }
+
+  lifecycle {
+    ignore_changes = [scaling_config[0].desired_size]
+  }
+
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+}
+
+resource "time_sleep" "wait" {
+  depends_on = [aws_eks_node_group.init]
+
+  create_duration = "3m"
+}
+
+resource "aws_eks_node_group" "init" {
+  ami_type      = "AL2023_x86_64_STANDARD"
+  capacity_type = "ON_DEMAND"
+  cluster_name  = local.eks_cluster_name
+
+  instance_types = [
+    "t3.medium",
+  ]
+  labels = {
+    "zilliz-group-name" = "init"
+    "node-role/init" = "true"
+  }
+  node_group_name_prefix = "${local.prefix_name}-init-"
+  node_role_arn          = local.eks_role.arn
+  subnet_ids             = local.subnet_ids
+  tags = merge({
+    "Vendor" = "zilliz-byoc"
+  }, var.custom_tags)
+  tags_all = merge({
+    "Vendor" = "zilliz-byoc"
+  }, var.custom_tags)
+  # version = "1.27"
+
+  launch_template {
+    id      = aws_launch_template.init.id
+    version = aws_launch_template.init.latest_version
+  }
+
+  scaling_config {
+    desired_size = 1
+    max_size     = 1
+    min_size     = 1
   }
 
   update_config {

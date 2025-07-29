@@ -12,6 +12,7 @@ module "vpc" {
   vpc_cidr = var.vpc_cidr
   custom_tags = var.custom_tags
   region = local.region
+  enable_endpoint = local.enable_endpoint
 }
 
 module "s3" {
@@ -43,6 +44,7 @@ module "eks" {
   security_group_id = local.security_group_id
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids
+  customer_pod_subnet_ids = local.customer_pod_subnet_ids
   eks_control_plane_subnet_ids = local.eks_control_plane_subnet_ids
   external_id = local.external_id
   agent_config = local.agent_config
@@ -99,7 +101,7 @@ resource "zillizcloud_byoc_i_project" "this" {
 
   // depend on private link to establish agent tunnel connection
   depends_on = [zillizcloud_byoc_i_project_agent.this,
-    module.eks, module.private_link, module.vpc]
+    module.eks, module.private_link, module.vpc, module.s3]
   lifecycle {
      ignore_changes = [data_plane_id, project_id, aws, ext_config]
   }

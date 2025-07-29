@@ -36,6 +36,12 @@ variable "subnet_ids" {
   default     = []
 }
 
+variable "customer_pod_subnet_ids" {
+  description = "Pod subnet IDs"
+  type        = list(string)
+  default     = []
+}
+
 variable "eks_control_plane_subnet_ids" {
   description = "Subnet IDs for eks control plane; default to subnet_ids if not provided"
   type        = list(string)

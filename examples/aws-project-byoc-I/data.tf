@@ -12,7 +12,7 @@ locals {
   customer_pod_subnet_ids = local.is_existing_vpc ? var.customer_pod_subnet_ids : []
   eks_control_plane_subnet_ids = local.is_existing_vpc ? var.customer_eks_control_plane_private_subnet_ids : module.vpc[0].private_subnets
   region = replace(data.zillizcloud_byoc_i_project_settings.this.region, "aws-", "")
-  enable_private_link = var.enable_private_link != null ? var.enable_private_link : data.zillizcloud_byoc_i_project_settings.this.private_link_enabled
+  enable_private_link =  data.zillizcloud_byoc_i_project_settings.this.private_link_enabled
   external_id = data.zillizcloud_external_id.current.id
   agent_config = {
     auth_token = data.zillizcloud_byoc_i_project_settings.this.op_config.token

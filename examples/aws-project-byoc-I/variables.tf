@@ -49,12 +49,6 @@ variable "customer_eks_control_plane_private_subnet_ids" {
 }
 
 
-variable "enable_private_link" {
-  description = "Enable private link for the byoc project"
-  type        = bool
-  default = null
-  nullable = true
-}
 
 variable "customer_ecr" {
   description = "Customer ECR configuration containing account ID, region, and prefix"
@@ -118,23 +112,6 @@ variable "custom_tags" {
   default     = {}
 }
 
-variable "core_instance_type" {
-  description = "Instance type used for the core virtual machine, which hosts Milvus Operators, Zilliz Cloud Agent, and Milvus dependencies, such as Prometheus, Etcd, Pulsar, etc. "
-  type        = string
-  default     = "m6i.2xlarge"
-}
-
-variable "fundamental_instance_type" {
-  description = "Instance type used for the fundamental virtual machine, which hosts Milvus components other than the query nodes, including the proxy, datanode, index pool, and coordinators. "
-  type        = string
-  default     = "m6i.2xlarge"
-}
-
-variable "search_instance_type" {
-  description = "Instance type used for the search virtual machine, which hosts the query nodes."
-  type        = string
-  default     = "m6id.4xlarge"
-}
 
 variable "enable_endpoint" {
   description = "Enable endpoint"

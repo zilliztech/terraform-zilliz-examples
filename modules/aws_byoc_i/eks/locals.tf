@@ -77,12 +77,12 @@ done
 
 DEFAULT_TAG=$(aws ecr describe-images \
   --registry-id 965570967084 \
-  --region us-west-2 \
+  --region ${var.region} \
   --repository-name zilliz-byoc/infra/byoc-booter \
   --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
   --output text)
 
-DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.us-west-2.amazonaws.com/zilliz-byoc/infra/byoc-booter:$DEFAULT_TAG
+DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.${var.region}.amazonaws.com/zilliz-byoc/infra/byoc-booter:$DEFAULT_TAG
 
 TAG=$(aws ecr describe-images \
   --registry-id ${local.ecr_account_id} \
@@ -97,7 +97,7 @@ else
   ZILLIZ_BYOC_IMAGE=${local.ecr_account_id}.dkr.ecr.${local.ecr_region}.amazonaws.com/${local.ecr_prefix}/infra/byoc-booter:$TAG
 fi
 
-ctr image pull --user AWS:$(aws ecr get-login-password --region us-west-2)  $ZILLIZ_BYOC_IMAGE
+ctr image pull --user AWS:$(aws ecr get-login-password --region ${var.region})  $ZILLIZ_BYOC_IMAGE
 ctr run --rm --net-host --privileged --env BOOT_CONFIG='${local.boot_config_json}'  $ZILLIZ_BYOC_IMAGE zilliz-bootstrap
 echo "zilliz init result $?"
 
@@ -126,12 +126,12 @@ done
 
 DEFAULT_TAG=$(aws ecr describe-images \
   --registry-id 965570967084 \
-  --region us-west-2 \
+  --region ${var.region} \
   --repository-name zilliz-byoc/infra/byoc-booter \
   --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
   --output text)
 
-DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.us-west-2.amazonaws.com/zilliz-byoc/infra/byoc-booter:$DEFAULT_TAG
+DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.${var.region}.amazonaws.com/zilliz-byoc/infra/byoc-booter:$DEFAULT_TAG
 
 TAG=$(aws ecr describe-images \
   --registry-id ${local.ecr_account_id} \
@@ -170,7 +170,7 @@ for subnet_id in $SUBNET_IDS; do
 done
 
 
-ctr image pull --user AWS:$(aws ecr get-login-password --region us-west-2)  $ZILLIZ_BYOC_IMAGE
+ctr image pull --user AWS:$(aws ecr get-login-password --region ${var.region})  $ZILLIZ_BYOC_IMAGE
 ctr run --rm --net-host --privileged --env BOOT_CONFIG='${local.boot_config_json}' --env IS_INIT=true --env POD_SUBNET_IDS="$SUBNET_IDS" --env K8S_SG_ID="$K8S_SG_ID" --env SUBNET_AZS="$SUBNET_AZS" $ZILLIZ_BYOC_IMAGE zilliz-bootstrap
 echo "zilliz init eni result $?"
 

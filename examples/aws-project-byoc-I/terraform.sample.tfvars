@@ -37,8 +37,6 @@ customer_eks_control_plane_private_subnet_ids = ["subnet-xxxxxxxxxxxxxxxxx", "su
 # The ID of the security group for the customer VPC, prerequsite: customer_vpc_id should be provided
 customer_security_group_id = "sg-xxxxxxxxxxxxxxxxx"
 
-# Enable private link for the BYOC project
-enable_private_link = true
 
 # The name of the customer bucket
 # If empty, uses "${dataplane_id}-milvus" as bucket name

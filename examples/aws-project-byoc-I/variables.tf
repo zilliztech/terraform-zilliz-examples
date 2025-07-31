@@ -118,3 +118,10 @@ variable "enable_endpoint" {
   type        = bool
   default     = false
 }
+
+
+variable "enable_manual_private_link" {
+  description = "Enable manual private link creation"
+  type        = bool
+  default     = false
+}

@@ -81,10 +81,6 @@ data "aws_eks_cluster_auth" "example" {
 }
 
 
-# data "tls_certificate" "eks" {
-#   url = local.eks_cluster_oidc_issuer
-# }
-
 resource "aws_iam_openid_connect_provider" "eks" {
   client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = [local.eks_cluster_oidc_issuer_thumbprint]

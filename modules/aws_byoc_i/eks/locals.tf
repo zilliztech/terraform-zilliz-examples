@@ -24,6 +24,8 @@ locals {
   maintenance_role_name = length(var.customer_maintenance_role_name) > 0 ? var.customer_maintenance_role_name : "${local.prefix_name}-maintenance-role"
   storage_role_name     = length(var.customer_storage_role_name) > 0 ? var.customer_storage_role_name : "${local.prefix_name}-storage-role"
 
+  eks_cluster_oidc_issuer_thumbprint = local.config.eks_cluster_oidc_issuer_thumbprint[var.region]
+
   # Security group ingress protocols
   # sg_ingress_protocol = ["tcp", "udp"]
 

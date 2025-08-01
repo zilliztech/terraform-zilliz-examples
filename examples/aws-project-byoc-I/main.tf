@@ -25,11 +25,11 @@ module "s3" {
 
 module "private_link" {
   count = local.enable_private_link? 1: 0
+  enable_private_hosted_zone = !var.enable_manual_private_link
   source = "../../modules/aws_byoc_i/privatelink"
   prefix_name = local.prefix_name
   dataplane_id = local.dataplane_id
   region = local.region
-  enable_private_link = local.enable_private_link
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids
   security_group_ids = [local.security_group_id]

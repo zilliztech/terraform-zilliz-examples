@@ -3,12 +3,6 @@ variable "prefix_name" {
   type        = string
 }
 
-variable "enable_private_link" {
-  description = "Enable private link"
-  type        = bool
-  default     = false
-}
-
 variable "region" {
   description = "Region"
   type        = string
@@ -41,4 +35,10 @@ variable "custom_tags" {
   description = "Custom tags to apply to resources"
   type        = map(string)
   default     = {}
+}
+
+variable "enable_private_hosted_zone" {
+  description = "Enable private hosted zone"
+  type        = bool
+  default     = true
 }

@@ -6,3 +6,7 @@ private_zone_name: byoc.zillizcloud.com
 agent_config: 
   server_host: zilliz-byoc-us.byoc.zillizcloud.com
   repository: 965570967084.dkr.ecr.us-west-2.amazonaws.com/zilliz-byoc/vdc/cloud-agent
+eks_cluster_oidc_issuer_thumbprint:
+  eu-central-1: 06b25927c42a721631c1efd9431e648fa62e1e39
+  us-west-2: 9e99a48a9960b14926bb7f3b02e22da2b0ab7280
+

@@ -1,0 +1,53 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sts:GetCallerIdentity"
+                
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:CreateRole",
+                "iam:GetRole",
+                "iam:ListRolePolicies",
+                "iam:ListAttachedRolePolicies",
+                "iam:AttachRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:ListInstanceProfilesForRole",
+                "iam:DeleteRole"
+            ],
+            "Resource": "arn:aws:iam::*:role/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetPolicy",
+                "iam:GetPolicyVersion",
+                "iam:ListPolicyVersions",
+                "iam:DeletePolicy",
+                "iam:CreatePolicy"
+            ],
+            "Resource": "arn:aws:iam::*:policy/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:TagRole",
+                "iam:UntagRole",
+                "iam:TagPolicy",
+                "iam:UntagPolicy",
+                "iam:ListRoleTags",
+                "iam:ListPolicyTags"
+            ],
+            "Resource": [
+                "arn:aws:iam::*:role/*",
+                "arn:aws:iam::*:policy/*"
+            ]
+        }
+    ]
+}

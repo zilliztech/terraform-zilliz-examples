@@ -29,3 +29,9 @@ variable "ExternalId" {
   description = "External identifier to use when assuming the role. To avoid the confused deputy problem."
   type        = string
 }
+
+variable "enable_private_link" {
+  description = "Enable private link for the byoc project"
+  type        = bool
+  default     = false
+}

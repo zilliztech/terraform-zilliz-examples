@@ -52,69 +52,13 @@ resource "aws_iam_role_policy_attachment" "maintenance_policy_attachment_2" {
 
 resource "aws_iam_policy" "maintenance_policy_1" {
   name        = "${local.prefix_name}-maintenance-policy-1"
-  description = "cross account policy for the zilliz byoc (part 1)"
+  description = "maintenance policy for the zilliz byoc (part 1)"
   tags = {
     Vendor = "zilliz-byoc"
   }
   policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
-      {
-        "Sid" : "AllowCreateServiceLinkedRoleForEKS",
-        "Effect" : "Allow",
-        "Action" : "iam:CreateServiceLinkedRole",
-        "Resource" : [
-          "arn:aws:iam::*:role/aws-service-role/eks.amazonaws.com/AWSServiceRoleForAmazonEKS",
-          "arn:aws:iam::*:role/aws-service-role/eks-nodegroup.amazonaws.com/AWSServiceRoleForAmazonEKSNodegroup"
-        ],
-        "Condition" : {
-          "StringEquals" : {
-            "iam:AWSServiceName" : [
-              "eks.amazonaws.com",
-              "eks-nodegroup.amazonaws.com"
-            ]
-          }
-        }
-      },
-      {
-        "Sid" : "CreateOpenIDConnectProvider",
-        "Effect" : "Allow",
-        "Action" : [
-          "iam:CreateOpenIDConnectProvider",
-          "iam:TagOpenIDConnectProvider"
-        ],
-        "Resource" : [
-          "arn:aws:iam::*:oidc-provider/*"
-        ],
-        "Condition" : {
-          "StringEquals" : {
-            "aws:RequestTag/Vendor" : "zilliz-byoc"
-          }
-        }
-      },
-      {
-        "Sid" : "DeleteOpenIDConnectProvider",
-        "Effect" : "Allow",
-        "Action" : [
-          "iam:GetOpenIDConnectProvider",
-          "iam:DeleteOpenIDConnectProvider"
-        ],
-        "Resource" : [
-          "arn:aws:iam::*:oidc-provider/*"
-        ]
-      },
-      {
-        "Sid" : "IAMReadEKSRole",
-        "Effect" : "Allow",
-        "Action" : [
-          "iam:GetRole",
-          "iam:ListAttachedRolePolicies"
-        ],
-        "Resource" : [
-          "${local.eks_role.arn}",
-          "arn:aws:iam::*:role/aws-service-role/eks-nodegroup.amazonaws.com/AWSServiceRoleForAmazonEKSNodegroup"
-        ]
-      },
       {
         "Sid" : "IAMPassRoleToEKS",
         "Effect" : "Allow",
@@ -242,7 +186,7 @@ resource "aws_iam_policy" "maintenance_policy_1" {
 
 resource "aws_iam_policy" "maintenance_policy_2" {
   name        = "${local.prefix_name}-maintenance-policy-2"
-  description = "cross account policy for the zilliz byoc (part 2)"
+  description = "maintenance policy for the zilliz byoc (part 2)"
   tags = {
     Vendor = "zilliz-byoc"
   }
@@ -253,7 +197,6 @@ resource "aws_iam_policy" "maintenance_policy_2" {
         "Sid" : "EKSCreate",
         "Effect" : "Allow",
         "Action" : [
-          "eks:CreateCluster",
           "eks:CreateNodegroup",
           "eks:CreateAddon",
           "eks:CreateAccessEntry",
@@ -357,7 +300,6 @@ resource "aws_iam_policy" "maintenance_policy_2" {
         "Action" : [
           "eks:DeleteAccessEntry",
           "eks:DeleteAddon",
-          "eks:DeleteCluster",
           "eks:DeleteFargateProfile",
           "eks:DeleteNodegroup",
           "eks:DeletePodIdentityAssociation"

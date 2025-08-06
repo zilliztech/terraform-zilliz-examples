@@ -21,6 +21,7 @@ module "aws_vpc" {
   region = var.region
   vpc_cidr   = var.vpc_cidr
   name       = var.name
+  enable_private_link = var.enable_private_link
 
 }
 
@@ -55,4 +56,8 @@ output "storage_role_arn" {
 output "external_id" {
   value = module.aws_iam.external_id
   
+}
+
+output "endpoint_id" {
+  value = module.aws_vpc.vpc_endpoint
 }

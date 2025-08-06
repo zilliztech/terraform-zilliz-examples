@@ -70,3 +70,21 @@ Output:
 |-------------------------------------------|----------------------------|
 | `data_plane_id`                              | BYOC project data plane ID |
 | `project_id`                              | BYOC project ID            |
+
+
+> **Note:**  
+> When creating EKS clusters and node groups, you must ensure that the required AWS service-linked roles are already created in your AWS account.  
+> 
+> Specifically, the following service roles are needed:
+> - `AWSServiceRoleForAmazonEKS` (`eks.amazonaws.com`)
+> - `AWSServiceRoleForAmazonEKSNodegroup` (`eks-nodegroup.amazonaws.com`)
+>
+> These roles are typically created automatically by AWS when you first create an EKS cluster or node group via the AWS Console. However, when using Terraform or other automation, you may need to create them manually if they do not exist.
+>
+> You can create these roles using the AWS CLI:
+> ```sh
+> aws iam create-service-linked-role --aws-service-name eks.amazonaws.com
+> aws iam create-service-linked-role --aws-service-name eks-nodegroup.amazonaws.com
+> ```
+>
+> For more details, see the [AWS documentation on service-linked roles for EKS](https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html).

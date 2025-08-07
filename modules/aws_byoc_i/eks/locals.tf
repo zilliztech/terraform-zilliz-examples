@@ -93,13 +93,15 @@ TAG=$(aws ecr describe-images \
   --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
   --output text)
 
-if [[ -z "$TAG" || "$TAG" == "None" ]]; then
+if [[ -z "$TAG" || "$TAG" == "None" || ${local.ecr_account_id} == "965570967084" ]]; then
+  # if the ecr account id is the zilliz's ecr account id, use the default image
   ZILLIZ_BYOC_IMAGE=$DEFAULT_ZILLIZ_BYOC_IMAGE
+  ctr image pull --user AWS:$(aws ecr get-login-password --region ${var.region})  $ZILLIZ_BYOC_IMAGE
 else
   ZILLIZ_BYOC_IMAGE=${local.ecr_account_id}.dkr.ecr.${local.ecr_region}.amazonaws.com/${local.ecr_prefix}/infra/byoc-booter:$TAG
+  ctr image pull --user AWS:$(aws ecr get-login-password --region ${local.ecr_region})  $ZILLIZ_BYOC_IMAGE
 fi
 
-ctr image pull --user AWS:$(aws ecr get-login-password --region ${var.region})  $ZILLIZ_BYOC_IMAGE
 ctr run --rm --net-host --privileged --env BOOT_CONFIG='${local.boot_config_json}'  $ZILLIZ_BYOC_IMAGE zilliz-bootstrap
 echo "zilliz init result $?"
 

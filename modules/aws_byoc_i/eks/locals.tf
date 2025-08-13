@@ -38,9 +38,11 @@ locals {
   account_id = data.aws_caller_identity.current.account_id
   // auto-generate private subnets cidr
 
-  ecr_account_id = var.customer_ecr.ecr_account_id
-  ecr_region     = var.customer_ecr.ecr_region
-  ecr_prefix     = var.customer_ecr.ecr_prefix
+  booter_ecr_account_id = length(var.booter.account_id) > 0 ? var.booter.account_id : var.customer_ecr.ecr_account_id
+  booter_ecr_region     = length(var.booter.region) > 0 ? var.booter.region : var.customer_ecr.ecr_region
+  booter_ecr_prefix     = length(var.booter.prefix) > 0 ? var.booter.prefix : var.customer_ecr.ecr_prefix
+  booter_ecr_image      = length(var.booter.image) > 0 ? var.booter.image : "infra/byoc-booter"
+  booter_ecr_tag        = var.booter.tag
 
   agent_config_json = jsonencode(var.agent_config)
   boot_config = {
@@ -77,6 +79,7 @@ until ctr --namespace k8s.io images ls >/dev/null 2>&1; do
   sleep 3
 done
 
+
 DEFAULT_TAG=$(aws ecr describe-images \
   --registry-id 965570967084 \
   --region ${var.region} \
@@ -86,21 +89,29 @@ DEFAULT_TAG=$(aws ecr describe-images \
 
 DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.${var.region}.amazonaws.com/zilliz-byoc/infra/byoc-booter:$DEFAULT_TAG
 
-TAG=$(aws ecr describe-images \
-  --registry-id ${local.ecr_account_id} \
-  --region ${local.ecr_region} \
-  --repository-name ${local.ecr_prefix}/infra/byoc-booter \
+LATEST_TAG=$(aws ecr describe-images \
+  --registry-id ${local.booter_ecr_account_id} \
+  --region ${local.booter_ecr_region} \
+  --repository-name ${local.booter_ecr_prefix}/${local.booter_ecr_image} \
   --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
   --output text)
 
-if [[ -z "$TAG" || "$TAG" == "None" || ${local.ecr_account_id} == "965570967084" ]]; then
-  # if the ecr account id is the zilliz's ecr account id, use the default image
-  ZILLIZ_BYOC_IMAGE=$DEFAULT_ZILLIZ_BYOC_IMAGE
-  ctr image pull --user AWS:$(aws ecr get-login-password --region ${var.region})  $ZILLIZ_BYOC_IMAGE
-else
-  ZILLIZ_BYOC_IMAGE=${local.ecr_account_id}.dkr.ecr.${local.ecr_region}.amazonaws.com/${local.ecr_prefix}/infra/byoc-booter:$TAG
-  ctr image pull --user AWS:$(aws ecr get-login-password --region ${local.ecr_region})  $ZILLIZ_BYOC_IMAGE
+
+TAG="${local.booter_ecr_tag}"
+if [[ -z "$TAG" ]]; then
+  TAG="$LATEST_TAG"
 fi
+
+if [[ -z "$TAG" || "$TAG" == "None" ]]; then
+
+  ZILLIZ_BYOC_IMAGE="$DEFAULT_ZILLIZ_BYOC_IMAGE"
+  ctr image pull --user AWS:$(aws ecr get-login-password --region ${var.region}) "$ZILLIZ_BYOC_IMAGE"
+else
+
+  ZILLIZ_BYOC_IMAGE="${local.booter_ecr_account_id}.dkr.ecr.${local.booter_ecr_region}.amazonaws.com/${local.booter_ecr_prefix}/${local.booter_ecr_image}:$TAG"
+  ctr image pull --user AWS:$(aws ecr get-login-password --region ${local.booter_ecr_region}) "$ZILLIZ_BYOC_IMAGE"
+fi
+
 
 ctr run --rm --net-host --privileged --env BOOT_CONFIG='${local.boot_config_json}'  $ZILLIZ_BYOC_IMAGE zilliz-bootstrap
 echo "zilliz init result $?"
@@ -137,17 +148,19 @@ DEFAULT_TAG=$(aws ecr describe-images \
 
 DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.${var.region}.amazonaws.com/zilliz-byoc/infra/byoc-booter:$DEFAULT_TAG
 
-TAG=$(aws ecr describe-images \
-  --registry-id ${local.ecr_account_id} \
-  --region ${local.ecr_region} \
-  --repository-name ${local.ecr_prefix}/infra/byoc-booter \
+LATEST_TAG=$(aws ecr describe-images \
+  --registry-id ${local.booter_ecr_account_id} \
+  --region ${local.booter_ecr_region} \
+  --repository-name ${local.booter_ecr_prefix}/${local.booter_ecr_image} \
   --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
   --output text)
 
-if [[ -z "$TAG" || "$TAG" == "None" ]]; then
+if [[ -z "$LATEST_TAG" || "$LATEST_TAG" == "None" || ${local.booter_ecr_account_id} == "965570967084" ]]; then
   ZILLIZ_BYOC_IMAGE=$DEFAULT_ZILLIZ_BYOC_IMAGE
+  ctr image pull --user AWS:$(aws ecr get-login-password --region ${var.region})  $ZILLIZ_BYOC_IMAGE
 else
-  ZILLIZ_BYOC_IMAGE=${local.ecr_account_id}.dkr.ecr.${local.ecr_region}.amazonaws.com/${local.ecr_prefix}/infra/byoc-booter:$TAG
+  ZILLIZ_BYOC_IMAGE=${local.booter_ecr_account_id}.dkr.ecr.${local.booter_ecr_region}.amazonaws.com/${local.booter_ecr_prefix}/${local.booter_ecr_image}:$TAG
+  ctr image pull --user AWS:$(aws ecr get-login-password --region ${local.booter_ecr_region})  $ZILLIZ_BYOC_IMAGE
 fi
 
 K8S_SG_ID="${aws_eks_cluster.zilliz_byoc_cluster.vpc_config[0].cluster_security_group_id}"
@@ -173,8 +186,6 @@ for subnet_id in $SUBNET_IDS; do
   fi
 done
 
-
-ctr image pull --user AWS:$(aws ecr get-login-password --region ${var.region})  $ZILLIZ_BYOC_IMAGE
 ctr run --rm --net-host --privileged --env BOOT_CONFIG='${local.boot_config_json}' --env IS_INIT=true --env POD_SUBNET_IDS="$SUBNET_IDS" --env K8S_SG_ID="$K8S_SG_ID" --env SUBNET_AZS="$SUBNET_AZS" $ZILLIZ_BYOC_IMAGE zilliz-bootstrap
 echo "zilliz init eni result $?"
 

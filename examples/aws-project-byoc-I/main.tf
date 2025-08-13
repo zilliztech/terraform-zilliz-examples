@@ -61,6 +61,7 @@ module "eks" {
   custom_tags = var.custom_tags
   // ecr
   customer_ecr = var.customer_ecr
+  booter = var.booter
 }
 
 

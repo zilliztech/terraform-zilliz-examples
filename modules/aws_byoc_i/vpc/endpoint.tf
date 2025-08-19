@@ -136,4 +136,18 @@ resource "aws_vpc_endpoint" "elb" {
   tags = { Name = "elb-interface-endpoint" }
 }
 
+# ==================================================================================================
+# EC2 INSTANCE CONNECT ENDPOINT
+#
+# Endpoint for EC2 Instance Connect, enabling secure SSH access to EC2 instances.
+# --------------------------------------------------------------------------------------------------
 
+resource "aws_ec2_instance_connect_endpoint" "this" {
+  count = var.enable_endpoint ? 1 : 0
+
+  subnet_id          = module.vpc.private_subnets[0]
+  security_group_ids = [aws_security_group.zilliz_byoc_security_group.id]
+  tags = {
+    Name = "ec2-instance-connect-endpoint"
+  }
+}

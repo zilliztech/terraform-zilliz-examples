@@ -188,13 +188,31 @@ variable "customer_ecr" {
     }
   )
   validation {
-    condition     = var.customer_ecr.ecr_prefix != "" && var.customer_ecr.ecr_account_id != "" && var.customer_ecr.ecr_region != ""
-    error_message = "ECR prefix, account ID and region cannot be empty"
+    condition     = var.customer_ecr.ecr_prefix != "" && var.customer_ecr.ecr_account_id != ""
+    error_message = "ECR prefix and account ID cannot be empty. If ecr_region is empty, var.region will be used as the default."
   }
 
   default = {
     ecr_account_id = "965570967084"
-    ecr_region     = "us-west-2"
+    ecr_region     = ""
     ecr_prefix     = "zilliz-byoc"
+  }
+}
+
+variable "booter" {
+  description = "Booter configuration including account ID, region, prefix, image, and tag"
+  type = object({
+    account_id = optional(string, "")
+    region     = optional(string, "")
+    prefix     = optional(string, "")
+    image      = optional(string, "")
+    tag        = optional(string, "")
+  })
+  default = {
+    account_id = ""
+    region     = ""
+    prefix     = ""
+    image      = ""
+    tag        = ""
   }
 }

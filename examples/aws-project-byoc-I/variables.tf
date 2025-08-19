@@ -125,3 +125,21 @@ variable "enable_manual_private_link" {
   type        = bool
   default     = false
 }
+
+variable "booter" {
+  description = "Booter configuration including account ID, region, prefix, image, and tag"
+  type = object({
+    account_id = optional(string, "")
+    region     = optional(string, "")
+    prefix     = optional(string, "")
+    image      = optional(string, "")
+    tag        = optional(string, "")
+  })
+  default = {
+    account_id = ""
+    region     = ""
+    prefix     = ""
+    image      = ""
+    tag        = ""
+  }
+}

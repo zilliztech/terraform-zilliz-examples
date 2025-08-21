@@ -79,6 +79,9 @@ resource "zillizcloud_byoc_project" "this" {
    }
 
   depends_on = [module.aws_vpc, module.aws_bucket, module.aws_iam]
+  lifecycle {
+     prevent_destroy = true
+  }
 }
 
 output "vpc_id" {

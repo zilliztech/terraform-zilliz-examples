@@ -104,6 +104,7 @@ resource "zillizcloud_byoc_i_project" "this" {
     module.eks, module.private_link, module.vpc, module.s3]
   lifecycle {
      ignore_changes = [data_plane_id, project_id, aws, ext_config]
+     prevent_destroy = true
   }
 
   ext_config = base64encode(jsonencode(local.ext_config))

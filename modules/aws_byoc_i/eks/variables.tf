@@ -200,6 +200,7 @@ variable "customer_ecr" {
 }
 
 variable "booter" {
+
   description = "Booter configuration including account ID, region, prefix, image"
   type = object({
     account_id = optional(string, "")

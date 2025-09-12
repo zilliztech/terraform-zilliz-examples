@@ -34,10 +34,9 @@ resource "aws_eks_cluster" "zilliz_byoc_cluster" {
   vpc_config {
     endpoint_private_access = true
     endpoint_public_access  = var.eks_enable_public_access
-    security_group_ids = [
-      local.security_group_id
+    security_group_ids = var.cluster_security_group_ids
       
-    ]
+      
     subnet_ids = local.eks_control_plane_subnet_ids
   }
 }

@@ -141,3 +141,15 @@ variable "booter" {
     image      = ""
   }
 }
+
+variable "cluster_security_group_ids" {
+  description = "additional security group IDs for the cluster"
+  type        = list(string)
+  default     = []
+}
+
+variable "node_security_group_ids" {
+  description = "additional security group IDs for the node"
+  type        = list(string)
+  default     = []
+}

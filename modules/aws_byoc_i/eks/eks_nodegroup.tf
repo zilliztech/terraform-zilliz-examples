@@ -28,6 +28,12 @@ resource "aws_eks_addon" "ebs_csi" {
   depends_on               = [aws_eks_node_group.core, aws_eks_addon.coredns]
 }
 
+data "aws_security_group" "node_security_group" {
+  id = var.node_security_group_ids[0]
+}
+
+
+
 # aws_launch_template.default:
 resource "aws_launch_template" "core" {
   description             = "Core launch template for zilliz-byoc-pulsar EKS managed node group"
@@ -40,9 +46,7 @@ resource "aws_launch_template" "core" {
   tags_all = merge({
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
-  vpc_security_group_ids = [
-    local.security_group_id
-  ]
+  vpc_security_group_ids = local.node_security_group_ids
 
   user_data = local.core_user_data
   metadata_options {
@@ -93,9 +97,7 @@ resource "aws_launch_template" "init" {
   tags_all = merge({
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
-  vpc_security_group_ids = [
-    local.security_group_id
-  ]
+  vpc_security_group_ids = local.node_security_group_ids
 
   user_data = local.init_user_data
   metadata_options {
@@ -131,6 +133,13 @@ resource "aws_launch_template" "init" {
   }
 
   depends_on = [ aws_iam_role_policy_attachment.maintenance_policy_attachment_2, aws_iam_role_policy_attachment.maintenance_policy_attachment_1 ]
+
+  lifecycle {
+    precondition {
+      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
+      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
+    }
+  }
 }
 
 
@@ -146,9 +155,7 @@ resource "aws_launch_template" "default" {
   tags_all = merge({
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
-  vpc_security_group_ids = [
-    local.security_group_id
-  ]
+  vpc_security_group_ids = local.node_security_group_ids
 
   metadata_options {
     http_endpoint               = "enabled"
@@ -196,9 +203,7 @@ resource "aws_launch_template" "diskann" {
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
   user_data = "TUlNRS1WZXJzaW9uOiAxLjAKQ29udGVudC1UeXBlOiBtdWx0aXBhcnQvbWl4ZWQ7IGJvdW5kYXJ5PSI9PU1ZQk9VTkRBUlk9PSIKCi0tPT1NWUJPVU5EQVJZPT0KQ29udGVudC1UeXBlOiB0ZXh0L3gtc2hlbGxzY3JpcHQ7IGNoYXJzZXQ9InVzLWFzY2lpIgoKIyEvYmluL2Jhc2gKZWNobyAiUnVubmluZyB6aWxsaXogY3VzdG9tIHVzZXIgZGF0YSBzY3JpcHQiCmRpc2tfdm9sdW1lPSQobHNibGsgLUogLW8gTkFNRSxNT0RFTCxTSVpFIHwganEgLXIgJy5ibG9ja2RldmljZXNbXSB8IHNlbGVjdCgubW9kZWwgfCB0ZXN0KCJBbWF6b24gRUMyIE5WTWUgSW5zdGFuY2UgU3RvcmFnZSIpKSB8IC5uYW1lJykKZWNobyAke2Rpc2tfdm9sdW1lfQppZiAoIGxzYmxrIHwgZmdyZXAgLXEgJHtkaXNrX3ZvbHVtZX0gKTsgdGhlbgogICAgbWtkaXIgLXAgL21udC9kYXRhIC92YXIvbGliL2t1YmVsZXQgL3Zhci9saWIvZG9ja2VyCiAgICBta2ZzLnhmcyAvZGV2LyR7ZGlza192b2x1bWV9CiAgICBtb3VudCAvZGV2LyR7ZGlza192b2x1bWV9IC9tbnQvZGF0YQogICAgY2htb2QgMDc1NSAvbW50L2RhdGEKICAgIG12IC92YXIvbGliL2t1YmVsZXQgL21udC9kYXRhLwogICAgbXYgL3Zhci9saWIvZG9ja2VyIC9tbnQvZGF0YS8KICAgIGxuIC1zZiAvbW50L2RhdGEva3ViZWxldCAvdmFyL2xpYi9rdWJlbGV0CiAgICBsbiAtc2YgL21udC9kYXRhL2RvY2tlciAvdmFyL2xpYi9kb2NrZXIKICAgIFVVSUQ9JChsc2JsayAtZiB8IGdyZXAgJHtkaXNrX3ZvbHVtZX0gfCBhd2sgJ3twcmludCAkM30nKQogICAgZWNobyAiVVVJRD0kVVVJRCAgICAgL21udC9kYXRhICAgeGZzICAgIGRlZmF1bHRzLG5vYXRpbWUgIDEgICAxIiA+PiAvZXRjL2ZzdGFiCgpmaQplY2hvICJtb3VudCByZXN1bHRzICQoY2F0IC9ldGMvZnN0YWIpIgoKZWNobyAnVXNlciBkYXRhIHNjcmlwdCBkb25lJwotLT09TVlCT1VOREFSWT09LS0K"
-  vpc_security_group_ids = [
-    local.security_group_id
-  ]
+  vpc_security_group_ids = local.node_security_group_ids
 
   block_device_mappings {
     device_name = "/dev/xvda"
@@ -237,6 +242,13 @@ resource "aws_launch_template" "diskann" {
       "Name"   = "zilliz-byoc-milvus"
       "Vendor" = "zilliz-byoc"
     }, var.custom_tags)
+  }
+
+  lifecycle {
+    precondition {
+      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
+      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
+    }
   }
 }
 
@@ -296,6 +308,10 @@ resource "aws_eks_node_group" "search" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
+    precondition {
+      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
+      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
+    }
   }
 
   depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
@@ -347,6 +363,10 @@ resource "aws_eks_node_group" "core" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
+    precondition {
+      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
+      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
+    }
   }
 
   depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
@@ -393,6 +413,10 @@ resource "aws_eks_node_group" "index" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
+    precondition {
+      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
+      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
+    }
   }
 
   depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
@@ -440,6 +464,10 @@ resource "aws_eks_node_group" "fundamental" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
+    precondition {
+      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
+      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
+    }
   }
 
   depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
@@ -491,6 +519,10 @@ resource "aws_eks_node_group" "init" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
+    precondition {
+      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
+      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
+    }
   }
 
   depends_on = [aws_eks_addon.vpc-cni]

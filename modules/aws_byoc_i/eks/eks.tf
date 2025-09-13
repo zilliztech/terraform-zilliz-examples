@@ -1,5 +1,7 @@
 data "aws_caller_identity" "current" {}
-
+data "aws_security_group" "cluster_additional_security_group" {
+  id = var.cluster_additional_security_group_ids[0]
+}
 # aws_eks_cluster.my_cluster:
 resource "aws_eks_cluster" "zilliz_byoc_cluster" {
   bootstrap_self_managed_addons = false
@@ -34,13 +36,20 @@ resource "aws_eks_cluster" "zilliz_byoc_cluster" {
   vpc_config {
     endpoint_private_access = true
     endpoint_public_access  = var.eks_enable_public_access
-    security_group_ids = [
-      local.security_group_id
+    security_group_ids = local.cluster_additional_security_group_ids
       
-    ]
+      
     subnet_ids = local.eks_control_plane_subnet_ids
   }
+
+    lifecycle {
+    precondition {
+      condition     = try(data.aws_security_group.cluster_additional_security_group.tags["Vendor"], "") == "zilliz-byoc"
+      error_message = "tag Vendor=zilliz-byoc is required for the cluster additional security group"
+    }
+  }
 }
+
 
 
 

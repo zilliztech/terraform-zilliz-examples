@@ -32,8 +32,6 @@ data "aws_security_group" "node_security_group" {
   id = var.node_security_group_ids[0]
 }
 
-
-
 # aws_launch_template.default:
 resource "aws_launch_template" "core" {
   description             = "Core launch template for zilliz-byoc-pulsar EKS managed node group"

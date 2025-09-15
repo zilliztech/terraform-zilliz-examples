@@ -91,7 +91,7 @@ resource "zillizcloud_byoc_i_project" "this" {
     network = {
       vpc_id             = local.vpc_id
       subnet_ids         = local.subnet_ids
-      security_group_ids = [local.default_security_group_id]
+      security_group_ids = []
       vpc_endpoint_id    = local.byoc_endpoint
     }
     role_arn = {

@@ -1,5 +1,5 @@
 data "aws_subnet" "selected" {
-  for_each = toset(var.subnet_ids)
+  for_each = { for idx, subnet_id in var.subnet_ids : idx => subnet_id }
   id       = each.value
 }
 

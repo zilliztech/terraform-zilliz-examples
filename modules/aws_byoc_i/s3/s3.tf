@@ -6,7 +6,6 @@ module "s3_bucket" {
   version = "3.15.1"
 
   bucket   = "${local.bucket_name}"
-  acl      = "private"
 
   control_object_ownership = true
   object_ownership         = "BucketOwnerEnforced"

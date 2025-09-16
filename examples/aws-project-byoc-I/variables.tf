@@ -35,33 +35,18 @@ variable "customer_cluster_additional_security_group_ids" {
   description = "additional security group IDs for the cluster"
   type        = list(string)
   default     = []
-
-  validation {
-    condition     = var.customer_vpc_id == "" || length(var.customer_cluster_additional_security_group_ids) > 0
-    error_message = "customer_cluster_additional_security_group_ids cannot be empty when customer_vpc_id is provided."
-  }
 }
 
 variable "customer_node_security_group_ids" {
   description = "security group IDs for the node group"
   type        = list(string)
   default     = []
-
-  validation {
-    condition     = var.customer_vpc_id == "" || length(var.customer_node_security_group_ids) > 0
-    error_message = "customer_node_security_group_ids cannot be empty when customer_vpc_id is provided."
-  }
 }
 
 variable "customer_private_link_security_group_ids" {
   description = "security group IDs for the private link"
   type        = list(string)
   default     = []
-
-  validation {
-    condition     = var.customer_vpc_id == "" || length(var.customer_private_link_security_group_ids) > 0
-    error_message = "customer_private_link_security_group_ids cannot be empty when customer_vpc_id is provided."
-  }
 }
 
 variable "customer_private_subnet_ids" {
@@ -86,10 +71,6 @@ variable "customer_ecr" {
     ecr_prefix     = string
     }
   )
-  validation {
-    condition     = var.customer_ecr.ecr_prefix != "" && var.customer_ecr.ecr_account_id != "" && var.customer_ecr.ecr_region != ""
-    error_message = "ECR prefix, account ID and region cannot be empty"
-  }
 
   default = {
     ecr_account_id = "965570967084"

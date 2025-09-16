@@ -6,61 +6,83 @@
 #
 # Instructions:
 # 1. Copy this file and rename it to 'terraform.tfvars'
-# 2. Replace all placeholder values (vpc-xxxxxxxxxxxxxxxxx, subnet-xxxxxxxxxxxxxxxxx, etc.) 
-#    with your actual AWS resource IDs
+# 2. Choose VPC configuration: leave customer_vpc_id empty for new VPC or provide existing VPC details
 # 3. Customize the optional parameters according to your requirements
-# 4. Run 'terraform plan' to verify your configuration before applying
 #
 # Required Prerequisites:
 # - AWS credentials configured (AWS CLI profile or access keys)
 # - Terraform installed
 # - Zilliz Cloud API key configured in provider.tf
-# - Existing VPC, subnets, and security group in your AWS account
+# - (Optional) Existing VPC, subnets, and security group if using customer-managed VPC
 #
 # For detailed setup instructions, refer to the README.md file
 #
 
-# The ID of the existing customer VPC, otherwise it will create a new VPC if not provided
-customer_vpc_id = "vpc-xxxxxxxxxxxxxxxxx"
 
-# The IDs of the private subnets for the customer VPC, prerequsite: customer_vpc_id should be provided
 customer_private_subnet_ids = ["subnet-xxxxxxxxxxxxxxxxx"]
 
 # The IDs of the pod subnets for the customer VPC
 customer_pod_subnet_ids = ["subnet-xxxxxxxxxxxxxxxxx"]
 
-# The IDs of the private subnets for the customer's EKS control plane
-# Must be in at least two different availability zones
+# ============================================================================
+# VPC CONFIGURATION - Choose between new VPC creation or existing VPC usage
+# ============================================================================
+
+# The ID of an existing customer VPC (optional)
+# Leave empty ("") to create a new VPC, or provide existing VPC ID
+customer_vpc_id = ""
+
+# CIDR block for new VPC creation (only used when customer_vpc_id is empty)
+vpc_cidr = "10.0.0.0/16"
+
+# The IDs of private subnets in the customer VPC (required when using existing VPC)
+# Leave empty when creating new VPC
+customer_private_subnet_ids = []
+
+# The ID of the security group for the customer VPC (required when using existing VPC)
+# Leave empty when creating new VPC
+customer_security_group_id = ""
+
+# The IDs of pod subnets for Kubernetes networking (optional, for existing VPC only)
+customer_pod_subnet_ids = []
+
+# The IDs of private subnets for EKS control plane (optional)
+# Must be in at least two different availability zones when provided
 # Defaults to customer_private_subnet_ids if not provided
-customer_eks_control_plane_private_subnet_ids = ["subnet-xxxxxxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyyyyyy"]
+customer_eks_control_plane_private_subnet_ids = []
 
-# The ID of the security group for the customer VPC, prerequsite: customer_vpc_id should be provided
-customer_security_group_id = "sg-xxxxxxxxxxxxxxxxx"
 
+# ============================================================================
+# CUSTOM RESOURCE NAMING - All optional, leave empty to use defaults
+# ============================================================================
 
 # The name of the customer bucket
-# If empty, uses "${dataplane_id}-milvus" as bucket name
-customer_bucket_name = "your-bucket-name"
+# If empty, uses "${local.prefix_name}-bucket" as bucket name
+customer_bucket_name = ""
 
 # The name of the customer EKS cluster
-# If empty, uses "${dataplane_id}" as EKS cluster name
-customer_eks_cluster_name = "your-eks-cluster-name"
+# If empty, uses "${local.prefix_name}" as EKS cluster name
+customer_eks_cluster_name = ""
 
 # The name of the customer storage role for S3 access
-# If empty, uses "${dataplane_id}-storage-role" as role name
-customer_storage_role_name = "your-storage-role-name"
+# If empty, uses "${local.prefix_name}-storage-role" as role name
+customer_storage_role_name = ""
 
 # The name of the customer EKS addon role for S3 access
-# If empty, uses "${dataplane_id}-addon-role" as role name
-customer_eks_addon_role_name = "your-eks-addon-role-name"
+# If empty, uses "${local.prefix_name}-addon-role" as role name
+customer_eks_addon_role_name = ""
 
 # The name of the customer EKS cluster role
-# If empty, uses "${dataplane_id}-eks-role" as role name
-customer_eks_role_name = "your-eks-role-name"
+# If empty, uses "${local.prefix_name}-eks-role" as role name
+customer_eks_role_name = ""
 
 # The name of the customer maintenance role for cluster administration
-# If empty, uses "${dataplane_id}-maintenance-role" as role name
-customer_maintenance_role_name = "your-maintenance-role-name"
+# If empty, uses "${local.prefix_name}-maintenance-role" as role name
+customer_maintenance_role_name = ""
+
+# ============================================================================
+# ADDITIONAL CONFIGURATION
+# ============================================================================
 
 # Customer ECR configuration containing account ID, region, and prefix
 customer_ecr = {
@@ -73,4 +95,18 @@ customer_ecr = {
 custom_tags = {
   custom_key   = "custom_value"
   custom_key_2 = "custom_value_2"
+}
+
+# Enable endpoint creation
+enable_endpoint = false
+
+# Enable manual private link creation
+enable_manual_private_link = false
+
+# Booter configuration for advanced container bootstrapping (optional)
+booter = {
+  account_id = ""
+  region     = ""
+  prefix     = ""
+  image      = ""
 }

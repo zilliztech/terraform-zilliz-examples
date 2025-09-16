@@ -24,10 +24,16 @@ variable "vpc_id" {
 }
 
 
-variable "security_group_id" {
-  description = "Security group ID"
-  type        = string
-  default     = ""
+variable "cluster_additional_security_group_ids" {
+  description = "additional security group IDs for the cluster"
+  type        = list(string)
+  default     = []
+}
+
+variable "node_security_group_ids" {
+  description = "Security group name"
+  type        = list(string)
+  default     = []
 }
 
 variable "subnet_ids" {

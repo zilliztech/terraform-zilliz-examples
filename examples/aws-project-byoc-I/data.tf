@@ -22,9 +22,19 @@ locals {
   # Uses customer-provided VPC if available, otherwise uses newly created VPC from vpc module
   vpc_id = local.is_existing_vpc ? var.customer_vpc_id :module.vpc[0].vpc_id
   
-  # Security group ID selection for EKS cluster and worker nodes
-  # Uses customer-provided security group or creates new one via vpc module
-  security_group_id = local.is_existing_vpc ? var.customer_security_group_id : module.vpc[0].security_group_id
+  # Default security group ID selection based on customer preference
+  # default to empty string if customer provides their own VPC
+  # otherwise, uses the security group ID from the vpc module
+  default_security_group_id = local.is_existing_vpc ?  "" : module.vpc[0].security_group_id
+
+  # Private link security group IDs selection based on customer preference
+  private_link_security_group_ids = local.is_existing_vpc ? var.customer_private_link_security_group_ids : [local.default_security_group_id] 
+
+  # Cluster additional security group IDs selection based on customer preference
+  cluster_additional_security_group_ids = local.is_existing_vpc ? var.customer_cluster_additional_security_group_ids : [local.default_security_group_id]
+
+  # Node security group IDs selection based on customer preference
+  node_security_group_ids = local.is_existing_vpc ? var.customer_node_security_group_ids : [local.default_security_group_id]
   
   # Private subnet IDs for EKS worker nodes and database components
   # Selects between customer-provided subnets or newly created private subnets

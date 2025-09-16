@@ -30,10 +30,38 @@ variable "customer_vpc_id" {
 
 }
 
-variable "customer_security_group_id" {
-  description = "The ID of the security group for the customer VPC"
-  type        = string
-  default     = ""
+
+variable "customer_cluster_additional_security_group_ids" {
+  description = "additional security group IDs for the cluster"
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = var.customer_vpc_id == "" || length(var.customer_cluster_additional_security_group_ids) > 0
+    error_message = "customer_cluster_additional_security_group_ids cannot be empty when customer_vpc_id is provided."
+  }
+}
+
+variable "customer_node_security_group_ids" {
+  description = "security group IDs for the node group"
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = var.customer_vpc_id == "" || length(var.customer_node_security_group_ids) > 0
+    error_message = "customer_node_security_group_ids cannot be empty when customer_vpc_id is provided."
+  }
+}
+
+variable "customer_private_link_security_group_ids" {
+  description = "security group IDs for the private link"
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = var.customer_vpc_id == "" || length(var.customer_private_link_security_group_ids) > 0
+    error_message = "customer_private_link_security_group_ids cannot be empty when customer_vpc_id is provided."
+  }
 }
 
 variable "customer_private_subnet_ids" {
@@ -141,3 +169,4 @@ variable "booter" {
     image      = ""
   }
 }
+

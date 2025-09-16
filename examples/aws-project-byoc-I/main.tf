@@ -32,7 +32,7 @@ module "private_link" {
   region = local.region
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids
-  security_group_ids = [local.security_group_id]
+  security_group_ids = local.private_link_security_group_ids
   custom_tags = var.custom_tags
 }
 
@@ -41,7 +41,8 @@ module "eks" {
   prefix_name = local.prefix_name
   dataplane_id = local.dataplane_id
   region = local.region
-  security_group_id = local.security_group_id
+  cluster_additional_security_group_ids = local.cluster_additional_security_group_ids
+  node_security_group_ids = local.node_security_group_ids
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids
   customer_pod_subnet_ids = local.customer_pod_subnet_ids
@@ -62,6 +63,9 @@ module "eks" {
   // ecr
   customer_ecr = var.customer_ecr
   booter = var.booter
+
+  // depend on private link to establish agent tunnel connection
+  depends_on = [module.private_link]
 }
 
 
@@ -87,7 +91,7 @@ resource "zillizcloud_byoc_i_project" "this" {
     network = {
       vpc_id             = local.vpc_id
       subnet_ids         = local.subnet_ids
-      security_group_ids = [local.security_group_id]
+      security_group_ids = []
       vpc_endpoint_id    = local.byoc_endpoint
     }
     role_arn = {

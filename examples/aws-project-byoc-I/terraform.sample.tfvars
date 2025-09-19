@@ -34,9 +34,6 @@ customer_pod_subnet_ids = ["subnet-xxxxxxxxxxxxxxxxx"]
 # Defaults to customer_private_subnet_ids if not provided
 customer_eks_control_plane_private_subnet_ids = ["subnet-xxxxxxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyyyyyy"]
 
-# The IDs of the security group for the cluster, prerequsite: customer_vpc_id should be provided
-customer_cluster_additional_security_group_ids = ["sg-xxxxxxxxxxxxxxxxx"]
-
 # The IDs of the security group for the node group, prerequsite: customer_vpc_id should be provided
 customer_node_security_group_ids = ["sg-xxxxxxxxxxxxxxxxx"]
 

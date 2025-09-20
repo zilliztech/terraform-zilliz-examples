@@ -22,8 +22,11 @@ locals {
   # Uses customer-provided VPC if available, otherwise uses newly created VPC from vpc module
   vpc_id = local.is_existing_vpc ? var.customer_vpc_id :module.vpc[0].vpc_id
   
-
   # Private link security group IDs selection based on customer preference
+  # Uses customer-provided security groups if available, otherwise uses VPC module's default security group
+  # When using existing VPC: customer MUST provide private_link_security_group_ids (enforced by validation in variables.tf)
+  # CRITICAL: These security groups must allow agent pods to access the private link endpoint
+  # to ensure successful BYOC connection from customer's data plane to Zilliz cloud control plane
   private_link_security_group_ids = length(var.customer_private_link_security_group_ids) > 0 ? var.customer_private_link_security_group_ids : [module.vpc[0].security_group_id]
 
   # Node security group IDs selection based on customer preference

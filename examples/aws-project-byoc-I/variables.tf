@@ -31,11 +31,6 @@ variable "customer_vpc_id" {
 }
 
 
-variable "customer_cluster_additional_security_group_ids" {
-  description = "additional security group IDs for the cluster"
-  type        = list(string)
-  default     = []
-}
 
 variable "customer_node_security_group_ids" {
   description = "security group IDs for the node group"

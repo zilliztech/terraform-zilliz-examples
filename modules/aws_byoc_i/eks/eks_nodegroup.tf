@@ -28,9 +28,7 @@ resource "aws_eks_addon" "ebs_csi" {
   depends_on               = [aws_eks_node_group.core, aws_eks_addon.coredns]
 }
 
-data "aws_security_group" "node_security_group" {
-  id = var.node_security_group_ids[0]
-}
+
 
 # aws_launch_template.default:
 resource "aws_launch_template" "core" {
@@ -132,12 +130,7 @@ resource "aws_launch_template" "init" {
 
   depends_on = [ aws_iam_role_policy_attachment.maintenance_policy_attachment_2, aws_iam_role_policy_attachment.maintenance_policy_attachment_1 ]
 
-  lifecycle {
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
-  }
+
 }
 
 
@@ -242,12 +235,7 @@ resource "aws_launch_template" "diskann" {
     }, var.custom_tags)
   }
 
-  lifecycle {
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
-  }
+
 }
 
 
@@ -306,10 +294,7 @@ resource "aws_eks_node_group" "search" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
+
   }
 
   depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
@@ -361,10 +346,6 @@ resource "aws_eks_node_group" "core" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
   }
 
   depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
@@ -411,10 +392,7 @@ resource "aws_eks_node_group" "index" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
+
   }
 
   depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
@@ -462,10 +440,7 @@ resource "aws_eks_node_group" "fundamental" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
+
   }
 
   depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
@@ -517,10 +492,7 @@ resource "aws_eks_node_group" "init" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
+
   }
 
   depends_on = [aws_eks_addon.vpc-cni]

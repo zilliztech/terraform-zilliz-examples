@@ -41,7 +41,6 @@ module "eks" {
   prefix_name = local.prefix_name
   dataplane_id = local.dataplane_id
   region = local.region
-  cluster_additional_security_group_ids = local.cluster_additional_security_group_ids
   node_security_group_ids = local.node_security_group_ids
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids

@@ -8,7 +8,6 @@ locals {
   k8s_node_groups              = var.k8s_node_groups
   # Dataplane ID for resource naming
   dataplane_id      = var.dataplane_id
-  cluster_additional_security_group_ids = var.cluster_additional_security_group_ids
   node_security_group_ids = var.node_security_group_ids
   # VPC CIDR block
   eks_oidc_url            = replace(aws_eks_cluster.zilliz_byoc_cluster.identity[0].oidc[0].issuer, "https://", "")

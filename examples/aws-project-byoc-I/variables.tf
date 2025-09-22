@@ -27,10 +27,7 @@ variable "customer_vpc_id" {
   description = "The ID of the customer VPC"
   type        = string
   default     = ""
-
 }
-
-
 
 variable "customer_node_security_group_ids" {
   description = "security group IDs for the node group"
@@ -44,6 +41,18 @@ variable "customer_private_link_security_group_ids" {
   default     = []
 }
 
+variable "create_private_link_security_group" {
+  description = "Whether to create a new security group for the private link endpoint"
+  type        = bool
+  default     = false
+}
+
+variable "private_link_security_group_name" {
+  description = "The name of the security group for the private link, if create_private_link_security_group is true"
+  type        = string
+  default     = ""
+}
+
 variable "customer_private_subnet_ids" {
   description = "The IDs of the private subnets for the customer VPC"
   type        = list(string)
@@ -55,8 +64,6 @@ variable "customer_eks_control_plane_private_subnet_ids" {
   type        = list(string)
   default     = []
 }
-
-
 
 variable "customer_ecr" {
   description = "Customer ECR configuration containing account ID, region, and prefix"
@@ -115,7 +122,6 @@ variable "custom_tags" {
   type        = map(string)
   default     = {}
 }
-
 
 variable "enable_endpoint" {
   description = "Enable endpoint"

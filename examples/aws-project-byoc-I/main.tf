@@ -33,6 +33,8 @@ module "private_link" {
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids
   security_group_ids = local.private_link_security_group_ids
+  create_security_group = var.create_private_link_security_group
+  security_group_name = var.private_link_security_group_name
   custom_tags = var.custom_tags
 }
 
@@ -67,17 +69,12 @@ module "eks" {
   depends_on = [module.private_link]
 }
 
-
-
 resource "zillizcloud_byoc_i_project_agent" "this" {
   project_id    = local.project_id
   data_plane_id = local.data_plane_id
 
   depends_on = [module.eks]
 }
-
-
-
 
 resource "zillizcloud_byoc_i_project" "this" {
 

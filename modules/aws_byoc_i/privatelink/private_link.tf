@@ -1,4 +1,3 @@
-
 resource "aws_vpc_endpoint" "byoc_endpoint" {
   vpc_id              = var.vpc_id
   // get the vpce service id from the vpce_config
@@ -13,4 +12,6 @@ resource "aws_vpc_endpoint" "byoc_endpoint" {
     Vendor = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn
   }, var.custom_tags)
+
+  depends_on = [ aws_security_group.byoc_endpoint_sg ]
 }

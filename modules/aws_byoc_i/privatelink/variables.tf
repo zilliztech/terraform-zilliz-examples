@@ -8,12 +8,10 @@ variable "region" {
   type        = string
 }
 
-
 variable "dataplane_id" {
   description = "Dataplane ID"
   type        = string
 }
-
 
 variable "vpc_id" {
   description = "VPC ID"
@@ -25,10 +23,21 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
-
 variable "security_group_ids" {
   description = "Security group IDs"
   type        = list(string)
+}
+
+variable "create_security_group" {
+  description = "Whether to create a new security group for the private link endpoint"
+  type        = bool
+  default     = false
+}
+
+variable "security_group_name" {
+  description = "The name of the security group for the private link, if create_security_group is true"
+  type        = string
+  default     = ""
 }
 
 variable "custom_tags" {

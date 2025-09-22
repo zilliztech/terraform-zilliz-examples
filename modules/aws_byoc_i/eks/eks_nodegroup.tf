@@ -297,7 +297,7 @@ resource "aws_eks_node_group" "search" {
 
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
 }
 
 # aws_eks_node_group.core:
@@ -348,7 +348,7 @@ resource "aws_eks_node_group" "core" {
     ignore_changes = [scaling_config[0].desired_size]
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
 }
 
 # aws_eks_node_group.index:
@@ -395,7 +395,7 @@ resource "aws_eks_node_group" "index" {
 
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
 }
 
 # aws_eks_node_group.fundamental
@@ -443,10 +443,10 @@ resource "aws_eks_node_group" "fundamental" {
 
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
 }
 
-resource "time_sleep" "wait" {
+resource "time_sleep" "wait_init" {
   depends_on = [aws_eks_node_group.init]
 
   create_duration = "30s"
@@ -491,9 +491,49 @@ resource "aws_eks_node_group" "init" {
   }
 
   lifecycle {
-    ignore_changes = [scaling_config[0].desired_size]
-
+    ignore_changes = [scaling_config]
   }
 
   depends_on = [aws_eks_addon.vpc-cni]
+}
+
+resource "aws_eks_node_group" "init_finish" {
+  node_group_name  = aws_eks_node_group.init.node_group_name
+  ami_type         = "AL2023_x86_64_STANDARD"
+  capacity_type    = "ON_DEMAND"
+  cluster_name     = local.eks_cluster_name
+
+  instance_types = [
+    "t3.medium",
+  ]
+  labels = {
+    "zilliz-group-name" = "init"
+    "node-role/init" = "true"
+  }
+  node_role_arn          = local.eks_role.arn
+  subnet_ids             = local.subnet_ids
+  tags = merge({
+    "Vendor" = "zilliz-byoc"
+  }, var.custom_tags)
+  tags_all = merge({
+    "Vendor" = "zilliz-byoc"
+  }, var.custom_tags)
+  # version = "1.27"
+
+  launch_template {
+    id      = aws_launch_template.init.id
+    version = aws_launch_template.init.latest_version
+  }
+
+  scaling_config {
+    desired_size = 0
+    max_size     = 1
+    min_size     = 0
+  }
+
+  update_config {
+    max_unavailable_percentage = 33
+  }
+
+  depends_on = [ time_sleep.wait_init ]
 }

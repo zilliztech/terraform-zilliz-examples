@@ -40,6 +40,13 @@ customer_node_security_group_ids = ["sg-xxxxxxxxxxxxxxxxx"]
 # The IDs of the security group for the private link, prerequsite: customer_vpc_id should be provided
 customer_private_link_security_group_ids = ["sg-xxxxxxxxxxxxxxxxx"]
 
+# Whether to create a new security group for the private link endpoint
+create_private_link_security_group = false
+
+# The name of the security group for the private link, if create_private_link_security_group is true
+# If empty, uses "${dataplane_id}-endpoint-sg" as security group name
+private_link_security_group_name = "your-endpoint-sg-name"
+
 # The name of the customer bucket
 # If empty, uses "${dataplane_id}-milvus" as bucket name
 customer_bucket_name = "your-bucket-name"

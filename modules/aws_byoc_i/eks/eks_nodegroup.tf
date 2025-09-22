@@ -297,7 +297,7 @@ resource "aws_eks_node_group" "search" {
 
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
 }
 
 # aws_eks_node_group.core:
@@ -348,7 +348,7 @@ resource "aws_eks_node_group" "core" {
     ignore_changes = [scaling_config[0].desired_size]
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
 }
 
 # aws_eks_node_group.index:
@@ -395,7 +395,7 @@ resource "aws_eks_node_group" "index" {
 
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
 }
 
 # aws_eks_node_group.fundamental
@@ -443,10 +443,10 @@ resource "aws_eks_node_group" "fundamental" {
 
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
 }
 
-resource "time_sleep" "wait" {
+resource "time_sleep" "wait_init" {
   depends_on = [aws_eks_node_group.init]
 
   create_duration = "30s"
@@ -483,7 +483,7 @@ resource "aws_eks_node_group" "init" {
   scaling_config {
     desired_size = 1
     max_size     = 1
-    min_size     = 1
+    min_size     = 0
   }
 
   update_config {
@@ -491,8 +491,7 @@ resource "aws_eks_node_group" "init" {
   }
 
   lifecycle {
-    ignore_changes = [scaling_config[0].desired_size]
-
+    ignore_changes = [scaling_config]
   }
 
   depends_on = [aws_eks_addon.vpc-cni]

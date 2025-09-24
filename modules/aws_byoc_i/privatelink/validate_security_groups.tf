@@ -1,15 +1,16 @@
 # Data source to fetch security group details for validation
 data "aws_security_group" "input_sg" {
-  for_each = toset(var.security_group_ids)
-  id       = each.value
+  # Use indexes (0..n-1) as stable keys. Length is known; element values may not be.
+  for_each = { for idx, _ in var.security_group_ids : tostring(idx) => true }
+  id       = var.security_group_ids[tonumber(each.key)]
 }
 
-# Local value to validate security group tags
 locals {
-  # Check if all security groups have the required Vendor tag
+  # Build the list of SG IDs that fail the tag check
   invalid_security_groups = [
-    for sg_id in var.security_group_ids:
-    sg_id if lookup(data.aws_security_group.input_sg[sg_id].tags, "Vendor", "") != "zilliz-byoc"
+    for idx, sg in data.aws_security_group.input_sg :
+    var.security_group_ids[tonumber(idx)]
+    if try(sg.tags["Vendor"], "") != "zilliz-byoc"
   ]
 }
 

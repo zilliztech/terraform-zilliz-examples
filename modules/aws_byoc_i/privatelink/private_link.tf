@@ -4,7 +4,7 @@ resource "aws_vpc_endpoint" "byoc_endpoint" {
   service_name        = "com.amazonaws.vpce.${var.region}.${local.config.vpce_service_ids[var.region]}"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = var.subnet_ids
-  security_group_ids  = var.security_group_ids
+  security_group_ids  = local.security_group_ids
   private_dns_enabled = true
 
   tags = merge({

@@ -268,7 +268,7 @@ resource "aws_eks_node_group" "search" {
     "node-role/nvme-quota" = "200"
   }
   node_group_name_prefix = "${local.prefix_name}-search-"
-  node_role_arn          = local.eks_role.arn
+  node_role_arn          = local.eks_node_role_arn
   subnet_ids             = local.subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
@@ -319,7 +319,7 @@ resource "aws_eks_node_group" "core" {
     "capacity-type"         = "ON_DEMAND"
   }
   node_group_name_prefix = "${local.prefix_name}-core-"
-  node_role_arn          = local.eks_role.arn
+  node_role_arn          = local.eks_node_role_arn
   subnet_ids             = local.subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
@@ -365,7 +365,7 @@ resource "aws_eks_node_group" "index" {
     "node-role/index-pool" = "true"
   }
   node_group_name_prefix = "${local.prefix_name}-index-"
-  node_role_arn          = local.eks_role.arn
+  node_role_arn          = local.eks_node_role_arn
   subnet_ids             = local.subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
@@ -413,7 +413,7 @@ resource "aws_eks_node_group" "fundamental" {
     "node-role/milvus"  = "true"
   }
   node_group_name_prefix = "${local.prefix_name}-fundamental-"
-  node_role_arn          = local.eks_role.arn
+  node_role_arn          = local.eks_node_role_arn
   subnet_ids             = local.subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
@@ -465,7 +465,7 @@ resource "aws_eks_node_group" "init" {
     "node-role/init" = "true"
   }
   node_group_name_prefix = "${local.prefix_name}-init-"
-  node_role_arn          = local.eks_role.arn
+  node_role_arn          = local.eks_node_role_arn
   subnet_ids             = local.subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"

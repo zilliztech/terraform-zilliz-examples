@@ -83,3 +83,22 @@ custom_tags = {
   custom_key   = "custom_value"
   custom_key_2 = "custom_value_2"
 }
+
+# Minimal roles configuration for EKS role separation
+# This feature allows you to use separate IAM roles for EKS cluster and node groups
+# instead of the default unified role, providing better security isolation
+minimal_roles = {
+  enabled = false  # Set to true to enable minimal roles feature
+  
+  # Cluster role configuration (for EKS control plane)
+  cluster_role = {
+    name = ""  # Custom name for cluster role (optional)
+    # use_existing_arn = "arn:aws:iam::123456789012:role/your-existing-cluster-role"  # Use existing role by ARN (optional)
+  }
+  
+  # Node role configuration (for EKS worker nodes)
+  node_role = {
+    name = ""  # Custom name for node role (optional)
+    # use_existing_arn = "arn:aws:iam::123456789012:role/your-existing-node-role"  # Use existing role by ARN (optional)
+  }
+}

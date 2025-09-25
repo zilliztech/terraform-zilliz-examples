@@ -1,4 +1,5 @@
 resource "aws_iam_role" "eks_role" {
+  count = var.minimal_roles.enabled ? 0 : 1
   name = local.eks_role_name
 
   tags = merge({
@@ -37,33 +38,39 @@ resource "aws_iam_role" "eks_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cni_policy_attachment" {
+  count      = var.minimal_roles.enabled ? 0 : 1
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.eks_role.name
+  role       = aws_iam_role.eks_role[0].name
 }
 
 resource "aws_iam_role_policy_attachment" "eks_ecr_policy_attachment" {
+  count      = var.minimal_roles.enabled ? 0 : 1
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role       = aws_iam_role.eks_role.name
+  role       = aws_iam_role.eks_role[0].name
 }
 
 resource "aws_iam_role_policy_attachment" "eks_worker_node_policy_attachment" {
+  count      = var.minimal_roles.enabled ? 0 : 1
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-  role       = aws_iam_role.eks_role.name
+  role       = aws_iam_role.eks_role[0].name
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy_attachment" {
+  count      = var.minimal_roles.enabled ? 0 : 1
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.eks_role.name
+  role       = aws_iam_role.eks_role[0].name
 }
 
 resource "aws_iam_role_policy_attachment" "eks_vpc_policy_attachment" {
+  count      = var.minimal_roles.enabled ? 0 : 1
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
-  role       = aws_iam_role.eks_role.name
+  role       = aws_iam_role.eks_role[0].name
 }
 
 resource "aws_iam_role_policy_attachment" "eks_assume" {
+  count      = var.minimal_roles.enabled ? 0 : 1
   policy_arn = aws_iam_policy.node_assume_role_policy.arn
-  role       = aws_iam_role.eks_role.name
+  role       = aws_iam_role.eks_role[0].name
 }
 
 resource "aws_iam_policy" "node_assume_role_policy" {

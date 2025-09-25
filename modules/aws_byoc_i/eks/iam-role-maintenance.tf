@@ -22,7 +22,7 @@ resource "aws_iam_role" "maintenance_role" {
       {
         "Effect" : "Allow",
         "Principal" : {
-          "AWS" : local.eks_role.arn
+          "AWS" : local.eks_cluster_role_arn
         },
         "Action" : "sts:AssumeRole",
         "Condition" : {
@@ -66,7 +66,7 @@ resource "aws_iam_policy" "maintenance_policy_1" {
           "iam:PassRole"
         ],
         "Resource" : [
-          aws_iam_role.eks_role.arn
+          local.eks_cluster_role_arn
         ],
         "Condition" : {
           "StringEquals" : {

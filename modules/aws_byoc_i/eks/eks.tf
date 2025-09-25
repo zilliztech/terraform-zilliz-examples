@@ -8,7 +8,7 @@ resource "aws_eks_cluster" "zilliz_byoc_cluster" {
   enabled_cluster_log_types = []
   name = local.eks_cluster_name
 
-  role_arn = local.eks_role.arn
+  role_arn = local.eks_cluster_role_arn
   tags = merge({
     "Vendor" = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn

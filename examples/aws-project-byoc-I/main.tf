@@ -63,6 +63,8 @@ module "eks" {
   // ecr
   customer_ecr = var.customer_ecr
   booter = var.booter
+  // minimal roles configuration
+  minimal_roles = var.minimal_roles
 
   // depend on private link to establish agent tunnel connection
   depends_on = [module.private_link]

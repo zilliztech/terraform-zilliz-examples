@@ -1,5 +1,5 @@
 module "aws_bucket" {
-  source = "../../modules/aws_bucket"
+  source = "../../modules/aws_byoc/aws_bucket"
 
   region      = var.region
   name            = var.name
@@ -9,7 +9,7 @@ module "aws_bucket" {
 data "zillizcloud_external_id" "current" {}
 
 module "aws_iam" {
-  source = "../../modules/aws_iam"
+  source = "../../modules/aws_byoc/aws_iam"
 
   bucketName = module.aws_bucket.s3_bucket_ids
   name       = var.name
@@ -18,7 +18,7 @@ module "aws_iam" {
 }
 
 module "aws_vpc" {
-  source = "../../modules/aws_vpc"
+  source = "../../modules/aws_byoc/aws_vpc"
 
   region          = var.region
   vpc_cidr            = var.vpc_cidr

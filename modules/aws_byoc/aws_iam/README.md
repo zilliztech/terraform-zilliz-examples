@@ -18,7 +18,7 @@ This Terraform module creates and manages the necessary IAM roles and policies f
 
 ```hcl
 module "aws_iam" {
-  source = "path/to/modules/aws_iam"
+  source = "path/to/modules/aws_byoc/aws_iam"
 
   name         = "your-project-name"
   ExternalId   = "your-external-id"

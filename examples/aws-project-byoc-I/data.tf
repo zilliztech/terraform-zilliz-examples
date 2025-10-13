@@ -36,6 +36,10 @@ locals {
   # Selects between customer-provided subnets or newly created private subnets
   subnet_ids =  local.is_existing_vpc ? var.customer_private_subnet_ids : module.vpc[0].private_subnets
   
+  # Private link subnet IDs selection with fallback logic
+  # Priority: 1) customer_private_link_subnet_ids, 2) customer_private_subnet_ids, 3) default subnets
+  private_link_subnet_ids = length(var.customer_private_link_subnet_ids) > 0 ? var.customer_private_link_subnet_ids : (local.is_existing_vpc ? var.customer_private_subnet_ids : module.vpc[0].private_subnets)
+  
   # Additional subnet IDs specifically for Kubernetes pod networking (optional)
   # Only used when customer provides existing VPC with dedicated pod subnets
   customer_pod_subnet_ids = local.is_existing_vpc ? var.customer_pod_subnet_ids : []

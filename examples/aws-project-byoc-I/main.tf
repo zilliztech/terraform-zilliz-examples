@@ -31,7 +31,7 @@ module "private_link" {
   dataplane_id = local.dataplane_id
   region = local.region
   vpc_id = local.vpc_id
-  subnet_ids = local.subnet_ids
+  subnet_ids = local.private_link_subnet_ids
   security_group_ids = local.private_link_security_group_ids
   create_security_group = var.create_private_link_security_group
   security_group_name = var.private_link_security_group_name

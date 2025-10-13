@@ -78,7 +78,7 @@ customer_maintenance_role_name = "your-maintenance-role-name"
 # Customer ECR configuration containing account ID, region, and prefix
 customer_ecr = {
   ecr_account_id = "965570967084"
-  ecr_region     = "us-west-2"
+  ecr_region     = ""
   ecr_prefix     = "zilliz-byoc"
 }
 

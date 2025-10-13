@@ -82,7 +82,7 @@ variable "customer_ecr" {
 
   default = {
     ecr_account_id = "965570967084"
-    ecr_region     = "us-west-2"
+    ecr_region     = ""
     ecr_prefix     = "zilliz-byoc"
   }
 }

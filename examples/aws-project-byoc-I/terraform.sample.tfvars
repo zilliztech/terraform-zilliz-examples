@@ -34,14 +34,18 @@ customer_pod_subnet_ids = ["subnet-xxxxxxxxxxxxxxxxx"]
 # Defaults to customer_private_subnet_ids if not provided
 customer_eks_control_plane_private_subnet_ids = ["subnet-xxxxxxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyyyyyy"]
 
-# The IDs of the security group for the cluster, prerequsite: customer_vpc_id should be provided
-customer_cluster_additional_security_group_ids = ["sg-xxxxxxxxxxxxxxxxx"]
-
 # The IDs of the security group for the node group, prerequsite: customer_vpc_id should be provided
 customer_node_security_group_ids = ["sg-xxxxxxxxxxxxxxxxx"]
 
 # The IDs of the security group for the private link, prerequsite: customer_vpc_id should be provided
 customer_private_link_security_group_ids = ["sg-xxxxxxxxxxxxxxxxx"]
+
+# Whether to create a new security group for the private link endpoint
+create_private_link_security_group = false
+
+# The name of the security group for the private link, if create_private_link_security_group is true
+# If empty, uses "${dataplane_id}-endpoint-sg" as security group name
+private_link_security_group_name = "your-endpoint-sg-name"
 
 # The name of the customer bucket
 # If empty, uses "${dataplane_id}-milvus" as bucket name
@@ -78,4 +82,23 @@ customer_ecr = {
 custom_tags = {
   custom_key   = "custom_value"
   custom_key_2 = "custom_value_2"
+}
+
+# Minimal roles configuration for EKS role separation
+# This feature allows you to use separate IAM roles for EKS cluster and node groups
+# instead of the default unified role, providing better security isolation
+minimal_roles = {
+  enabled = false  # Set to true to enable minimal roles feature
+  
+  # Cluster role configuration (for EKS control plane)
+  cluster_role = {
+    name = ""  # Custom name for cluster role (optional)
+    # use_existing_arn = "arn:aws:iam::123456789012:role/your-existing-cluster-role"  # Use existing role by ARN (optional)
+  }
+  
+  # Node role configuration (for EKS worker nodes)
+  node_role = {
+    name = ""  # Custom name for node role (optional)
+    # use_existing_arn = "arn:aws:iam::123456789012:role/your-existing-node-role"  # Use existing role by ARN (optional)
+  }
 }

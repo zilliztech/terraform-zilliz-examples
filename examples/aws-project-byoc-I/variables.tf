@@ -27,14 +27,6 @@ variable "customer_vpc_id" {
   description = "The ID of the customer VPC"
   type        = string
   default     = ""
-
-}
-
-
-variable "customer_cluster_additional_security_group_ids" {
-  description = "additional security group IDs for the cluster"
-  type        = list(string)
-  default     = []
 }
 
 variable "customer_node_security_group_ids" {
@@ -49,6 +41,18 @@ variable "customer_private_link_security_group_ids" {
   default     = []
 }
 
+variable "create_private_link_security_group" {
+  description = "Whether to create a new security group for the private link endpoint"
+  type        = bool
+  default     = false
+}
+
+variable "private_link_security_group_name" {
+  description = "The name of the security group for the private link, if create_private_link_security_group is true"
+  type        = string
+  default     = ""
+}
+
 variable "customer_private_subnet_ids" {
   description = "The IDs of the private subnets for the customer VPC"
   type        = list(string)
@@ -60,8 +64,6 @@ variable "customer_eks_control_plane_private_subnet_ids" {
   type        = list(string)
   default     = []
 }
-
-
 
 variable "customer_ecr" {
   description = "Customer ECR configuration containing account ID, region, and prefix"
@@ -121,7 +123,6 @@ variable "custom_tags" {
   default     = {}
 }
 
-
 variable "enable_endpoint" {
   description = "Enable endpoint"
   type        = bool
@@ -148,6 +149,34 @@ variable "booter" {
     region     = ""
     prefix     = ""
     image      = ""
+  }
+}
+
+variable "minimal_roles" {
+  description = "Minimal role configuration for EKS role separation and customization"
+  type = object({
+    enabled = optional(bool, false)
+    # Cluster role configuration
+    cluster_role = optional(object({
+      name    = optional(string, "")
+      use_existing_arn = optional(string, "")  # Use existing role by ARN
+    }), {})
+    # Node role configuration  
+    node_role = optional(object({
+      name    = optional(string, "")
+      use_existing_arn = optional(string, "")  # Use existing role by ARN
+    }), {})
+  })
+  default = {
+    enabled = false
+  }
+  
+  validation {
+    condition = alltrue([
+      length(var.minimal_roles.cluster_role.use_existing_arn) == 0 || can(regex("^arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9+=,.@_-]+$", var.minimal_roles.cluster_role.use_existing_arn)),
+      length(var.minimal_roles.node_role.use_existing_arn) == 0 || can(regex("^arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9+=,.@_-]+$", var.minimal_roles.node_role.use_existing_arn))
+    ])
+    error_message = "use_existing_arn must be a valid IAM role ARN format: arn:aws:iam::ACCOUNT:role/ROLE_NAME"
   }
 }
 

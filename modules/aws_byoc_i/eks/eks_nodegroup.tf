@@ -28,9 +28,7 @@ resource "aws_eks_addon" "ebs_csi" {
   depends_on               = [aws_eks_node_group.core, aws_eks_addon.coredns]
 }
 
-data "aws_security_group" "node_security_group" {
-  id = var.node_security_group_ids[0]
-}
+
 
 # aws_launch_template.default:
 resource "aws_launch_template" "core" {
@@ -132,12 +130,7 @@ resource "aws_launch_template" "init" {
 
   depends_on = [ aws_iam_role_policy_attachment.maintenance_policy_attachment_2, aws_iam_role_policy_attachment.maintenance_policy_attachment_1 ]
 
-  lifecycle {
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
-  }
+
 }
 
 
@@ -242,12 +235,7 @@ resource "aws_launch_template" "diskann" {
     }, var.custom_tags)
   }
 
-  lifecycle {
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
-  }
+
 }
 
 
@@ -280,7 +268,7 @@ resource "aws_eks_node_group" "search" {
     "node-role/nvme-quota" = "200"
   }
   node_group_name_prefix = "${local.prefix_name}-search-"
-  node_role_arn          = local.eks_role.arn
+  node_role_arn          = local.eks_node_role_arn
   subnet_ids             = local.subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
@@ -306,13 +294,10 @@ resource "aws_eks_node_group" "search" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
+
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
 }
 
 # aws_eks_node_group.core:
@@ -334,7 +319,7 @@ resource "aws_eks_node_group" "core" {
     "capacity-type"         = "ON_DEMAND"
   }
   node_group_name_prefix = "${local.prefix_name}-core-"
-  node_role_arn          = local.eks_role.arn
+  node_role_arn          = local.eks_node_role_arn
   subnet_ids             = local.subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
@@ -361,13 +346,9 @@ resource "aws_eks_node_group" "core" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
 }
 
 # aws_eks_node_group.index:
@@ -384,7 +365,7 @@ resource "aws_eks_node_group" "index" {
     "node-role/index-pool" = "true"
   }
   node_group_name_prefix = "${local.prefix_name}-index-"
-  node_role_arn          = local.eks_role.arn
+  node_role_arn          = local.eks_node_role_arn
   subnet_ids             = local.subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
@@ -411,13 +392,10 @@ resource "aws_eks_node_group" "index" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
+
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
 }
 
 # aws_eks_node_group.fundamental
@@ -435,7 +413,7 @@ resource "aws_eks_node_group" "fundamental" {
     "node-role/milvus"  = "true"
   }
   node_group_name_prefix = "${local.prefix_name}-fundamental-"
-  node_role_arn          = local.eks_role.arn
+  node_role_arn          = local.eks_node_role_arn
   subnet_ids             = local.subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
@@ -462,16 +440,13 @@ resource "aws_eks_node_group" "fundamental" {
 
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
+
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait]
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
 }
 
-resource "time_sleep" "wait" {
+resource "time_sleep" "wait_init" {
   depends_on = [aws_eks_node_group.init]
 
   create_duration = "30s"
@@ -490,7 +465,7 @@ resource "aws_eks_node_group" "init" {
     "node-role/init" = "true"
   }
   node_group_name_prefix = "${local.prefix_name}-init-"
-  node_role_arn          = local.eks_role.arn
+  node_role_arn          = local.eks_node_role_arn
   subnet_ids             = local.subnet_ids
   tags = merge({
     "Vendor" = "zilliz-byoc"
@@ -508,7 +483,7 @@ resource "aws_eks_node_group" "init" {
   scaling_config {
     desired_size = 1
     max_size     = 1
-    min_size     = 1
+    min_size     = 0
   }
 
   update_config {
@@ -516,11 +491,7 @@ resource "aws_eks_node_group" "init" {
   }
 
   lifecycle {
-    ignore_changes = [scaling_config[0].desired_size]
-    precondition {
-      condition     = try(data.aws_security_group.node_security_group.tags["Vendor"], "") == "zilliz-byoc"
-      error_message = "tag Vendor=zilliz-byoc is required for the node security group"
-    }
+    ignore_changes = [scaling_config]
   }
 
   depends_on = [aws_eks_addon.vpc-cni]

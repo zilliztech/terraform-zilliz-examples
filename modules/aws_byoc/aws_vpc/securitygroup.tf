@@ -57,4 +57,9 @@ resource "aws_security_group" "zilliz_byoc_sg" {
     Name = "${var.name}-sg"
     Vendor = "zilliz-byoc"
   }
+  lifecycle {
+      ignore_changes = [
+        ingress,
+      ]
+  }
 }

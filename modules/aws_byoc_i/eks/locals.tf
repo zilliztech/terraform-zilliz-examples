@@ -8,13 +8,26 @@ locals {
   k8s_node_groups              = var.k8s_node_groups
   # Dataplane ID for resource naming
   dataplane_id      = var.dataplane_id
-  cluster_additional_security_group_ids = var.cluster_additional_security_group_ids
   node_security_group_ids = var.node_security_group_ids
   # VPC CIDR block
   eks_oidc_url            = replace(aws_eks_cluster.zilliz_byoc_cluster.identity[0].oidc[0].issuer, "https://", "")
-  eks_role                = aws_iam_role.eks_role
+  eks_role                = var.minimal_roles.enabled ? null : aws_iam_role.eks_role[0]
   maintenance_role        = aws_iam_role.maintenance_role
   eks_addon_role          = aws_iam_role.eks_addon_role
+  
+  # Minimal roles - simplified role references
+  eks_cluster_role = var.minimal_roles.enabled ? (
+    length(var.minimal_roles.cluster_role.use_existing_arn) > 0 ? data.aws_iam_role.external_cluster_role[0] : aws_iam_role.eks_cluster_role[0]
+  ) : null
+  
+  eks_node_role = var.minimal_roles.enabled ? (
+    length(var.minimal_roles.node_role.use_existing_arn) > 0 ? data.aws_iam_role.external_node_role[0] : aws_iam_role.eks_node_role[0]
+  ) : null
+  
+  # Unified role selection for EKS resources
+  # When minimal_roles is enabled, use dedicated roles; otherwise use the original unified role
+  eks_cluster_role_arn = var.minimal_roles.enabled ? local.eks_cluster_role.arn : local.eks_role.arn
+  eks_node_role_arn    = var.minimal_roles.enabled ? local.eks_node_role.arn : local.eks_role.arn
   eks_cluster_oidc_issuer = aws_eks_cluster.zilliz_byoc_cluster.identity[0].oidc[0].issuer
   bucket_id               = var.s3_bucket_id
 
@@ -24,6 +37,15 @@ locals {
   eks_addon_role_name   = length(var.customer_eks_addon_role_name) > 0 ? var.customer_eks_addon_role_name : "${local.prefix_name}-addon-role"
   maintenance_role_name = length(var.customer_maintenance_role_name) > 0 ? var.customer_maintenance_role_name : "${local.prefix_name}-maintenance-role"
   storage_role_name     = length(var.customer_storage_role_name) > 0 ? var.customer_storage_role_name : "${local.prefix_name}-storage-role"
+  
+  // Minimal roles naming (only used when enabled and creating new roles)
+  minimal_cluster_role_name = var.minimal_roles.enabled && length(var.minimal_roles.cluster_role.use_existing_arn) == 0 ? (
+    length(var.minimal_roles.cluster_role.name) > 0 ? var.minimal_roles.cluster_role.name : "${local.prefix_name}-eks-cluster-role"
+  ) : "${local.prefix_name}-eks-cluster-role"  # fallback for resource creation
+  
+  minimal_node_role_name = var.minimal_roles.enabled && length(var.minimal_roles.node_role.use_existing_arn) == 0 ? (
+    length(var.minimal_roles.node_role.name) > 0 ? var.minimal_roles.node_role.name : "${local.prefix_name}-eks-node-role"
+  ) : "${local.prefix_name}-eks-node-role"  # fallback for resource creation
 
   eks_cluster_oidc_issuer_thumbprint = local.config.eks_cluster_oidc_issuer_thumbprint[var.region]
 

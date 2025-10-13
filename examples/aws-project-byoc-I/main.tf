@@ -33,6 +33,8 @@ module "private_link" {
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids
   security_group_ids = local.private_link_security_group_ids
+  create_security_group = var.create_private_link_security_group
+  security_group_name = var.private_link_security_group_name
   custom_tags = var.custom_tags
 }
 
@@ -41,7 +43,6 @@ module "eks" {
   prefix_name = local.prefix_name
   dataplane_id = local.dataplane_id
   region = local.region
-  cluster_additional_security_group_ids = local.cluster_additional_security_group_ids
   node_security_group_ids = local.node_security_group_ids
   vpc_id = local.vpc_id
   subnet_ids = local.subnet_ids
@@ -63,12 +64,12 @@ module "eks" {
   // ecr
   customer_ecr = var.customer_ecr
   booter = var.booter
+  // minimal roles configuration
+  minimal_roles = var.minimal_roles
 
   // depend on private link to establish agent tunnel connection
   depends_on = [module.private_link]
 }
-
-
 
 resource "zillizcloud_byoc_i_project_agent" "this" {
   project_id    = local.project_id
@@ -76,9 +77,6 @@ resource "zillizcloud_byoc_i_project_agent" "this" {
 
   depends_on = [module.eks]
 }
-
-
-
 
 resource "zillizcloud_byoc_i_project" "this" {
 

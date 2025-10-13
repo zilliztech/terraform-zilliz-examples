@@ -23,13 +23,6 @@ variable "vpc_id" {
   default     = ""
 }
 
-
-variable "cluster_additional_security_group_ids" {
-  description = "additional security group IDs for the cluster"
-  type        = list(string)
-  default     = []
-}
-
 variable "node_security_group_ids" {
   description = "Security group name"
   type        = list(string)
@@ -218,5 +211,33 @@ variable "booter" {
     region     = ""
     prefix     = ""
     image      = ""
+  }
+}
+
+variable "minimal_roles" {
+  description = "Minimal role configuration for EKS role separation and customization"
+  type = object({
+    enabled = optional(bool, false)
+    # Cluster role configuration
+    cluster_role = optional(object({
+      name    = optional(string, "")
+      use_existing_arn = optional(string, "")  # Use existing role by ARN
+    }), {})
+    # Node role configuration  
+    node_role = optional(object({
+      name    = optional(string, "")
+      use_existing_arn = optional(string, "")  # Use existing role by ARN
+    }), {})
+  })
+  default = {
+    enabled = false
+  }
+  
+  validation {
+    condition = alltrue([
+      length(var.minimal_roles.cluster_role.use_existing_arn) == 0 || can(regex("^arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9+=,.@_-]+$", var.minimal_roles.cluster_role.use_existing_arn)),
+      length(var.minimal_roles.node_role.use_existing_arn) == 0 || can(regex("^arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9+=,.@_-]+$", var.minimal_roles.node_role.use_existing_arn))
+    ])
+    error_message = "use_existing_arn must be a valid IAM role ARN format: arn:aws:iam::ACCOUNT:role/ROLE_NAME"
   }
 }

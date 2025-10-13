@@ -26,6 +26,10 @@ customer_vpc_id = "vpc-xxxxxxxxxxxxxxxxx"
 # The IDs of the private subnets for the customer VPC, prerequsite: customer_vpc_id should be provided
 customer_private_subnet_ids = ["subnet-xxxxxxxxxxxxxxxxx"]
 
+# The IDs of the private subnets for the private link endpoint
+# If not provided, will use customer_private_subnet_ids or default subnets
+customer_private_link_subnet_ids = ["subnet-xxxxxxxxxxxxxxxxx"]
+
 # The IDs of the pod subnets for the customer VPC
 customer_pod_subnet_ids = ["subnet-xxxxxxxxxxxxxxxxx"]
 

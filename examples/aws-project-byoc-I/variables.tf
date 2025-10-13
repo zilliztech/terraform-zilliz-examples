@@ -59,6 +59,12 @@ variable "customer_private_subnet_ids" {
   default     = []
 }
 
+variable "customer_private_link_subnet_ids" {
+  description = "The IDs of the private subnets for the private link endpoint. If not provided, will use customer_private_subnet_ids or default subnets"
+  type        = list(string)
+  default     = []
+}
+
 variable "customer_eks_control_plane_private_subnet_ids" {
   description = "The IDs of the private subnets for the customer's EKS control plane, must be in at least two different availability zones. Default to use customer_private_subnet_ids if not provided"
   type        = list(string)

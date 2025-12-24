@@ -557,3 +557,51 @@ resource "aws_iam_policy" "aws_ebs_csi_controller_policy" {
 output "eks_role_arn" {
   value = aws_iam_role.eks_role.arn
 }
+
+# https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html
+resource "aws_iam_policy" "aws_ebs_csi_kms_policy" {
+  count       = var.enable_ebs_kms ? 1 : 0
+  name        = "zilliz-byoc-${var.name}-ebs-csi-kms-policy"
+  description = "policy for ebs csi kms"
+  tags = {
+    Vendor = "zilliz-byoc"
+  }
+  policy = jsonencode({
+    "Version":"2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "kms:CreateGrant",
+          "kms:ListGrants",
+          "kms:RevokeGrant"
+        ],
+        "Resource": [var.ebs_kms_key_arn],
+        "Condition": {
+          "Bool": {
+            "kms:GrantIsForAWSResource": "true"
+          }
+        }
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey"
+        ],
+        "Resource": [var.ebs_kms_key_arn]
+      }
+    ]
+  })
+}
+
+
+
+resource "aws_iam_role_policy_attachment" "ebs_csi_kms_policy_attachment" {
+  count      = var.enable_ebs_kms ? 1 : 0
+  policy_arn = aws_iam_policy.aws_ebs_csi_kms_policy[0].arn
+  role       = aws_iam_role.eks_role.name
+}

@@ -112,5 +112,6 @@ locals {
   ext_config = {
     eks_cluster_name = module.eks.eks_cluster_name
     ecr = var.customer_ecr
+    ebs_kms_key_arn = var.enable_ebs_kms ? var.ebs_kms_key_arn : null
   }
 }

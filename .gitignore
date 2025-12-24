@@ -31,3 +31,8 @@ terraform.rc
 
 # Ignore VS Code settings
 .vscode/
+
+
+**/test-module
+# Ignore zip files
+**/*.zip

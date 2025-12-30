@@ -1,85 +1,71 @@
-# Quick Start Guide for Zilliz BYOC
+# Zilliz BYOC Terraform Examples
 
-This guide will walk you through downloading Terraform CLI, setting up the environment, and applying Terraform configuration for creating all the dependencies required by Zilliz BYOC.
+This repository contains Terraform examples and reusable modules for deploying Zilliz Cloud Bring Your Own Cloud (BYOC) projects across multiple cloud providers.
 
-## 1. Install Terraform CLI
+## Quick Start
 
-Before you start, you need to install Terraform CLI on your system. Follow the official installation guide for your operating system:
-[Terraform CLI Installation Guide](https://developer.hashicorp.com/terraform/downloads)
+1. **Browse available examples**: See [`examples/`](./examples/) directory
+2. **Choose your deployment type**: AWS, GCP, or Azure
+3. **Follow the example-specific guide**: Each example includes detailed README
+4. **Deploy**: `terraform init && terraform plan && terraform apply`
 
-[Configuring Authentication (Using AWS as an Example)](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/aws-build)
+## What's Included
 
+- **Examples**: Ready-to-use Terraform configurations for different deployment scenarios
+- **Modules**: Reusable Terraform modules for common infrastructure components
+- **IAM Policies**: Policy templates for required permissions
+- **Documentation**: Step-by-step guides and best practices
 
-## 2. Quick Start
+## Examples
 
-##### 2.1 Clone the Project Repository
-First, clone the project repository to your local environment:
-```
-git clone https://github.com/zilliztech/zilliz-byoc-prepare.git
-cd zilliz-byoc-prepare/byoc-prepare
-```
+See [`examples/README.md`](./examples/README.md) for complete documentation of all available examples.
 
-##### 2.2 Configure terraform.tfvars.json
-Edit the terraform.tfvars.json file to specify the required variables. Below is an explanation of the variables you need to configure:
+**Available Examples**:
+- **AWS BYOC-I** - Customer-managed VPC with full customization
+- **AWS BYOC Standard** - Automated full-stack deployment
+- **AWS BYOC Manual** - Deployment with existing infrastructure
+- **GCP BYOC Manual** - Google Cloud Platform deployment
+- **Azure BYOC-I** - Azure deployment (coming soon)
 
-`region`: AWS region where resources will be deployed (e.g., us-west-2).
+## Modules
 
-`vpc_cidr`: CIDR block for the VPC (e.g., 10.0.0.0/16).
+Reusable Terraform modules are available in [`modules/`](./modules/):
 
-`name`: A unique name for the BYOC project.
+- **AWS**: `aws_byoc/` and `aws_byoc_i/` modules
+- **GCP**: `gcp/` modules (VPC, GCS, GKE, IAM, PrivateLink)
+- **Azure**: `azure/` modules (coming soon)
 
-`ExternalId`: The external ID provided by the Zilliz console.
+Each module includes its own documentation.
 
-An example of terraform.tfvars.json:
-```
-{
-  "region": "us-west-2",
-  "vpc_cidr": "10.0.0.0/16",
-  "name": "my-byoc-project",
-  "ExternalId": "example-external-id"
-}
-```
-##### 2.3 Initialize and Apply Terraform Configuration
-Run the following commands to initialize the Terraform environment and apply the configuration:
+## Prerequisites
 
-Initialize Terraform:
+- **Terraform CLI** (>= 1.0.0) - [Install Guide](https://developer.hashicorp.com/terraform/downloads)
+- **Cloud Provider Credentials** - AWS/GCP/Azure configured
+- **Zilliz Cloud Account** - BYOC organization access and API key
 
-`terraform init`
+See example-specific README files for detailed prerequisites and IAM permission requirements.
 
-Verify those resources will be created by Terraform:
+## Documentation
 
-`terraform plan`
+- **[Examples Index](./examples/README.md)** - Overview and comparison of all examples
+- **[AWS BYOC-I Guide](./examples/aws-project-byoc-I/README.md)** - Detailed deployment guide
+- **[AWS IAM Permissions](./examples/aws-project-byoc-I/terraform-permissions/README.md)** - Required IAM policies
+- **[AWS Requirements](./examples/AWS-Requirements.md)** - AWS deployment requirements
 
-Apply the Configuration:
+## Resources
 
-`terraform apply`
+- [Zilliz Cloud Terraform Provider](https://registry.terraform.io/providers/zilliztech/zillizcloud/latest)
+- [Zilliz Cloud Documentation](https://docs.zilliz.com/)
+- [Terraform Documentation](https://developer.hashicorp.com/terraform/docs)
 
-Review the plan when prompted and type yes to confirm and proceed with the resource creation.
+## Support
 
-##### 3. Verify Deployment
+For issues or questions:
+1. Check the example-specific README files
+2. Review cloud provider requirements
+3. Consult [Zilliz Cloud Documentation](https://docs.zilliz.com/)
+4. Contact Zilliz Support
 
-After the terraform apply command completes, verify that all resources have been successfully created. You can check the AWS Management Console or use the Terraform state output for confirmation.
+## License
 
-An example of output:
-
-```
-bucket_name = "byoc-name-milvus"
-cross_account_role_arn = "arn:aws:iam::xxxxxxxxxxxx:role/zilliz-byoc-byoc-name-cross-account-role"
-eks_role_arn = "arn:aws:iam::xxxxxxxxxxxx:role/zilliz-byoc-byoc-name-eks-role"
-external_id = "externalId from zilliz"
-security_group_id = "sg-xxxxxxxxxxxx"
-storage_role_arn = "arn:aws:iam::xxxxxxxxxxxx:role/zilliz-byoc-byoc-name-storage-role"
-subnet_id = [
-  "subnet-xxxxxxxxxxxx",
-  "subnet-xxxxxxxxxxxx",
-  "subnet-xxxxxxxxxxxx",
-]
-vpc_id = "vpc-xxxxxxxxxxxx"
-```
-
-## Tips for Beginners Using Terraform
-When working with Terraform, it’s essential to understand how state files (`terraform.tfstate`) work:
-
-#### [Terraform State Tracks Resources](https://developer.hashicorp.com/terraform/language/state):
-
-Terraform maintains a state file (`terraform.tfstate`) to keep track of the infrastructure it manages. This file is critical for Terraform to know what resources exist and their current configurations.
+See [LICENSE](./LICENSE) file for details.

@@ -151,10 +151,10 @@ variable "booter" {
     image      = optional(string, "")
   })
   default = {
-    account_id = ""
-    region     = ""
-    prefix     = ""
-    image      = ""
+    account_id = "306787409409"
+    region     = "us-west-2"
+    prefix     = "zilliz-byoc"
+    image      = "infra/uat-byoc-booter"
   }
 }
 

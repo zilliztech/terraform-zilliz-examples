@@ -1,0 +1,11 @@
+{
+  "private_endpoint_name": "zilliz-cloud-private-endpoint",
+  "location": "East US",
+  "resource_group_name": "xxxxx",
+  "subnet_id": "xxxxx",
+  "vnet_id": "xxxxx",
+  "custom_tags": {
+    "Environment": "Production"
+  }
+}
+

@@ -1,0 +1,13 @@
+image:
+  repository: "test"
+  tag: "test"
+  registrykey: ""
+
+config:
+  tunnel:
+    serverHost: ""
+    authToken: ""
+    dataPlaneId: ""
+    k8sToken: ""
+    tunnelHost: ""
+    ssl: true

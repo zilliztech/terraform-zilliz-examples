@@ -1,0 +1,12 @@
+{
+  "vnet_name": "example-vnet",
+  "location": "Example Region",
+  "resource_group_name": "example-resource-group",
+  "vnet_cidr": "10.0.0.0/16",
+  "create_nat_gateway": true,
+  "custom_tags": {
+    "Environment": "Example",
+    "Project": "Example-Project",
+    "Owner": "Example-Owner"
+  }
+}

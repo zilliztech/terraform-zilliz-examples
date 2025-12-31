@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: milvus-tool
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infra
+  labels:
+    control-plane: controller-manager
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: infra-agent-sa
+  namespace: infra
+  annotations:
+    azure.workload.identity/client-id: {{ .Values.rbac.maintenanceClientId }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vdc
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloud-terminal
+---
+# cluster-admin-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-admin-sa
+  namespace: kube-system
+---
+# cluster-admin-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-admin-role
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - '*'
+    resources:
+      - '*'
+  - verbs:
+      - '*'
+    nonResourceURLs:
+      - '*'
+
+---
+# cluster-admin-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-admin-binding
+subjects:
+- kind: ServiceAccount
+  name: cluster-admin-sa  
+  namespace: kube-system  
+- kind: ServiceAccount
+  name: default
+  namespace: cloud-terminal
+- kind: ServiceAccount
+  name: infra-agent-sa
+  namespace: infra
+- kind: ServiceAccount
+  name: cloud-agent-sa
+  namespace: vdc
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin-role  
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+ name: cluster-admin-sa-secret
+ namespace: kube-system
+ annotations:
+   kubernetes.io/service-account.name: "cluster-admin-sa"

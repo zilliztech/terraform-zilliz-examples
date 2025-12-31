@@ -1,0 +1,78 @@
+data "azurerm_location" "current" {
+  location = var.location
+}
+
+locals {
+  # Load config file (similar to AWS EKS pattern)
+  config = yamldecode(file("${path.module}/../../conf.yaml"))
+
+  # Prefix name for resource naming (similar to AWS EKS pattern)
+  prefix_name = var.prefix_name != "" ? var.prefix_name : replace(var.cluster_name, "-", "")
+
+  # Node groups configuration (similar to AWS EKS pattern)
+  k8s_node_groups = var.k8s_node_groups
+
+  # Convert location display name to short name using Azure data source
+  location = data.azurerm_location.current.location
+
+  # Get Azure agent config from config file based on location
+  # Default to empty map if location not found in config
+  azure_agent_config = try(local.config.Azure.agent_config[local.location], {})
+
+  # Standard tags for all resources (similar to AWS EKS pattern)
+  # Merge Vendor tag with custom_tags
+  common_tags = merge(
+    {
+      "Vendor" = "zilliz-byoc"
+    },
+    var.custom_tags
+  )
+
+  # Standard node labels pattern (similar to AWS EKS)
+  # Each node pool should have:
+  # - zilliz-group-name: the group name
+  # - node-role/*: role-specific labels
+  
+
+  # Core node pool labels (matching AWS EKS core group)
+  core_node_labels = {
+    "zilliz-group-name"     = "core"
+    "node-role/etcd"        = "true"
+    "node-role/pulsar"      = "true"
+    "node-role/infra"       = "true"
+    "node-role/vdc"         = "true"
+    "node-role/milvus-tool" = "true"
+    "capacity-type"         = "ON_DEMAND"
+  }
+
+  # Search node pool labels (matching AWS EKS search group)
+  search_node_labels = {
+    "zilliz-group-name"  = "search"
+    "node-role/diskANN"  = "true"
+    "node-role/milvus"   = "true"
+    "node-role/nvme-quota" = "200"
+  }
+
+  # Index node pool labels (matching AWS EKS index group)
+  index_node_labels = {
+    "zilliz-group-name"    = "index"
+    "node-role/index-pool" = "true"
+  }
+
+  # Fundamental node pool labels (matching AWS EKS fundamental group)
+  fundamental_node_labels = {
+    "zilliz-group-name" = "fundamental"
+    "node-role/default" = "true"
+    "node-role/milvus"  = "true"
+  }
+
+  # Default node pool labels (for agentpool)
+  default_node_labels = {
+    "zilliz-group-name" = "agentpool"
+    "node-role"         = "agentpool"
+  }
+
+  # Maintenance identity name
+  maintenance_identity_name = "${var.cluster_name}-maintenance-identity"
+}
+

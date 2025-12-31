@@ -1,0 +1,32 @@
+apiVersion: v1
+data:
+  application.yml: |
+    server:
+      port: 9501
+      additionalPorts: 9502,9503
+    
+    byoc:
+      tunnel:
+        serverHost: {{ .Values.config.tunnel.serverHost }}
+        authToken: "{{ .Values.config.tunnel.authToken }}"
+        dataPlaneId: {{ .Values.config.tunnel.dataPlaneId }}
+        srvNo: 1
+        ssl: {{ .Values.config.tunnel.ssl }}
+{{- if ne .Values.config.tunnel.k8sToken "" }}
+        useK8sProxy: true
+{{- end }}
+
+    spring:
+      jackson:
+        mapper:
+          accept-case-insensitive-properties: true
+
+      profiles:
+        active: dev
+      application:
+        name: cloud-agent
+      
+kind: ConfigMap
+metadata:
+  name: cloud-agent
+  namespace: vdc

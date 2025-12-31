@@ -31,8 +31,8 @@ terraform.rc
 
 # Ignore VS Code settings
 .vscode/
-
-
 **/test-module
-# Ignore zip files
-**/*.zip
+**/rendered-agent.yaml
+**/agent-context.zip
+**/test-module
+

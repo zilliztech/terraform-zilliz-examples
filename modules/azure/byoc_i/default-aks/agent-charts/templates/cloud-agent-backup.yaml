@@ -1,0 +1,118 @@
+{{- if ne .Values.config.tunnel.k8sToken "" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    configmap.reloader.stakater.com/reload: cloud-agent
+  name: cloud-agent-backup
+  namespace: vdc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: vdc
+      app.kubernetes.io/name: cloud-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: vdc
+        app.kubernetes.io/name: cloud-agent
+    spec:
+      {{- if .Values.config.tunnel.endpointIp }}
+      hostAliases:
+      - ip: {{ .Values.config.tunnel.endpointIp}}
+        hostnames:
+        - {{ .Values.config.tunnel.serverHost }}
+      {{- end }}
+      serviceAccountName: cloud-agent-sa
+      containers:
+      - env:
+        - name: OTEL_TRACES_EXPORTER
+          value: none
+        - name: OTEL_METRICS_EXPORTER
+          value: none
+        - name: OTEL_LOGS_EXPORTER
+          value: none
+        - name: OTEL_SERVICE_NAME
+          value: cloud-agent
+        - name: SPRING_CONFIG_LOCATION
+          value: file:///spring-config/application.yml
+        - name: BYOC_K8S_KEY
+          value: "{{ .Values.config.tunnel.authToken }}"
+        image: {{ .Values.image.repository }}/vdc/cloud-agent:{{ .Values.image.tag }}
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /cloud/check_healthy_db
+            port: 9501
+          initialDelaySeconds: 90
+          periodSeconds: 30
+          successThreshold: 1
+        name: cloud-agent
+        ports:
+        - containerPort: 9501
+        - containerPort: 9502
+        - containerPort: 9503
+        - containerPort: 9504
+        readinessProbe:
+          httpGet:
+            path: /cloud/check_healthy_db
+            port: 9501
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: 2
+            memory: 2Gi
+          requests:
+            cpu: 1
+            memory: 1Gi
+        volumeMounts:
+        - mountPath: /spring-config
+          name: spring-config
+      - args:
+        - proxy
+        - --port=8081
+        - --accept-hosts=^localhost$,^127\.0\.0\.1$,^{{ .Values.config.tunnel.tunnelHost }}$
+        - --keepalive=300s
+        - --address=0.0.0.0
+        - --insecure-skip-tls-verify=true 
+        - --server=https://kubernetes.default.svc.cluster.local
+        command:
+        - kubectl
+        image: {{ .Values.image.repository }}/byoc/kubectl:1.31.4
+        imagePullPolicy: Always
+        name: kubectl-proxy
+        ports:
+        - containerPort: 8081
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /api
+            port: 8081
+            scheme: HTTP
+            httpHeaders:
+            - name: Host
+              value: {{ .Values.config.tunnel.tunnelHost }}
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1   
+      nodeSelector:
+        node-role/vdc: "true"
+      tolerations:
+      - effect: NoExecute
+        key: node-role/vdc
+        operator: Equal
+        value: "true"
+      volumes:
+      - configMap:
+          name: cloud-agent-backup
+        name: spring-config
+{{- end }}

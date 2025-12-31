@@ -1,0 +1,9 @@
+{
+  "resource_group_name": "example-resource-group",
+  "storage_account_name": "examplestorage01",
+  "location": "East US",
+  "virtual_network_subnet_ids": [
+    "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example-resource-group/providers/Microsoft.Network/virtualNetworks/example-vnet/subnets/milvus"
+  ],
+  "container_name": "example-data"
+}

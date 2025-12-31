@@ -1,0 +1,11 @@
+{
+  "name": "zilliz-byoc",
+  "location": "centralindia",
+  "resource_group_name": "xxxxx",
+  "storage_container_scope": "xxxxx",
+  "tags": {
+    "Environment": "Production",
+    "Project": "Zilliz-BYOC"
+  }
+}
+

@@ -21,6 +21,8 @@ module "s3" {
   dataplane_id = local.dataplane_id
   customer_bucket_name = var.customer_bucket_name
   custom_tags = var.custom_tags
+  enable_s3_kms = var.enable_s3_kms
+  s3_kms_key_arn = var.s3_kms_key_arn
 }
 
 module "private_link" {
@@ -66,6 +68,12 @@ module "eks" {
   booter = var.booter
   // minimal roles configuration
   minimal_roles = var.minimal_roles
+
+  // kms encryption for ebs and s3
+  enable_ebs_kms = var.enable_ebs_kms
+  ebs_kms_key_arn = var.ebs_kms_key_arn
+  enable_s3_kms = var.enable_s3_kms
+  s3_kms_key_arn = var.s3_kms_key_arn
 
   // depend on private link to establish agent tunnel connection
   depends_on = [module.private_link]

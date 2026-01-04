@@ -9,7 +9,7 @@ module "s3_bucket" {
   acl      = "private"
 
   control_object_ownership = true
-  object_ownership         = "ObjectWriter"
+  object_ownership         = "BucketOwnerEnforced"
 
   tags = {
     Vendor = "zilliz-byoc"
@@ -19,4 +19,18 @@ module "s3_bucket" {
 
 output "s3_bucket_ids" {
   value = module.s3_bucket["milvus"].s3_bucket_id
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
+  count  = var.enable_s3_kms ? 1 : 0
+  bucket = module.s3_bucket["milvus"].s3_bucket_id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = "aws:kms"
+      kms_master_key_id = var.s3_kms_key_arn
+    }
+
+    bucket_key_enabled = true
+  }
 }

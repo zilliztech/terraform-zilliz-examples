@@ -71,3 +71,32 @@ resource "aws_iam_role_policy_attachment" "custom_policy_attachment" {
   policy_arn = aws_iam_policy.storage_policy.arn
   role       = aws_iam_role.storage_role.name
 }
+
+# https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html
+resource "aws_iam_policy" "s3_kms_policy" {
+  count       = var.enable_s3_kms ? 1 : 0
+  name        = "zilliz-byoc-${var.name}-storage-kms-policy"
+  description = "Policy for storage role KMS"
+  tags = {
+    Vendor = "zilliz-byoc"
+  }
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "kms:Decrypt",
+          "kms:GenerateDataKey*"
+        ],
+        "Resource" : [var.s3_kms_key_arn]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "s3_kms_policy_attachment" {
+  count      = var.enable_s3_kms ? 1 : 0
+  policy_arn = aws_iam_policy.s3_kms_policy[0].arn
+  role       = aws_iam_role.storage_role.name
+} 

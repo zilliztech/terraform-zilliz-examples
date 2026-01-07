@@ -45,20 +45,10 @@ output "storage_container_name" {
   value       = local.storage_container_name
 }
 
-# Storage Identity Outputs
-output "storage_identity_id" {
-  description = "ID of the storage user assigned managed identity (created or customer provided)"
-  value       = local.storage_identity_id
-}
-
-output "storage_identity_client_id" {
-  description = "Client ID of the storage user assigned managed identity (created or customer provided)"
-  value       = local.storage_identity_client_id
-}
-
-output "storage_identity_principal_id" {
-  description = "Principal ID of the storage user assigned managed identity (created or customer provided)"
-  value       = local.storage_identity_principal_id
+# Storage identities
+output "storage_identities" {
+  description = "Storage identities (list of {client_id, principal_id, resource_id})"
+  value       = local.storage_identities
 }
 
 # Private Endpoint Outputs (only when enable_private_link is true)

@@ -5,6 +5,13 @@
 # 3. Storage Identity (User Assigned Managed Identity)
 # 4. AKS Cluster for Milvus
 # 5. Private Endpoint for Zilliz Cloud connectivity (optional)
+# 6. Zilliz Cloud Project Agent Module
+# 7. Zilliz Cloud Project Module
+
+data "zillizcloud_byoc_i_project_settings" "this" {
+  project_id    = var.project_id
+  data_plane_id = var.dataplane_id
+}
 
 # ============================================================================
 # 1. Virtual Network Module (Conditional)
@@ -17,7 +24,7 @@ module "vnet" {
   vnet_name           = local.vnet_config.name
   location            = local.vnet_config.location
   resource_group_name = local.vnet_config.resource_group_name
-  vnet_cidr          = local.vnet_config.cidr
+  vnet_cidr           = local.vnet_config.cidr
 
   create_nat_gateway = local.vnet_config.create_nat_gateway
   nat_gateway_name   = local.vnet_config.nat_gateway_name
@@ -37,24 +44,24 @@ module "storage_account" {
   resource_group_name  = local.storage_config.resource_group_name
   location             = local.storage_config.location
 
-  account_tier             = local.storage_config.account_tier
-  account_replication_type = local.storage_config.account_replication_type
-  account_kind             = local.storage_config.account_kind
-  minimum_tls_version      = local.storage_config.minimum_tls_version
-  allow_blob_public_access = local.storage_config.allow_blob_public_access
-  network_default_action   = local.storage_config.network_default_action
+  account_tier                  = local.storage_config.account_tier
+  account_replication_type      = local.storage_config.account_replication_type
+  account_kind                  = local.storage_config.account_kind
+  minimum_tls_version           = local.storage_config.minimum_tls_version
+  allow_blob_public_access      = local.storage_config.allow_blob_public_access
+  network_default_action        = local.storage_config.network_default_action
   public_network_access_enabled = local.storage_config.public_network_access_enabled
 
   # If storage_subnet_names is empty, allow all VNet subnets
   # Otherwise, only allow specified subnets
   virtual_network_subnet_ids = length(local.storage_subnet_names) > 0 ? [
     for subnet_name in local.storage_subnet_names : local.subnet_ids[subnet_name]
-  ] : [
+    ] : [
     for subnet_id in values(local.subnet_ids) : subnet_id
   ]
 
-  container_name       = local.storage_container_name
-  container_metadata   = local.storage_config.container_metadata
+  container_name        = local.storage_container_name
+  container_metadata    = local.storage_config.container_metadata
   container_access_type = local.storage_config.container_access_type
 
   custom_tags = local.storage_config.tags
@@ -91,12 +98,12 @@ module "milvus_aks" {
 
   source = "../../modules/azure/byoc_i/default-aks"
 
-  prefix_name        = local.name_prefix
-  cluster_name       = local.aks_config.cluster_name
-  location           = local.aks_config.location
+  prefix_name         = local.name_prefix
+  cluster_name        = local.aks_config.cluster_name
+  location            = local.aks_config.location
   resource_group_name = local.aks_config.resource_group_name
-  subnet_id          = local.aks_subnet_id
-  vnet_id            = local.vnet_id
+  subnet_id           = local.aks_subnet_id
+  vnet_id             = local.vnet_id
 
   kubernetes_version = local.aks_config.kubernetes_version
   service_cidr       = local.aks_config.service_cidr
@@ -105,7 +112,7 @@ module "milvus_aks" {
   k8s_node_groups   = local.aks_config.k8s_node_groups
 
   # Storage identity for federated credentials
-  storage_identity_id = local.storage_identity_id
+  storage_identity_id = local.common_storage_identity_id
 
   # Optional AKS configuration
   acr_name     = var.acr_name
@@ -113,8 +120,8 @@ module "milvus_aks" {
   agent_tag    = var.agent_tag
   env          = var.env
   dataplane_id = var.dataplane_id
-  auth_token = var.auth_token
-  custom_tags = local.common_tags
+  auth_token   = var.auth_token
+  custom_tags  = local.common_tags
 
   depends_on = [module.vnet, module.zilliz_private_endpoint, module.storage_identity]
 }
@@ -129,12 +136,83 @@ module "zilliz_private_endpoint" {
   source = "../../modules/azure/byoc_i/default-privatelink"
 
   private_endpoint_name = local.private_endpoint_config.name
-  location             = local.private_endpoint_config.location
-  resource_group_name  = local.private_endpoint_config.resource_group_name
-  subnet_id            = local.private_endpoint_config.subnet_id
-  vnet_id              = local.private_endpoint_config.vnet_id
+  location              = local.private_endpoint_config.location
+  resource_group_name   = local.private_endpoint_config.resource_group_name
+  subnet_id             = local.private_endpoint_config.subnet_id
+  vnet_id               = local.private_endpoint_config.vnet_id
 
   custom_tags = local.private_endpoint_config.tags
 
   depends_on = [module.vnet]
+}
+
+# ============================================================================
+# 6. Zilliz Cloud Project Agent Module
+# ============================================================================
+
+resource "zillizcloud_byoc_i_project_agent" "this" {
+  project_id    = var.project_id
+  data_plane_id = var.dataplane_id
+
+  depends_on = [module.milvus_aks]
+}
+
+# ============================================================================
+# 7. Zilliz Cloud Project Module
+# ============================================================================
+resource "zillizcloud_byoc_i_project" "this" {
+
+  project_id    = var.project_id
+  data_plane_id = var.dataplane_id
+
+  azure = {
+    region = data.zillizcloud_byoc_i_project_settings.this.region
+
+    network = {
+      vnet_id          = local.vnet_id
+      subnet_ids       = local.subnet_ids
+      nsg_ids          = []
+      vnet_endpoint_id = local.private_endpoint_id
+    }
+    identity = {
+      storages    = local.storage_identities
+      kubelet     = local.kubelet_identity
+      maintenance = local.maintenance_identity
+    }
+    storage = {
+      storage_account_name = local.storage_account_id
+      container_name       = local.storage_container_name
+    }
+  }
+
+  // depend on private link to establish agent tunnel connection
+  depends_on = [zillizcloud_byoc_i_project_agent.this,
+  module.milvus_aks, module.zilliz_private_endpoint, module.storage_identity]
+  lifecycle {
+    ignore_changes  = [data_plane_id, project_id, azure, ext_config]
+    prevent_destroy = true
+  }
+
+  ext_config = base64encode(jsonencode(local.ext_config))
+}
+
+
+output "data_plane_id" {
+  value = var.dataplane_id
+}
+
+output "project_id" {
+  value = var.project_id
+}
+
+output "destroy_info" {
+  value = <<EOT
+To destroy this infrastructure, run the following command:
+
+ZILLIZCLOUD_API_KEY=<api_key> terraform destroy \
+  -var="dataplane_id=${var.dataplane_id}" \
+  -var="project_id=${var.project_id}"
+
+Note: Replace <api_key> with your actual Zilliz Cloud API key.
+EOT
 }

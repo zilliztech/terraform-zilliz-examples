@@ -17,12 +17,15 @@ terraform {
       source  = "hashicorp/archive"
       version = ">= 2.0.0"
     }
+    zillizcloud = {
+      source  = "zilliztech/zillizcloud"
+      version = "0.6.26-rc2"
+    }
   }
 }
 
 provider "azurerm" {
   features {}
-
   subscription_id = "38fd913c-a183-459a-b857-1c23940d70c1"
 }
 

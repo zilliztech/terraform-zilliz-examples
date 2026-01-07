@@ -26,8 +26,8 @@ resource "azurerm_federated_identity_credential" "aks_storage_milvustool_federat
   ]
 }
 
-resource "azurerm_federated_identity_credential" "aks_storage_milvustool_federation" {
-  name                = "milvus-tool-aks-federation"
+resource "azurerm_federated_identity_credential" "aks_storage_loki_federation" {
+  name                = "loki-aks-federation"
   resource_group_name = var.resource_group_name
   parent_id           = var.storage_identity_id
   audience            = ["api://AzureADTokenExchange"]

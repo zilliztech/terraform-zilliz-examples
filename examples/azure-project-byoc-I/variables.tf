@@ -335,9 +335,16 @@ variable "env" {
   default     = ""
 }
 
-variable "dataplane_id" {
-  description = "Dataplane ID"
+variable "project_id" {
+  description = "BYOC Project ID"
   type        = string
+  nullable    = false
+}
+
+variable "dataplane_id" {
+  description = "BYOC Dataplane ID"
+  type        = string
+  nullable    = false
 }
 
 # ============================================================================
@@ -356,4 +363,21 @@ variable "network_security" {
 variable "auth_token" {
   description = "Authentication token for agent communication"
   type        = string
+}
+
+variable "customer_acr" {
+  description = "Customer ACR (Azure Container Registry) configuration. Full image path: {name}.azurecr.io/{prefix}/{image}:{tag}"
+  type = object({
+    name = string
+    prefix = string
+  })
+  default = {
+    name = ""
+    prefix = ""
+  }
+
+  validation {
+    condition     = var.customer_acr.name != "" && var.customer_acr.prefix != ""
+    error_message = "customer_acr.name and customer_acr.prefix are required."
+  }
 }

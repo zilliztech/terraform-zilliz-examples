@@ -4,7 +4,7 @@ data "azurerm_location" "current" {
 
 locals {
   # Load config file (similar to AWS EKS pattern)
-  config = yamldecode(file("${path.module}/../../conf.yaml"))
+  config = yamldecode(file("${path.module}/../../../conf.yaml"))
 
   # Prefix name for resource naming (similar to AWS EKS pattern)
   prefix_name = var.prefix_name != "" ? var.prefix_name : replace(var.cluster_name, "-", "")

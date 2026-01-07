@@ -42,10 +42,6 @@ locals {
     try(var.customer_storage_container_name, "") != "" ? var.customer_storage_container_name : "zilliz-byoc-data"
   )
 
-  # Storage Identity ID selection
-  storage_identity_id = var.create_storage_identity ? module.storage_identity[0].storage_identity.object_id : var.customer_storage_identity_id
-  storage_identity_client_id = var.create_storage_identity ? module.storage_identity[0].storage_identity.client_id : var.customer_storage_identity_client_id
-  storage_identity_principal_id = var.create_storage_identity ? module.storage_identity[0].storage_identity.principal_id : var.customer_storage_identity_principal_id
 
   # AKS Cluster ID and name selection
   aks_cluster_id = var.create_aks ? module.milvus_aks[0].cluster_id : var.customer_aks_cluster_id
@@ -120,6 +116,35 @@ locals {
   } : null
 
   # ============================================================================
+  # Identity Configuration
+  # ============================================================================
+  # Storage Identities Configuration
+  # ============================================================================
+  storage_identities = [
+    for identity in module.storage_identity[0].instance_identities : {
+      client_id    = identity.client_id
+      principal_id = identity.principal_id
+      resource_id  = identity.object_id
+    }
+  ]
+
+  common_storage_identity_id = module.storage_identity[0].storage_identity.resource_id
+
+  # Maintenance Identity 
+  maintenance_identity = {
+    client_id    = module.milvus_aks[0].maintenance_identity_client_id
+    principal_id = module.milvus_aks[0].maintenance_identity_principal_id
+    resource_id  = module.milvus_aks[0].maintenance_identity_id
+  }
+
+  # Kubelet Identity 
+  kubelet_identity = {
+    client_id    = module.milvus_aks[0].kubelet_identity.client_id
+    principal_id = module.milvus_aks[0].kubelet_identity.object_id
+    resource_id  = module.milvus_aks[0].kubelet_identity.user_assigned_identity_id
+  }
+
+  # ============================================================================
   # Private Endpoint Configuration (for Zilliz Cloud Private Link)
   # ============================================================================
   # Private endpoint configuration - only created if enable_private_link is true
@@ -135,6 +160,9 @@ locals {
 
   # Private endpoint subnet name
   private_endpoint_subnet_name = var.enable_private_link && var.private_endpoint != null ? try(var.private_endpoint.subnet_name, "privatelink") : null
+
+  # Private endpoint ID
+  private_endpoint_id = var.enable_private_link && var.private_endpoint != null ? module.zilliz_private_endpoint[0].private_endpoint_id : null
 
   # ============================================================================
   # AKS Configuration
@@ -187,6 +215,11 @@ locals {
   network_security = {
     enable_public_support = try(var.network_security.enable_public_support, false)
     allowed_subnets       = try(var.network_security.allowed_subnets, ["milvus", "default"])
+  }
+
+  ext_config = {
+    aks_cluster_name = local.aks_cluster_name
+    acr =  var.customer_acr
   }
 }
 

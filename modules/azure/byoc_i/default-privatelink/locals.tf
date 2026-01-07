@@ -14,7 +14,7 @@ locals {
     var.custom_tags
   )
 
-  config = yamldecode(file("${path.module}/../../conf.yaml"))
+  config = yamldecode(file("${path.module}/../../../conf.yaml"))
   
   dns_zone_name = "cloud-tunnel.az-${local.location}.byoc.${local.config.Azure.private_zone_domain_suffix}"
   

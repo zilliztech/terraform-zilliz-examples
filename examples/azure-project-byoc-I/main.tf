@@ -14,11 +14,9 @@ data "zillizcloud_byoc_i_project_settings" "this" {
 }
 
 # ============================================================================
-# 1. Virtual Network Module (Conditional)
+# 1. Virtual Network Module 
 # ============================================================================
 module "vnet" {
-  count = var.create_vnet ? 1 : 0
-
   source = "../../modules/azure/byoc_i/default-virtual-networks"
 
   vnet_name           = local.vnet_config.name
@@ -33,11 +31,9 @@ module "vnet" {
 }
 
 # ============================================================================
-# 2. Storage Account Module (Conditional)
+# 2. Storage Account Module 
 # ============================================================================
 module "storage_account" {
-  count = var.create_storage_account ? 1 : 0
-
   source = "../../modules/azure/byoc_i/default-storageaccount"
 
   storage_account_name = local.storage_config.name
@@ -52,13 +48,7 @@ module "storage_account" {
   network_default_action        = local.storage_config.network_default_action
   public_network_access_enabled = local.storage_config.public_network_access_enabled
 
-  # If storage_subnet_names is empty, allow all VNet subnets
-  # Otherwise, only allow specified subnets
-  virtual_network_subnet_ids = length(local.storage_subnet_names) > 0 ? [
-    for subnet_name in local.storage_subnet_names : local.subnet_ids[subnet_name]
-    ] : [
-    for subnet_id in values(local.subnet_ids) : subnet_id
-  ]
+  virtual_network_subnet_ids = local.subnet_ids
 
   container_name        = local.storage_container_name
   container_metadata    = local.storage_config.container_metadata
@@ -70,19 +60,15 @@ module "storage_account" {
 }
 
 # ============================================================================
-# 3. Storage Identity Module (Conditional)
+# 3. Storage Identity Module 
 # ============================================================================
 module "storage_identity" {
-  count = var.create_storage_identity ? 1 : 0
-
   source = "../../modules/azure/byoc_i/default-storage-identity"
 
-  name                = local.name_prefix
+  name                = local.prefix_name
   location            = local.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = local.resource_group_name
 
-  # Storage container scope for role assignment
-  # Format: /subscriptions/{subscription-id}/resourceGroups/{rg}/providers/Microsoft.Storage/storageAccounts/{account}/blobServices/default/containers/{container}
   storage_container_scope = local.storage_container_scope
 
   custom_tags = local.common_tags
@@ -91,14 +77,12 @@ module "storage_identity" {
 }
 
 # ============================================================================
-# 4. AKS Cluster Module (Conditional)
+# 4. AKS Cluster Module 
 # ============================================================================
 module "milvus_aks" {
-  count = var.create_aks ? 1 : 0
-
   source = "../../modules/azure/byoc_i/default-aks"
 
-  prefix_name         = local.name_prefix
+  prefix_name         = local.prefix_name
   cluster_name        = local.aks_config.cluster_name
   location            = local.aks_config.location
   resource_group_name = local.aks_config.resource_group_name
@@ -198,11 +182,11 @@ resource "zillizcloud_byoc_i_project" "this" {
 
 
 output "data_plane_id" {
-  value = var.dataplane_id
+  value = local.dataplane_id
 }
 
 output "project_id" {
-  value = var.project_id
+  value = local.project_id
 }
 
 output "destroy_info" {

@@ -2,188 +2,19 @@
 # Common Variables
 # ============================================================================
 
-variable "name" {
-  description = "The name of the BYOC project (used for resource naming)"
-  type        = string
-  nullable    = false
-
-  validation {
-    condition     = var.name != ""
-    error_message = "variable name cannot be empty."
-  }
-}
-
-variable "location" {
-  description = "Azure region where resources will be created (e.g., 'East US', 'West Europe')"
-  type        = string
-  nullable    = false
-
-  validation {
-    condition     = var.location != ""
-    error_message = "variable location cannot be empty."
-  }
-}
-
-variable "resource_group_name" {
-  description = "Name of the Azure resource group"
-  type        = string
-  nullable    = false
-
-  validation {
-    condition     = var.resource_group_name != ""
-    error_message = "variable resource_group_name cannot be empty."
-  }
-}
-
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
   default     = {}
 }
 
-# ============================================================================
-# Resource Creation Flags
-# ============================================================================
-
-variable "create_vnet" {
-  description = "Whether to create a new VNet. If false, customer_vnet_id must be provided."
-  type        = bool
-  default     = true
-}
-
-variable "create_storage_account" {
-  description = "Whether to create a new Storage Account. If false, customer_storage_account_id must be provided."
-  type        = bool
-  default     = true
-}
-
-variable "create_storage_identity" {
-  description = "Whether to create a new Storage Identity. If false, customer_storage_identity_id must be provided."
-  type        = bool
-  default     = true
-}
-
-variable "create_aks" {
-  description = "Whether to create a new AKS cluster. If false, customer_aks_cluster_id must be provided."
-  type        = bool
-  default     = true
-}
-
-# ============================================================================
-# Customer Provided Resources
-# ============================================================================
-
-variable "customer_vnet_id" {
-  description = "ID of existing VNet to use. Required when create_vnet is false."
-  type        = string
-  default     = ""
-
-  validation {
-    condition     = var.create_vnet || var.customer_vnet_id != ""
-    error_message = "customer_vnet_id is required when create_vnet is false."
-  }
-}
-
-variable "customer_subnet_ids" {
-  description = "Map of subnet names to their IDs for existing VNet. Required when create_vnet is false. Format: { milvus = \"subnet-id\", privatelink = \"subnet-id\" }"
-  type        = map(string)
-  default     = {}
-
-  validation {
-    condition     = var.create_vnet || (length(var.customer_subnet_ids) > 0 && contains(keys(var.customer_subnet_ids), "milvus"))
-    error_message = "customer_subnet_ids must include at least 'milvus' subnet when create_vnet is false."
-  }
-}
-
-variable "customer_storage_account_id" {
-  description = "ID of existing Storage Account to use. Required when create_storage_account is false."
-  type        = string
-  default     = ""
-
-  validation {
-    condition     = var.create_storage_account || var.customer_storage_account_id != ""
-    error_message = "customer_storage_account_id is required when create_storage_account is false."
-  }
-}
-
-variable "customer_storage_account_name" {
-  description = "Name of existing Storage Account. Required when create_storage_account is false."
-  type        = string
-  default     = ""
-
-  validation {
-    condition     = var.create_storage_account || var.customer_storage_account_name != ""
-    error_message = "customer_storage_account_name is required when create_storage_account is false."
-  }
-}
-
-variable "customer_storage_container_name" {
-  description = "Name of existing storage container. Required when create_storage_account is false."
-  type        = string
-  default     = ""
-}
-
-variable "customer_storage_identity_id" {
-  description = "ID of existing Storage Identity (User Assigned Managed Identity) to use. Required when create_storage_identity is false."
-  type        = string
-  default     = ""
-
-  validation {
-    condition     = var.create_storage_identity || var.customer_storage_identity_id != ""
-    error_message = "customer_storage_identity_id is required when create_storage_identity is false."
-  }
-}
-
-variable "customer_storage_identity_client_id" {
-  description = "Client ID of existing Storage Identity. Required when create_storage_identity is false."
-  type        = string
-  default     = ""
-
-  validation {
-    condition     = var.create_storage_identity || var.customer_storage_identity_client_id != ""
-    error_message = "customer_storage_identity_client_id is required when create_storage_identity is false."
-  }
-}
-
-variable "customer_storage_identity_principal_id" {
-  description = "Principal ID of existing Storage Identity. Required when create_storage_identity is false."
-  type        = string
-  default     = ""
-
-  validation {
-    condition     = var.create_storage_identity || var.customer_storage_identity_principal_id != ""
-    error_message = "customer_storage_identity_principal_id is required when create_storage_identity is false."
-  }
-}
-
-variable "customer_aks_cluster_id" {
-  description = "ID of existing AKS cluster to use. Required when create_aks is false."
-  type        = string
-  default     = ""
-
-  validation {
-    condition     = var.create_aks || var.customer_aks_cluster_id != ""
-    error_message = "customer_aks_cluster_id is required when create_aks is false."
-  }
-}
-
-variable "customer_aks_cluster_name" {
-  description = "Name of existing AKS cluster. Required when create_aks is false."
-  type        = string
-  default     = ""
-
-  validation {
-    condition     = var.create_aks || var.customer_aks_cluster_name != ""
-    error_message = "customer_aks_cluster_name is required when create_aks is false."
-  }
-}
 
 # ============================================================================
 # VNet Module Configuration
 # ============================================================================
 
 variable "vnet" {
-  description = "Virtual Network configuration. CIDR is required when create_vnet is true, all other options use defaults."
+  description = "Virtual Network configuration.D efault CIDR is 10.0.0.0/16."
   type = object({
     # Required when create_vnet is true: CIDR block for the virtual network
     cidr = optional(string)

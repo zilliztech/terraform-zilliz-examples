@@ -1,61 +1,63 @@
-# Local values for configuration abstraction and module organization
-data "azurerm_location" "current" {
-  location = var.location
+resource "random_id" "short_uuid" {
+  byte_length = 3  # 3 bytes = 6 characters when base64 encoded
 }
 
 locals {
+  # Azure region extracted from Zilliz cloud settings, removing "az-" prefix
+  # Normalizes region format from Zilliz naming convention to standard Azure region names
+  region = replace(data.zillizcloud_byoc_i_project_settings.this.region, "az-", "")
 
-  location = data.azurerm_location.current.location
-  # Common naming prefix for all resources
-  name_prefix = var.name
+  # Resource group name extracted from Zilliz cloud configuration used for all resources
+  # TODO: check it from the project settings.
+  resource_group_name = data.zillizcloud_byoc_i_project_settings.this.resource_group_name
+
+  # Data plane identifier from Zilliz cloud configuration
+  # Used to associate Azure resources with the correct Zilliz data plane instance
+  dataplane_id = data.zillizcloud_byoc_i_project_settings.this.data_plane_id
+
+  # Zilliz project identifier for resource tagging and organization
+  # Links Azure resources back to the specific Zilliz cloud project
+  project_id = data.zillizcloud_byoc_i_project_settings.this.project_id
+
+  # Truncated project identifier for resource naming, limited to first 10 characters
+  # Extracted from the Zilliz cloud BYOC project settings to ensure uniqueness
+  short_project_id = substr(local.project_id, 0, 10)
+  
+  # Standardized naming prefix for all Azure resources created by this Terraform configuration
+  # Combines "zilliz" brand, short project ID, and random hex for global uniqueness
+  prefix_name = "zilliz-${local.short_project_id}-${random_id.short_uuid.hex}"
 
   # Common tags merged with user-provided tags
   common_tags = merge(
     {
       Vendor      = "zilliz-byoc"
       ManagedBy   = "terraform"
-      Project     = var.name
+      Project     = local.project_id
       Environment = try(var.tags.Environment, "Production")
     },
     var.tags
   )
 
-  # ============================================================================
-  # Resource Selection Logic
-  # ============================================================================
-  # VNet ID selection - use customer VNet if provided, otherwise use created VNet
-  vnet_id = var.create_vnet ? module.vnet[0].vnet_id : var.customer_vnet_id
+  vnet_id = module.vnet.vnet_id
 
-  # Subnet IDs selection - use customer subnets if provided, otherwise use created subnets
-  subnet_ids = var.create_vnet ? module.vnet[0].subnet_ids : var.customer_subnet_ids
+  subnet_ids = module.vnet.subnet_ids
 
-  # Storage Account ID and name selection
-  storage_account_id = var.create_storage_account ? module.storage_account[0].storage_account_id : var.customer_storage_account_id
-  storage_account_name = var.create_storage_account ? module.storage_account[0].storage_account_name : var.customer_storage_account_name
+  storage_account_id = module.storage_account.storage_account_id
+  storage_account_name = module.storage_account.storage_account_name
+  storage_container_name = module.storage_account.container_name
 
-  # Storage container name selection
-  # When creating storage account: use provided name or default
-  # When using existing: use customer provided name or default
-  storage_container_name = var.create_storage_account ? (
-    try(var.storage.container_name, null) != null && var.storage.container_name != "" ? var.storage.container_name : "zilliz-byoc-data"
-  ) : (
-    try(var.customer_storage_container_name, "") != "" ? var.customer_storage_container_name : "zilliz-byoc-data"
-  )
-
-
-  # AKS Cluster ID and name selection
-  aks_cluster_id = var.create_aks ? module.milvus_aks[0].cluster_id : var.customer_aks_cluster_id
-  aks_cluster_name = var.create_aks ? module.milvus_aks[0].cluster_name : var.customer_aks_cluster_name
+  aks_cluster_id = module.milvus_aks.cluster_id
+  aks_cluster_name = module.milvus_aks.cluster_name
 
   # ============================================================================
   # VNet Configuration
   # ============================================================================
   # Default VNet configuration - CIDR is required when create_vnet is true
-  vnet_config = var.create_vnet ? {
-    name                = "${local.name_prefix}-vnet"
+  vnet_config = {
+    name                = "${local.prefix_name}-vnet"
     location            = local.location
-    resource_group_name = var.resource_group_name
-    cidr                = try(var.vnet.cidr, "")
+    resource_group_name = local.resource_group_name
+    cidr                = try(var.vnet.cidr, "10.0.0.0/16") # Default CIDR is 10.0.0.0/16
 
     # Subnet configuration - auto-split enabled by default
     auto_split_subnets = true
@@ -63,18 +65,18 @@ locals {
 
     # NAT Gateway configuration - created by default for outbound internet access
     create_nat_gateway = true
-    nat_gateway_name   = "${local.name_prefix}-nat-gateway"
+    nat_gateway_name   = "${local.prefix_name}-nat-gateway"
 
     tags = local.common_tags
-  } : null
+  }
 
   # ============================================================================
   # Storage Account Configuration
   # ============================================================================
-  storage_config = var.create_storage_account ? {
-    name                = try(var.storage.name, "")
+  storage_config = {
+    name                = "${local.prefix_name}-storage-account"
     location            = local.location
-    resource_group_name = var.resource_group_name
+    resource_group_name = local.resource_group_name
 
     # Storage account properties
     account_tier             = try(var.storage.account_tier, "Standard")
@@ -88,17 +90,12 @@ locals {
     allow_blob_public_access     = try(var.storage.allow_blob_public_access, false)
 
     # Container configuration
-    container_name      = local.storage_container_name
+    container_name      = "${local.prefix_name}-storage-container"
     container_metadata  = try(var.storage.container_metadata, {})
     container_access_type = try(var.storage.container_access_type, "private")
 
     tags = local.common_tags
-  } : null
-
-  # Storage account subnet names
-  # If allowed_subnet_names is empty, allow all VNet subnets (will be resolved in main.tf)
-  # If specified, only allow those specific subnets
-  storage_subnet_names = length(try(var.storage.allowed_subnet_names, [])) > 0 ? var.storage.allowed_subnet_names : []
+  }
 
   # Storage container scope for storage identity role assignment
   # Format: /subscriptions/{subscription-id}/resourceGroups/{rg}/providers/Microsoft.Storage/storageAccounts/{account}/blobServices/default/containers/{container}
@@ -109,7 +106,7 @@ locals {
   # ============================================================================
   # Storage identity configuration - created after storage account
   storage_identity_config = var.create_storage_identity ? {
-    name                = local.name_prefix
+    name                = "${local.prefix_name}-storage-identity"
     location            = local.location
     resource_group_name = var.resource_group_name
     tags                = local.common_tags
@@ -157,10 +154,6 @@ locals {
     vnet_id             = local.vnet_id
     tags                = local.common_tags
   } : null
-
-  # Private endpoint subnet name
-  private_endpoint_subnet_name = var.enable_private_link && var.private_endpoint != null ? try(var.private_endpoint.subnet_name, "privatelink") : null
-
   # Private endpoint ID
   private_endpoint_id = var.enable_private_link && var.private_endpoint != null ? module.zilliz_private_endpoint[0].private_endpoint_id : null
 
@@ -169,7 +162,7 @@ locals {
   # ============================================================================
   # Default AKS configuration - converts node_pools to k8s_node_groups format
   aks_config = {
-    cluster_name        = "${local.name_prefix}-aks"
+    cluster_name        = "${local.prefix_name}-aks"
     location            = local.location
     resource_group_name = var.resource_group_name
 

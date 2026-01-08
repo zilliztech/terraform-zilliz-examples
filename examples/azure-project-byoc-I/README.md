@@ -104,7 +104,7 @@ Each module has a configuration object with sensible defaults:
 ```hcl
 locals {
   vnet_config = {
-    name                = "${local.name_prefix}-vnet"
+    name                = "${local.prefix_name}-vnet"
     location            = var.location
     cidr                = var.vnet.cidr  # CIDR is now in vnet object
     auto_split_subnets  = true  # Always enabled by default

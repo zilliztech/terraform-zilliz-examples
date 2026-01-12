@@ -20,16 +20,18 @@ resource "azurerm_role_assignment" "maintenance_vnet_network_contributor" {
   description = "Allow maintenance identity to manage network resources in VNet"
 }
 
-# Role Assignment 2: Managed Identity Federated Identity Credential Contributor on storage identity
-# This allows the maintenance identity to create/update/delete federated identity credentials on the storage identity
+# Role Assignment 2: Managed Identity Federated Identity Credential Contributor on all instance storage identities
+# This allows the maintenance identity to create/update/delete federated identity credentials on all instance storage identities
 # This is needed for workload identity federation
-resource "azurerm_role_assignment" "maintenance_storage_identity_federated_credential" {
+resource "azurerm_role_assignment" "maintenance_instance_storage_identity_federated_credential" {
+  # Use index as key to avoid "for_each value includes values derived from resource attributes" error
+  for_each = { for idx, id in var.instance_storage_identity_ids : tostring(idx) => id }
 
-  scope                = var.storage_identity_id
+  scope                = each.value
   role_definition_name = "Managed Identity Federated Identity Credential Contributor"
   principal_id         = azurerm_user_assigned_identity.maintenance.principal_id
 
-  description = "Allow maintenance identity to manage federated identity credentials on storage identity"
+  description = "Allow maintenance identity to manage federated identity credentials on instance storage identity"
 }
 
 # Role Assignment 3: AKS Contributor on AKS cluster

@@ -18,15 +18,15 @@ resource "azurerm_kubernetes_cluster" "main" {
 
   # Network Profile
   network_profile {
-    network_plugin      = "azure"
-    network_policy      = "azure"
-    network_data_plane  = "azure"
-    load_balancer_sku   = "standard"
-    service_cidr        = var.service_cidr
-    dns_service_ip      = "10.255.0.10"
-    outbound_type       = "loadBalancer"
-    service_cidrs       = [var.service_cidr]
-    
+    network_plugin     = "azure"
+    network_policy     = "azure"
+    network_data_plane = "azure"
+    load_balancer_sku  = "standard"
+    service_cidr       = var.service_cidr
+    dns_service_ip     = "10.255.0.10"
+    outbound_type      = "loadBalancer"
+    service_cidrs      = [var.service_cidr]
+
     load_balancer_profile {
       backend_pool_type         = "NodeIPConfiguration"
       managed_outbound_ip_count = 1
@@ -37,7 +37,7 @@ resource "azurerm_kubernetes_cluster" "main" {
   private_cluster_enabled             = true
   private_cluster_public_fqdn_enabled = true
   private_dns_zone_id                 = "System"
-  
+
   # API Server Access Profile (Private Cluster)
   # api_server_access_profile {
   #   authorized_ip_ranges = []
@@ -61,11 +61,11 @@ resource "azurerm_kubernetes_cluster" "main" {
     only_critical_addons_enabled = true
     orchestrator_version         = var.kubernetes_version
     scale_down_mode              = "Delete"
-    
+
     # Use standardized labels similar to AWS EKS pattern
     # Ensure zilliz-group-name is present
     node_labels = local.default_node_labels
-    
+
     temporary_name_for_rotation = "agentpool"
     upgrade_settings {
       max_surge                     = "10%"
@@ -105,7 +105,7 @@ resource "azurerm_kubernetes_cluster" "main" {
 
   # OIDC Issuer Profile
   oidc_issuer_enabled = true
-  
+
   # Workload Identity
   workload_identity_enabled = true
 

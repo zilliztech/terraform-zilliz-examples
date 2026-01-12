@@ -103,18 +103,6 @@ variable "storage_identity_id" {
   type        = string
 }
 
-variable "acr_name" {
-  description = "Azure Container Registry name"
-  type        = string
-  default     = ""
-}
-
-variable "acr_prefix" {
-  description = "Azure Container Registry image prefix"
-  type        = string
-  default     = ""
-}
-
 variable "agent_tag" {
   description = "Agent image tag"
   type        = string

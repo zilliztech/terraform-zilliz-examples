@@ -1,6 +1,6 @@
 # Storage Identity - User Assigned Managed Identity
 resource "azurerm_user_assigned_identity" "storage_identity" {
-  name                = local.storage_identity_name
+  name                = "${local.storage_identity_name}-default"
   location            = local.location
   resource_group_name = var.resource_group_name
 

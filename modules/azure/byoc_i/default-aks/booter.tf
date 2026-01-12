@@ -17,8 +17,8 @@ EOF
 )
 
   agent_config = {
-    repository = "zillizeastus.azurecr.io/infra/uat-byoc-booter"
-    tag = "20251229-a1e98a5"
+    repository = "${local.azure_agent_config.acr_name}.azurecr.io/${local.azure_agent_config.acr_prefix}"
+    tag = var.agent_tag != "" ? var.agent_tag : local.azure_agent_config.agent_tag
     serverHost = (
       var.env == "UAT" ?
       "cloud-tunnel.az-${local.location}${var.enable_private_endpoint ? ".byoc" : ""}.cloud-uat3.zilliz.com" :

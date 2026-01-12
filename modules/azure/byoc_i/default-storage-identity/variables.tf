@@ -13,8 +13,8 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "storage_container_scope" {
-  description = "Scope for storage container role assignment (e.g., /subscriptions/.../containers/container-name)"
+variable "storage_account_scope" {
+  description = "Scope for storage account role assignment (e.g., /subscriptions/.../storageAccounts/account-name)"
   type        = string
 }
 

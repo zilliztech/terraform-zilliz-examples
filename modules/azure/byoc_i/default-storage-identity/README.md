@@ -1,11 +1,11 @@
 # Azure Storage Identity Module
 
-This Terraform module creates a User Assigned Managed Identity for accessing Azure Storage containers in Zilliz BYOC deployments.
+This Terraform module creates a User Assigned Managed Identity for accessing Azure Storage accounts in Zilliz BYOC deployments.
 
 ## Features
 
 - Creates User Assigned Managed Identity
-- Configures Storage Blob Data Contributor role assignment on container scope
+- Configures Storage Blob Data Contributor role assignment on storage account scope
 - Implements security best practices with least privilege
 - Tags resources with Vendor=zilliz-byoc tag
 
@@ -15,10 +15,10 @@ This Terraform module creates a User Assigned Managed Identity for accessing Azu
 module "storage_identity" {
   source = "../../modules/azure/storage-identity"
 
-  name                    = "zilliz-byoc"
-  location                = "East US"
-  resource_group_name     = "rg-zilliz-byoc"
-  storage_container_scope = "/subscriptions/.../providers/Microsoft.Storage/storageAccounts/mystorageaccount/blobServices/default/containers/mycontainer"
+  name                  = "zilliz-byoc"
+  location              = "East US"
+  resource_group_name   = "rg-zilliz-byoc"
+  storage_account_scope = "/subscriptions/.../providers/Microsoft.Storage/storageAccounts/mystorageaccount"
 
   custom_tags = {
     Environment = "Production"
@@ -41,7 +41,7 @@ module "storage_identity" {
 | name | Base name for the storage identity (will be prefixed with "zilliz-byoc-") | `string` | n/a | yes |
 | location | Azure region where resources will be created | `string` | n/a | yes |
 | resource_group_name | Name of the resource group | `string` | n/a | yes |
-| storage_container_scope | Full resource ID of the storage container for role assignment (e.g., /subscriptions/.../containers/container-name) | `string` | n/a | yes |
+| storage_account_scope | Full resource ID of the storage account for role assignment (e.g., /subscriptions/.../storageAccounts/account-name) | `string` | n/a | yes |
 | custom_tags | Custom tags to apply to all resources (merged with Vendor=zilliz-byoc tag) | `map(string)` | `{}` | no |
 
 ## Outputs
@@ -56,12 +56,12 @@ module "storage_identity" {
 
 ### Storage Identity
 
-The storage identity is used by workloads (e.g., Milvus) to access Azure Storage containers.
+The storage identity is used by workloads (e.g., Milvus) to access Azure Storage accounts.
 
 **Role Assignments:**
-- **Storage Blob Data Contributor** on container scope
-  - Allows read/write access to blobs in the specified container
-  - Scoped to the specific container only
+- **Storage Blob Data Contributor** on storage account scope
+  - Allows read/write access to blobs in the specified storage account
+  - Scoped to the specific storage account
 
 **Identity Naming:**
 - The identity name is automatically prefixed with "zilliz-byoc-" (e.g., `zilliz-byoc-{name}`)
@@ -73,7 +73,7 @@ The storage identity is used by workloads (e.g., Milvus) to access Azure Storage
 ## Security Considerations
 
 - Follows the principle of least privilege
-- Role assignment is scoped to specific container only
-- No access to other storage accounts or containers
+- Role assignment is scoped to specific storage account
+- No access to other storage accounts
 - Uses User Assigned Managed Identity (not System Assigned) for better control
 

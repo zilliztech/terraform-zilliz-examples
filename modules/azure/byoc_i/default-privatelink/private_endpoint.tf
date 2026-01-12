@@ -37,10 +37,11 @@ resource "azurerm_private_endpoint" "main" {
 
   # Private Service Connection
   private_service_connection {
-    name                           = "${var.private_endpoint_name}-connection"
-    is_manual_connection           = false
-    private_connection_resource_id = local.zilliz_byoc_privatelink_resource_id
-    subresource_names              = []
+    name                              = "${var.private_endpoint_name}-connection"
+    is_manual_connection              = true
+    private_connection_resource_alias = local.zilliz_byoc_privatelink_resource_alias
+    subresource_names                 = []
+    request_message                   = "Please approve the private endpoint connection request"
   }
 
   # Private DNS Zone Group (automatically manages DNS records)

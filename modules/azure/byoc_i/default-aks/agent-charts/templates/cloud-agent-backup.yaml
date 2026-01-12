@@ -1,4 +1,3 @@
-{{- if ne .Values.config.tunnel.k8sToken "" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -72,16 +71,38 @@ spec:
         volumeMounts:
         - mountPath: /spring-config
           name: spring-config
-      - args:
-        - proxy
-        - --port=8081
-        - --accept-hosts=^localhost$,^127\.0\.0\.1$,^{{ .Values.config.tunnel.tunnelHost }}$
-        - --keepalive=300s
-        - --address=0.0.0.0
-        - --insecure-skip-tls-verify=true 
-        - --server=https://kubernetes.default.svc.cluster.local
-        command:
-        - kubectl
+      - command:
+        - /bin/sh
+        - -c
+        - |
+          # Step 1: Wait for the Secret to exist in kube-system
+          echo "Waiting for secret 'cluster-admin-sa-secret' in kube-system..."
+          until kubectl get secret -n kube-system cluster-admin-sa-secret > /dev/null 2>&1; do
+            echo "Secret not found yet. Retrying in 5 seconds..."
+            sleep 5
+          done
+
+          # Step 2: Extract and decode the token
+          echo "Secret found. Extracting permanent token..."
+          PERMANENT_TOKEN=$(kubectl get secret -n kube-system cluster-admin-sa-secret -o jsonpath='{.data.token}' | base64 -d)
+
+          # Step 3: Validate the token is not empty
+          if [ -z "$PERMANENT_TOKEN" ]; then
+            echo "Error: Token is empty. Check if the Secret data is correct."
+            exit 1
+          fi
+
+          # Step 4: Start the proxy using exec (replaces shell with kubectl process)
+          echo "Token acquired. Starting kubectl proxy..."
+          exec kubectl proxy \
+            --port=8081 \
+            --address=0.0.0.0 \
+            --accept-hosts=^localhost$,^127\.0\.0\.1$,^{{ .Values.config.tunnel.tunnelHost }}$ \
+            --keepalive=300s \
+            --reject-paths="" \
+            --insecure-skip-tls-verify=true \
+            --server=https://kubernetes.default.svc.cluster.local \
+            --token="$PERMANENT_TOKEN"
         image: {{ .Values.image.repository }}/byoc/kubectl:1.31.4
         imagePullPolicy: Always
         name: kubectl-proxy
@@ -115,4 +136,3 @@ spec:
       - configMap:
           name: cloud-agent-backup
         name: spring-config
-{{- end }}

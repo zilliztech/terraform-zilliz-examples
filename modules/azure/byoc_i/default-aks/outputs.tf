@@ -118,7 +118,7 @@ output "maintenance_identity_principal_id" {
 # AKS-managed identities outputs
 output "agentpool_identity_client_id" {
   description = "The client ID of the AKS agentpool managed identity"
-  value       =  data.azurerm_user_assigned_identity.agentpool.client_id
+  value       = data.azurerm_user_assigned_identity.agentpool.client_id
 }
 
 output "agentpool_identity_id" {
@@ -138,8 +138,8 @@ output "azurepolicy_identity_id" {
 
 output "aks_all" {
   description = "All AKS-managed identities"
-  value = azurerm_kubernetes_cluster.main
-  sensitive = true
+  value       = azurerm_kubernetes_cluster.main
+  sensitive   = true
 }
 
 output "run_command_output" {

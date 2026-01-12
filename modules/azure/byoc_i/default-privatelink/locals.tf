@@ -15,8 +15,8 @@ locals {
   )
 
   config = yamldecode(file("${path.module}/../../../conf.yaml"))
-  
-  dns_zone_name = "cloud-tunnel.az-${local.location}.byoc.${local.config.Azure.private_zone_domain_suffix}"
-  
-  zilliz_byoc_privatelink_resource_id = local.config.Azure.zilliz_byoc_privatelink_resource_id["${local.location}"]
+
+  dns_zone_name = "cloud-tunnel.az-${local.location}.${local.config.Azure.private_zone_domain_suffix}"
+
+  zilliz_byoc_privatelink_resource_alias = local.config.Azure.zilliz_byoc_privatelink_resource_alias["${local.location}"]
 }

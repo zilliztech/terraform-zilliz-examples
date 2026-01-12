@@ -15,14 +15,12 @@ eks_cluster_oidc_issuer_thumbprint:
   us-west-2: 9e99a48a9960b14926bb7f3b02e22da2b0ab7280
 
 Azure:
-  private_zone_domain_suffix: byoc.cloud-uat3.zilliz.com
-  zilliz_byoc_privatelink_resource_id:
-    eastus: "/subscriptions/50ebee1c-fba0-4bdc-808e-17e9f8400929/resourceGroups/vdc-east-us/providers/Microsoft.Network/privateLinkServices/e-az-eastus-esb2fa5dpamlza"
-    centralindia: "xxx"
-    westus3: "xxx"
+  private_zone_domain_suffix: xxx
+  zilliz_byoc_privatelink_resource_alias: 
+    westus3: xxx
   agent_config:
-    eastus:
-      acr_name: zillizeastus
-      acr_prefix: zilliz-byoc/vdc/cloud-agent
-      agent_tag: 20251229-a1e98a5
+    westus3:
+      acr_name: xxx
+      acr_prefix: xxx
+      agent_tag: xxx
 

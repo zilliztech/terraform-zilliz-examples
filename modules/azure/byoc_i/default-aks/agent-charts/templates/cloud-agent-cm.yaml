@@ -12,9 +12,7 @@ data:
         dataPlaneId: {{ .Values.config.tunnel.dataPlaneId }}
         srvNo: 1
         ssl: {{ .Values.config.tunnel.ssl }}
-{{- if ne .Values.config.tunnel.k8sToken "" }}
         useK8sProxy: true
-{{- end }}
 
     spring:
       jackson:

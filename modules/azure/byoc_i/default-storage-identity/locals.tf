@@ -17,7 +17,8 @@ locals {
   # Identity name
   storage_identity_name = "${var.name}-storage-identity"
 
-  # Instance identities set (1-10) - must be strings for for_each
+  # Instance identities set (1-9) - must be strings for for_each
+  # range(1, 10) generates [1,2,3,4,5,6,7,8,9] = 9 elements
   instance_identities = toset([for i in range(1, 10) : tostring(i)])
 }
 

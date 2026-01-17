@@ -55,6 +55,19 @@ resource "aws_launch_template" "core" {
     enabled = true
   }
 
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      delete_on_termination = "true"
+      encrypted             = "false"
+      iops                  = 3000
+      throughput            = 125
+      volume_size           = local.k8s_node_groups.core.disk_size
+      volume_type           = "gp3"
+    }
+  }
+
   tag_specifications {
     resource_type = "instance"
     tags = merge({
@@ -158,6 +171,19 @@ resource "aws_launch_template" "default" {
     enabled = true
   }
 
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      delete_on_termination = "true"
+      encrypted             = "false"
+      iops                  = 3000
+      throughput            = 125
+      volume_size           = local.k8s_node_groups.index.disk_size
+      volume_type           = "gp3"
+    }
+  }
+
   tag_specifications {
     resource_type = "instance"
     tags = merge({
@@ -204,7 +230,7 @@ resource "aws_launch_template" "diskann" {
       encrypted             = "false"
       iops                  = 3000
       throughput            = 125
-      volume_size           = 100
+      volume_size           = local.k8s_node_groups.search.disk_size
       volume_type           = "gp3"
     }
   }

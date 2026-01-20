@@ -11,14 +11,6 @@ metadata:
     control-plane: controller-manager
 ---
 apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: infra-agent-sa
-  namespace: infra
-  annotations:
-    azure.workload.identity/client-id: {{ .Values.rbac.maintenanceClientId }}
----
-apiVersion: v1
 kind: Namespace
 metadata:
   name: monitoring

@@ -9,6 +9,10 @@ terraform {
       source  = "azure/azapi"
       version = ">= 1.0.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = ">= 3.0.0"
+    }
     local = {
       source  = "hashicorp/local"
       version = ">= 2.0.0"
@@ -26,9 +30,11 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id = "38fd913c-a183-459a-b857-1c23940d70c1"
+  subscription_id = var.subscription_id
 }
 
 provider "azapi" {
 }
 
+provider "zillizcloud" {
+}

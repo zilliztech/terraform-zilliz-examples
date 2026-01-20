@@ -19,6 +19,12 @@ locals {
   # Default to empty map if location not found in config
   azure_agent_config = try(local.config.Azure.agent_config[local.location], {})
 
+  # Hosts
+  dataplane_suffix = element(split("-", var.dataplane_id), length(split("-", var.dataplane_id)) - 1)
+  env_domain       = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
+  byoc_suffix      = var.enable_private_endpoint ? ".byoc" : ""
+  host_suffix      = ".az-${local.location}${local.byoc_suffix}.${local.env_domain}"
+
   # Standard tags for all resources (similar to AWS EKS pattern)
   # Merge Vendor tag with custom_tags
   common_tags = merge(
@@ -32,7 +38,7 @@ locals {
   # Each node pool should have:
   # - zilliz-group-name: the group name
   # - node-role/*: role-specific labels
-  
+
 
   # Core node pool labels (matching AWS EKS core group)
   core_node_labels = {
@@ -47,9 +53,9 @@ locals {
 
   # Search node pool labels (matching AWS EKS search group)
   search_node_labels = {
-    "zilliz-group-name"  = "search"
-    "node-role/diskANN"  = "true"
-    "node-role/milvus"   = "true"
+    "zilliz-group-name"    = "search"
+    "node-role/diskANN"    = "true"
+    "node-role/milvus"     = "true"
     "node-role/nvme-quota" = "200"
   }
 
@@ -74,5 +80,14 @@ locals {
 
   # Maintenance identity name
   maintenance_identity_name = "${var.cluster_name}-maintenance-identity"
+
+  # Disk type
+  core_disk_type        = "Managed"
+  search_disk_type      = "Ephemeral"
+  index_disk_type       = "Managed"
+  fundamental_disk_type = "Managed"
+
+  # OS SKU
+  os_sku = "Ubuntu"
 }
 

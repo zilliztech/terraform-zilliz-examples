@@ -1,20 +1,20 @@
 # Storage Identity - User Assigned Managed Identity
 resource "azurerm_user_assigned_identity" "storage_identity" {
-  name                = local.storage_identity_name
+  name                = "${local.storage_identity_name}-default"
   location            = local.location
   resource_group_name = var.resource_group_name
 
   tags = local.common_tags
 }
 
-# Role Assignment: Storage Blob Data Contributor on container
-# This allows the storage identity to read/write blobs in the container
-resource "azurerm_role_assignment" "container_bind" {
-  scope                = var.storage_container_scope
+# Role Assignment: Storage Blob Data Contributor on storage account
+# This allows the storage identity to read/write blobs in the storage account
+resource "azurerm_role_assignment" "storage_account_bind" {
+  scope                = var.storage_account_scope
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_user_assigned_identity.storage_identity.principal_id
 
-  description = "Allow storage identity to access storage container"
+  description = "Allow storage identity to access storage account"
 }
 # Instance Identities - User Assigned Managed Identities
 resource "azurerm_user_assigned_identity" "instance_identity" {
@@ -27,15 +27,15 @@ resource "azurerm_user_assigned_identity" "instance_identity" {
   tags = local.common_tags
 }
 
-# Role Assignment: Storage Blob Data Contributor on container for instance identities
-resource "azurerm_role_assignment" "container_bind_instance" {
+# Role Assignment: Storage Blob Data Contributor on storage account for instance identities
+resource "azurerm_role_assignment" "storage_account_bind_instance" {
   for_each = local.instance_identities
 
-  scope                = var.storage_container_scope
+  scope                = var.storage_account_scope
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_user_assigned_identity.instance_identity[each.value].principal_id
 
-  description = "Allow instance identity ${each.value} to access storage container"
+  description = "Allow instance identity ${each.value} to access storage account"
 }
 
 

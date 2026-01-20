@@ -65,22 +65,20 @@ variable "k8s_node_groups" {
     max_size            = number
     desired_size        = number
     os_disk_size_gb     = number
-    os_disk_type        = string
-    node_labels         = optional(map(string), {})
     enable_auto_scaling = optional(bool, true)
   }))
-  
+
   default = {}
-  
+
   validation {
     condition = alltrue([
-      for k, v in var.k8s_node_groups : 
-        v.vm_size != "" && 
-        v.min_size >= 0 && 
-        v.max_size > 0 && 
-        v.desired_size >= 0 && 
-        v.desired_size <= v.max_size &&
-        v.os_disk_size_gb > 0
+      for k, v in var.k8s_node_groups :
+      v.vm_size != "" &&
+      v.min_size >= 0 &&
+      v.max_size > 0 &&
+      v.desired_size >= 0 &&
+      v.desired_size <= v.max_size &&
+      v.os_disk_size_gb > 0
     ])
     error_message = "Invalid node group configuration. Ensure vm_size is set, sizes are valid, and os_disk_size_gb is positive."
   }
@@ -98,19 +96,14 @@ variable "vnet_id" {
   type        = string
 }
 
+variable "instance_storage_identity_ids" {
+  description = "List of resource IDs of all instance storage identities for federated credential management"
+  type        = list(string)
+  default     = []
+}
+
 variable "storage_identity_id" {
-  description = "Resource ID of the storage identity (required for federated credential management)"
-  type        = string
-}
-
-variable "acr_name" {
-  description = "Azure Container Registry name"
-  type        = string
-  default     = ""
-}
-
-variable "acr_prefix" {
-  description = "Azure Container Registry image prefix"
+  description = "Resource ID of the storage identity"
   type        = string
   default     = ""
 }

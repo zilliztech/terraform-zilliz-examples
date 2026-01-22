@@ -35,5 +35,4 @@ terraform.rc
 **/.cursor/*
 
 **/rendered-agent.yaml
-**/agent-context.zip
 **/test-module

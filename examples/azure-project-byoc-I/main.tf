@@ -223,8 +223,9 @@ To destroy this infrastructure, run the following command:
 
 ZILLIZCLOUD_API_KEY=<api_key> terraform destroy \
   -var="dataplane_id=${local.data_plane_id}" \
-  -var="project_id=${local.project_id}"
-
+  -var="project_id=${local.project_id}" \
+  -var="subscription_id=${var.subscription_id}" \
+  -var="resource_group_name=${var.resource_group_name}"
 Note: Replace <api_key> with your actual Zilliz Cloud API key.
 EOT
 }

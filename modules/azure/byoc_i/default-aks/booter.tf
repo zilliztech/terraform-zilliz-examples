@@ -26,11 +26,9 @@ EOF
     endpointIp          = ""
     maintenanceClientId = azurerm_user_assigned_identity.maintenance.client_id
   }
-}
 
-resource "local_file" "rendered_agent_valuesyaml" {
-  filename = "${path.module}/agent-charts/agent.yaml"
-  content = templatefile(
+  # Render agent config as YAML content for command injection 
+  agent_yaml_content = templatefile(
     "${path.module}/agent-charts/cloud_agent.tpl",
     local.agent_config
   )
@@ -45,38 +43,33 @@ data "azurerm_resources" "search_vmss" {
   depends_on = [azurerm_kubernetes_cluster_node_pool.search]
 }
 
-data "archive_file" "agent_context" {
-  type       = "zip"
-  source_dir = "${path.module}/agent-charts"
-
-  output_path = "${path.module}/agent-context.zip"
-
-  depends_on = [local_file.rendered_agent_valuesyaml]
-}
-
+# Pre-generated zip file containing helm chart (excluding .tpl and agent.yaml)
+# Example to regenerate zip file:
+#   Linux/macOS: cd agent-charts && zip -r ../agent-context.zip . -x "*.tpl" -x "agent.yaml"
 resource "azapi_resource_action" "aks_run_command" {
   type        = "Microsoft.ContainerService/managedClusters@2025-10-01"
   resource_id = azurerm_kubernetes_cluster.main.id
   action      = "runCommand"
   method      = "POST"
 
-  locks = [data.archive_file.agent_context.output_sha256]
-
   body = {
     command = <<-EOT
+      cat > agent.yaml << 'AGENT_VALUES'
+      ${local.agent_yaml_content}
+      AGENT_VALUES
       helm upgrade --install cloud-agent ./ -f ./agent.yaml -n vdc --create-namespace
-      kubectl rollout status deployment/cloud-agent -n vdc --timeout=50s
+      kubectl rollout status deployment/cloud-agent -n vdc --timeout=180s
     EOT
 
-    context = filebase64(data.archive_file.agent_context.output_path)
+    context = filebase64("${path.module}/agent-context.zip")
 
   }
 
-  depends_on = [data.archive_file.agent_context, azurerm_kubernetes_cluster_node_pool.core]
+  depends_on = [azurerm_kubernetes_cluster_node_pool.core]
 
   response_export_values = ["properties.exitCode", "properties.logs"]
   lifecycle {
-    ignore_changes = [body, locks]
+    ignore_changes = [body]
     postcondition {
       condition     = self.output.properties.exitCode == 0
       error_message = "AKS Run Command failed.\nLogs: ${self.output.properties.logs}"
@@ -84,8 +77,8 @@ resource "azapi_resource_action" "aks_run_command" {
   }
 
   timeouts {
-    create = "60s"
-    update = "60s"
+    create = "300s"  # 5 minutes - helm install + rollout may take time on fresh cluster
+    update = "300s"
     delete = "60s"
   }
 }

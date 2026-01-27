@@ -13,12 +13,12 @@ eks_cluster_oidc_issuer_thumbprint:
   us-west-2: 9e99a48a9960b14926bb7f3b02e22da2b0ab7280
 
 Azure:
-  private_zone_domain_suffix: xxx
+  private_zone_domain_suffix: byoc.zillizcloud.com
   zilliz_byoc_privatelink_resource_alias: 
-    westus3: xxx
+    southeastasia: zilliz-byoc-az-southeastasia.5f6659f1-d834-4668-80b1-162787693908.southeastasia.azure.privatelinkservice
   agent_config:
-    westus3:
-      acr_name: xxx
-      acr_prefix: xxx
-      agent_tag: xxx
+    southeastasia:
+      acr_name: zillizsoutheastasia-cgfbbjgsd6h7abf6.azurecr.io
+      acr_prefix: zilliz-byoc
+      agent_tag: release_2.23.0-20260116-4932-a835d8d0c1
 

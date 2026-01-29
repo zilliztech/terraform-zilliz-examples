@@ -18,7 +18,7 @@ EOF
 
   agent_config = {
     repository          = "${local.azure_agent_config.acr_name}.azurecr.io/${local.azure_agent_config.acr_prefix}"
-    tag                 = var.agent_tag != "" ? var.agent_tag : local.azure_agent_config.agent_tag
+    tag                 = var.agent_tag
     serverHost          = "cloud-tunnel${local.host_suffix}"
     authToken           = var.auth_token
     dataPlaneId         = var.dataplane_id

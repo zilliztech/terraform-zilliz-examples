@@ -111,7 +111,6 @@ variable "storage_identity_id" {
 variable "agent_tag" {
   description = "Agent image tag"
   type        = string
-  default     = ""
 }
 
 variable "env" {

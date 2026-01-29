@@ -20,7 +20,6 @@ Azure:
     southeastasia: zilliz-byoc-az-southeastasia.5f6659f1-d834-4668-80b1-162787693908.southeastasia.azure.privatelinkservice
   agent_config:
     southeastasia:
-      acr_name: zillizsoutheastasia-cgfbbjgsd6h7abf6.azurecr.io
+      acr_name: zillizsoutheastasia-cgfbbjgsd6h7abf6
       acr_prefix: zilliz-byoc
-      agent_tag: release_2.23.0-20260116-4932-a835d8d0c1
 

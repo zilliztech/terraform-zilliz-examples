@@ -23,7 +23,7 @@ terraform {
     }
     zillizcloud = {
       source  = "zilliztech/zillizcloud"
-      version = "0.6.26-rc2"
+      version = "~> 0.6.26"
     }
   }
 }

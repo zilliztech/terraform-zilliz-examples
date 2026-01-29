@@ -93,8 +93,8 @@ The DNS zone name and Zilliz Cloud resource ID are read from `conf.yaml`:
 ```yaml
 Azure:
   private_zone_domain_suffix: "zillizcloud.com"
-  zilliz_byoc_privatelink_resource_id:
-    eastus: "/subscriptions/.../providers/Microsoft.Network/privateLinkServices/zilliz-cloud-eastus"
-    westus: "/subscriptions/.../providers/Microsoft.Network/privateLinkServices/zilliz-cloud-westus"
+  zilliz_byoc_privatelink_resource_alias:
+    eastus: "zilliz-cloud-eastus.xxxx-xxxx-xxxxxxxxx.eastus.azure.privatelinkservice"
+    westus: "zilliz-cloud-eastus.xxxxx-xxxx-xxxxxxxxx.westus.azure.privatelinkservice"
 ```
 

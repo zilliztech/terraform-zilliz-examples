@@ -1,11 +1,12 @@
-# Provisioning Azure Zilliz BYOC Project (WIP)
+# Provisioning Azure Zilliz BYOC Project 
 
-This example is using the following modules and [zilliz-cloud provider](https://registry.terraform.io/providers/zilliztech/zillizcloud/latest):
-- [azure/byoc_i/default-virtual-networks module](../../modules/azure/byoc_i/default-virtual-networks)
-- [azure/byoc_i/default-storageaccount module](../../modules/azure/byoc_i/default-storageaccount)
-- [azure/byoc_i/default-storage-identity module](../../modules/azure/byoc_i/default-storage-identity)
-- [azure/byoc_i/default-privatelink module](../../modules/azure/byoc_i/default-privatelink)
-- [azure/byoc_i/default-aks module](../../modules/azure/byoc_i/default-aks)
+## Overview
+The Azure BYOC-I example provides:
+- Azure Virtual Network (VNet) configuration
+- Azure Storage Account for Milvus storage
+- Azure Kubernetes Service (AKS) cluster setup
+- Managed Identities for authentication
+- Private Endpoint configuration (optional)
 
 ## Prerequisites
 
@@ -149,3 +150,19 @@ azure-project-byoc-I/
 - [default-storage-identity](../../modules/azure/byoc_i/default-storage-identity/README.md)
 - [default-privatelink](../../modules/azure/byoc_i/default-privatelink/README.md)
 - [default-aks](../../modules/azure/byoc_i/default-aks/README.md)
+
+
+## Stay Updated
+
+For updates on Azure BYOC-I support:
+- Check [Zilliz Cloud Documentation](https://docs.zilliz.com/)
+- Review [Zilliz Cloud Release Notes](https://docs.zilliz.com/docs/release-notes)
+- Contact Zilliz Support
+
+
+## Support
+
+For questions about Azure BYOC-I availability:
+- Contact Zilliz Support
+- Check [Zilliz Cloud Documentation](https://docs.zilliz.com/)
+- Review [Zilliz Community Forums](https://github.com/milvus-io/milvus/discussions)

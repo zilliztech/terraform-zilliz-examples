@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-agent
+  labels:
+    app: cloud-agent
+  namespace: vdc
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: cloud-agent
+  ports:
+    - name: http
+      port: 9501
+      targetPort: 9501

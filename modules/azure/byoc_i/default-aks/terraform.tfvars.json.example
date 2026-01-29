@@ -1,0 +1,59 @@
+{
+  "cluster_name": "example-aks-cluster",
+  "location": "East US",
+  "resource_group_name": "example-resource-group",
+  "subnet_id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example-resource-group/providers/Microsoft.Network/virtualNetworks/example-vnet/subnets/milvus",
+  "default_node_pool": {
+    "vm_size": "Standard_D4as_v5",
+    "node_count": 1,
+    "min_count": 1,
+    "max_count": 5,
+    "enable_auto_scaling": true
+  },
+  "k8s_node_groups": {
+    "core": {
+      "vm_size": "Standard_D4as_v5",
+      "min_size": 1,
+      "max_size": 50,
+      "desired_size": 1,
+      "os_disk_size_gb": 128,
+      "os_disk_type": "Managed"
+    },
+    "search": {
+      "vm_size": "Standard_L16s_v3",
+      "min_size": 0,
+      "max_size": 100,
+      "desired_size": 0,
+      "os_disk_size_gb": 160,
+      "os_disk_type": "Managed"
+    },
+    "index": {
+      "vm_size": "Standard_D8s_v5",
+      "min_size": 0,
+      "max_size": 100,
+      "desired_size": 0,
+      "os_disk_size_gb": 256,
+      "os_disk_type": "Managed"
+    },
+    "fundamental": {
+      "vm_size": "Standard_D4as_v5",
+      "min_size": 0,
+      "max_size": 6,
+      "desired_size": 0,
+      "os_disk_size_gb": 128,
+      "os_disk_type": "Managed"
+    }
+  },
+  "custom_tags": {
+    "Environment": "Production",
+    "Project": "Milvus-AKS",
+    "Owner": "Example-Team"
+  },
+  "vnet_id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example-resource-group/providers/Microsoft.Network/virtualNetworks/example-vnet",
+  "acr_name": "exampleacr",
+  "acr_prefix": "example-prefix",
+  "agent_tag": "latest",
+  "env": "production",
+  "dataplane_id": "xxxxxxxxxxxx",
+  "storage_identity_id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example-resource-group/providers/Microsoft.ManagedIdentity/userAssignedIdentities/example-storage-identity"
+}

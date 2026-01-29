@@ -3,7 +3,7 @@
   "location": "centralindia",
   "resource_group_name": "xxxxx",
   "storage_account_scope": "xxxxx",
-  "tags": {
+  "custom_tags": {
     "Environment": "Production",
     "Project": "Zilliz-BYOC"
   }

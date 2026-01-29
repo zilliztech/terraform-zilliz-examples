@@ -4,8 +4,9 @@ This Terraform module creates a User Assigned Managed Identity for accessing Azu
 
 ## Features
 
-- Creates User Assigned Managed Identity
-- Configures Storage Blob Data Contributor role assignment on storage account scope
+- Creates a default User Assigned Managed Identity for storage access
+- Creates 9 instance User Assigned Managed Identities (numbered 1-9) for workload isolation
+- Configures Storage Blob Data Contributor role assignment on storage account scope for all identities
 - Implements security best practices with least privilege
 - Tags resources with Vendor=zilliz-byoc tag
 
@@ -13,7 +14,7 @@ This Terraform module creates a User Assigned Managed Identity for accessing Azu
 
 ```hcl
 module "storage_identity" {
-  source = "../../modules/azure/storage-identity"
+  source = "../../modules/azure/byoc_i/default-storage-identity"
 
   name                  = "zilliz-byoc"
   location              = "East US"
@@ -48,23 +49,23 @@ module "storage_identity" {
 
 | Name | Description |
 |------|-------------|
-| storage_identity_object_id | The ID of the storage user assigned managed identity |
-| storage_identity_client_id | The client ID of the storage user assigned managed identity |
-| storage_identity_principal_id | The principal ID of the storage user assigned managed identity |
+| `storage_identity` | The default storage identity object with `object_id`, `client_id`, and `principal_id` |
+| `instance_identities` | List of instance identity objects, each with `object_id`, `client_id`, and `principal_id` |
 
 ## Identity Details
 
 ### Storage Identity
 
-The storage identity is used by workloads (e.g., Milvus) to access Azure Storage accounts.
+The module creates one default storage identity and 9 instance identities, all used by workloads (e.g., Milvus) to access Azure Storage accounts.
 
 **Role Assignments:**
-- **Storage Blob Data Contributor** on storage account scope
+- **Storage Blob Data Contributor** on storage account scope for all identities (default + instance)
   - Allows read/write access to blobs in the specified storage account
   - Scoped to the specific storage account
 
 **Identity Naming:**
-- The identity name is automatically prefixed with "zilliz-byoc-" (e.g., `zilliz-byoc-{name}`)
+- Default identity: `{name}-storage-identity-default`
+- Instance identities: `{name}-storage-identity-{1..9}`
 
 **Tags:**
 - All resources are tagged with `Vendor=zilliz-byoc`

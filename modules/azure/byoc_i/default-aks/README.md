@@ -93,9 +93,7 @@ module "milvus_aks" {
 | service_cidr | CIDR for Kubernetes services | `string` | `"10.255.0.0/16"` | no |
 | default_node_pool | Configuration for the default node pool | `object` | See below | no |
 | k8s_node_groups | Configuration for Kubernetes node groups (core, search, index, fundamental) | `map(object)` | See below | no |
-| acr_name | Azure Container Registry name | `string` | `""` | no |
-| acr_prefix | Azure Container Registry image prefix | `string` | `""` | no |
-| agent_tag | Agent image tag | `string` | `""` | no |
+| agent_tag | Agent image tag | `string` | n/a | yes |
 | env | Environment name | `string` | `""` | no |
 | dataplane_id | Dataplane ID | `string` | `""` | no |
 | enable_private_endpoint | Whether to enable private endpoint for the AKS cluster | `bool` | `false` | no |

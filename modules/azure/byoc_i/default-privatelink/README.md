@@ -45,7 +45,7 @@ The module automatically determines the DNS zone name based on the Azure region:
 
 The DNS zone name and Zilliz Cloud resource ID are read from `conf.yaml`:
 - `Azure.private_zone_domain_suffix`
-- `Azure.zilliz_byoc_privatelink_resource_id[region]`
+- `Azure.zilliz_byoc_privatelink_resource_alias[region]`
 
 ## Inputs
 
@@ -72,7 +72,7 @@ The DNS zone name and Zilliz Cloud resource ID are read from `conf.yaml`:
 
 ## Prerequisites
 
-1. **conf.yaml**: The module requires a `conf.yaml` file at `../../conf.yaml` with:
+1. **conf.yaml**: The module requires a `conf.yaml` file at `../../../conf.yaml` with:
    - `Azure.private_zone_domain_suffix`: Domain suffix for DNS zones
    - `Azure.zilliz_byoc_privatelink_resource_id`: Map of region to Zilliz Cloud resource ID
 
@@ -82,8 +82,8 @@ The DNS zone name and Zilliz Cloud resource ID are read from `conf.yaml`:
 
 ## Notes
 
-- The private endpoint uses automatic connection (not manual)
-- DNS zone registration is disabled (registration_enabled = false)
+- The private endpoint is configured with `is_manual_connection = true` because it connects via `private_connection_resource_alias`, which requires this setting. However, since the user's subscription is already added to the Zilliz Cloud Private Link Service allow list, the connection will be auto-approved in practice.
+- DNS zone registration is disabled (`registration_enabled = false`)
 - The DNS A record uses TTL of 300 seconds
 - The private endpoint connection name is automatically generated as `{private_endpoint_name}-connection`
 - The DNS zone group name is automatically generated as `{private_endpoint_name}-dns-zone-group`

@@ -58,7 +58,7 @@ variable "default_node_pool" {
 # Additional Node Pools Configuration
 # Similar to AWS EKS k8s_node_groups pattern - supports dynamic node pools
 variable "k8s_node_groups" {
-  description = "Configuration for Kubernetes node groups (similar to AWS EKS k8s_node_groups). Supports any node pool names."
+  description = "Configuration for Kubernetes node groups. Must contain keys: core, search, index, fundamental."
   type = map(object({
     vm_size             = string
     min_size            = number
@@ -68,7 +68,10 @@ variable "k8s_node_groups" {
     enable_auto_scaling = optional(bool, true)
   }))
 
-  default = {}
+  validation {
+    condition     = length(setsubtract(["core", "search", "index", "fundamental"], keys(var.k8s_node_groups))) == 0
+    error_message = "k8s_node_groups must contain all required keys: core, search, index, fundamental."
+  }
 
   validation {
     condition = alltrue([

@@ -30,6 +30,6 @@ output "private_dns_zone_vnet_link_id" {
 
 output "private_endpoint_ip_address" {
   description = "IP address of the private endpoint"
-  value       = azurerm_private_endpoint.main
+  value       = azurerm_private_endpoint.main.private_service_connection[0].private_ip_address
   sensitive   = true
 }

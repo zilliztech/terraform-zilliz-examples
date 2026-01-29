@@ -111,15 +111,26 @@ Output:
 
 | Name | Description |
 |------|-------------|
-| `resource_group_name` | Resource group name |
-| `vnet_id` | Virtual Network ID |
-| `vnet_name` | Virtual Network name |
-| `storage_account_id` | Storage Account ID |
-| `storage_account_name` | Storage Account name |
-| `storage_container_name` | Storage container name |
-| `user_assigned_identity_id` | User-assigned Managed Identity ID |
-| `aks_cluster_id` | AKS cluster ID |
-| `aks_cluster_name` | AKS cluster name |
+| `vnet_id` | ID of the virtual network |
+| `vnet_name` | Name of the virtual network |
+| `subnet_ids` | Map of subnet names to their IDs |
+| `subnet_address_prefixes` | Map of subnet names to their address prefixes |
+| `nat_gateway_id` | ID of the NAT Gateway |
+| `storage_account_id` | ID of the storage account |
+| `storage_account_name` | Name of the storage account |
+| `storage_account_primary_blob_endpoint` | Primary blob endpoint URL |
+| `storage_container_name` | Name of the storage container |
+| `storage_identities` | Storage identities (list of {client_id, principal_id, resource_id}) |
+| `zilliz_private_endpoint_id` | ID of the Zilliz Cloud private endpoint |
+| `zilliz_private_endpoint_name` | Name of the Zilliz Cloud private endpoint |
+| `zilliz_private_endpoint_ip_address` | IP address of the Zilliz Cloud private endpoint (sensitive) |
+| `zilliz_private_dns_zone_id` | ID of the private DNS zone for Zilliz Cloud |
+| `zilliz_private_dns_zone_name` | Name of the private DNS zone for Zilliz Cloud |
+| `aks_cluster_id` | ID of the AKS cluster |
+| `aks_cluster_name` | Name of the AKS cluster |
+| `aks_cluster_fqdn` | FQDN of the AKS cluster |
+| `aks_cluster_private_fqdn` | Private FQDN of the AKS cluster |
+| `aks_kube_config` | Kubernetes configuration for the AKS cluster (sensitive) |
 
 
 ## File Structure

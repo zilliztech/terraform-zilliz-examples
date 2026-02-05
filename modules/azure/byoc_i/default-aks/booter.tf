@@ -19,10 +19,10 @@ EOF
   agent_config = {
     repository          = "${local.azure_agent_config.acr_name}.azurecr.io/${local.azure_agent_config.acr_prefix}"
     tag                 = var.agent_tag
-    serverHost          = "cloud-tunnel${local.host_suffix}"
+    serverHost          = local.server_host
     authToken           = var.auth_token
     dataPlaneId         = var.dataplane_id
-    tunnelHost          = "k8s${local.dataplane_suffix}${local.host_suffix}"
+    tunnelHost          = local.tunnel_host
     endpointIp          = ""
     maintenanceClientId = azurerm_user_assigned_identity.maintenance.client_id
   }

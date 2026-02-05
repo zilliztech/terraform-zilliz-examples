@@ -20,10 +20,15 @@ locals {
   azure_agent_config = try(local.config.Azure.agent_config[local.location], {})
 
   # Hosts
-  dataplane_suffix = element(split("-", var.dataplane_id), length(split("-", var.dataplane_id)) - 1)
+
+  # The regex [^-]+$ matches one or more non-hyphen characters at the end of the string
+  # zilliz-byoc-azure-southeastasia-xxxyyyzzz -> xxxyyyzzz
+  dataplane_suffix = regex("[^-]+$", var.dataplane_id)
   env_domain       = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
-  byoc_suffix      = var.enable_private_endpoint ? ".byoc" : ""
-  host_suffix      = ".az-${local.location}${local.byoc_suffix}.${local.env_domain}"
+  # if enable_private_endpoint is true, the server_host is cloud-tunnel.az-southeastasia.byoc.cloud.zilliz.com, otherwise it is cloud-tunnel.az-southeastasia.zilliz.com
+  server_host      = "cloud-tunnel.az-${local.location}${var.enable_private_endpoint ? ".byoc" : ""}.${local.env_domain}"
+  # k8sxxxyyyzzz.az-southeastasia.byoc.cloud.zilliz.com
+  tunnel_host      = "k8s${local.dataplane_suffix}.az-${local.location}.byoc.${local.env_domain}"
 
   # Standard tags for all resources (similar to AWS EKS pattern)
   # Merge Vendor tag with custom_tags

@@ -6,7 +6,6 @@ module "s3_bucket" {
 
   for_each = var.s3_bucket_names
   bucket   = "${var.name}-${each.key}"
-  acl      = "private"
 
   control_object_ownership = true
   object_ownership         = "BucketOwnerEnforced"

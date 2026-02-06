@@ -35,3 +35,5 @@ terraform.rc
 **/rendered-agent.yaml
 **/test-module
 
+
+.notebook/**

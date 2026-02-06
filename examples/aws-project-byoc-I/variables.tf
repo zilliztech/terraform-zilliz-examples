@@ -210,3 +210,15 @@ variable "s3_kms_key_arn" {
   type        = string
   default     = ""
 }
+
+variable "enable_aws_cse" {
+  description = "Enable AWS CSE"
+  type        = bool
+  default     = false
+}
+
+variable "aws_cse_exiting_key_arn" {
+  description = "The ARN of the existing KMS key to use for AWS CSE"
+  type        = string
+  default     = ""
+}

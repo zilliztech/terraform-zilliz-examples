@@ -79,6 +79,14 @@ module "eks" {
   depends_on = [module.private_link]
 }
 
+module "kms" {
+  count = var.enable_aws_cse ? 1 : 0
+  source = "../../modules/aws_byoc_i/kms"
+  prefix = local.prefix_name
+  trust_role_arn = local.storage_role.arn
+  aws_cse_exiting_key_arn = var.aws_cse_exiting_key_arn
+}
+
 resource "zillizcloud_byoc_i_project_agent" "this" {
   project_id    = local.project_id
   data_plane_id = local.data_plane_id
@@ -108,17 +116,29 @@ resource "zillizcloud_byoc_i_project" "this" {
     storage = {
       bucket_id = local.s3_bucket_id
     }
+    cse = var.enable_aws_cse ? {
+      default_aws_cse_key_arn     = module.kms[0].cse_key_arn
+      aws_cse_role_arn    = module.kms[0].cse_role_arn
+      external_id = module.kms[0].external_id
+    } : null
   }
 
   // depend on private link to establish agent tunnel connection
   depends_on = [zillizcloud_byoc_i_project_agent.this,
-    module.eks, module.private_link, module.vpc, module.s3]
+    module.eks, module.private_link, module.vpc, module.s3, module.kms]
   lifecycle {
      ignore_changes = [data_plane_id, project_id, aws, ext_config]
      prevent_destroy = true
   }
 
   ext_config = base64encode(jsonencode(local.ext_config))
+}
+
+
+
+
+output "cse_key_arn" {
+  value = var.enable_aws_cse ? module.kms[0].cse_key_arn : null
 }
 
 output "data_plane_id" {

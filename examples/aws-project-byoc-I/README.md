@@ -240,7 +240,28 @@ The example automatically creates **4 IAM roles** with specific purposes:
 
 ---
 
-### 6. ECR Integration
+### 6. Encryption
+
+#### Client-Side Encryption (CSE)
+- **Enable AWS CSE with automatic KMS key creation**:
+  ```hcl
+  enable_aws_cse = true
+  ```
+  - **Purpose**: Enables client-side encryption for Milvus data
+  - **Behavior**: Automatically creates a new KMS key for CSE operations
+  - **Output**: `cse_key_arn` - The ARN of the created CSE KMS key
+
+- **Enable AWS CSE with existing KMS key**:
+  ```hcl
+  enable_aws_cse          = true
+  aws_cse_exiting_key_arn = "arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012"
+  ```
+  - **Purpose**: Uses your existing KMS key for client-side encryption
+  - **Note**: The existing key must allow the storage role to use it for encryption/decryption
+
+---
+
+### 7. ECR Integration
 
 #### Default
 - **Default ECR Configuration**:
@@ -275,7 +296,7 @@ The example automatically creates **4 IAM roles** with specific purposes:
 
 ---
 
-### 7. Resource Tagging
+### 8. Resource Tagging
 
 #### Default
 - **Default Tags**: Resources are automatically tagged with:
@@ -501,6 +522,7 @@ After successful deployment:
 |--------|-------------|
 | `data_plane_id` | BYOC project data plane ID |
 | `project_id` | BYOC project ID |
+| `cse_key_arn` | CSE KMS key ARN (if `enable_aws_cse = true`) |
 
 ## Important Notes
 

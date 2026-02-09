@@ -106,3 +106,8 @@ minimal_roles = {
     # use_existing_arn = "arn:aws:iam::123456789012:role/your-existing-node-role"  # Use existing role by ARN (optional)
   }
 }
+
+# Enable AWS Client-Side Encryption (CSE) for Milvus data
+# When enabled without aws_cse_exiting_key_arn, a new KMS key will be created automatically
+enable_aws_cse          = false
+aws_cse_exiting_key_arn = ""  # Optional: Use existing KMS key ARN for CSE

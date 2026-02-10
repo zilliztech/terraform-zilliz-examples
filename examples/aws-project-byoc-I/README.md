@@ -245,7 +245,7 @@ The example automatically creates **4 IAM roles** with specific purposes:
 #### Client-Side Encryption (CSE)
 - **Enable AWS CSE with automatic KMS key creation**:
   ```hcl
-  enable_aws_cse = true
+  enable_cse = true
   ```
   - **Purpose**: Enables client-side encryption for Milvus data
   - **Behavior**: Automatically creates a new KMS key for CSE operations
@@ -253,7 +253,7 @@ The example automatically creates **4 IAM roles** with specific purposes:
 
 - **Enable AWS CSE with existing KMS key**:
   ```hcl
-  enable_aws_cse          = true
+  enable_cse          = true
   aws_cse_exiting_key_arn = "arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012"
   ```
   - **Purpose**: Uses your existing KMS key for client-side encryption
@@ -522,7 +522,7 @@ After successful deployment:
 |--------|-------------|
 | `data_plane_id` | BYOC project data plane ID |
 | `project_id` | BYOC project ID |
-| `cse_key_arn` | CSE KMS key ARN (if `enable_aws_cse = true`) |
+| `cse_key_arn` | CSE KMS key ARN (if `enable_cse = true`) |
 
 ## Important Notes
 

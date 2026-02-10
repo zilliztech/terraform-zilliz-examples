@@ -80,7 +80,7 @@ module "eks" {
 }
 
 module "kms" {
-  count = var.enable_aws_cse ? 1 : 0
+  count = var.enable_cse ? 1 : 0
   source = "../../modules/aws_byoc_i/kms"
   prefix = local.prefix_name
   trust_role_arn = local.storage_role.arn
@@ -116,7 +116,7 @@ resource "zillizcloud_byoc_i_project" "this" {
     storage = {
       bucket_id = local.s3_bucket_id
     }
-    cse = var.enable_aws_cse ? {
+    cse = var.enable_cse ? {
       default_aws_cse_key_arn     = module.kms[0].cse_key_arn
       aws_cse_role_arn    = module.kms[0].cse_role_arn
       external_id = module.kms[0].external_id
@@ -138,7 +138,7 @@ resource "zillizcloud_byoc_i_project" "this" {
 
 
 output "cse_key_arn" {
-  value = var.enable_aws_cse ? module.kms[0].cse_key_arn : null
+  value = var.enable_cse ? module.kms[0].cse_key_arn : null
 }
 
 output "data_plane_id" {

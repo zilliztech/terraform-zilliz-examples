@@ -109,5 +109,5 @@ minimal_roles = {
 
 # Enable AWS Client-Side Encryption (CSE) for Milvus data
 # When enabled without aws_cse_exiting_key_arn, a new KMS key will be created automatically
-enable_aws_cse          = false
+enable_cse          = false
 aws_cse_exiting_key_arn = ""  # Optional: Use existing KMS key ARN for CSE

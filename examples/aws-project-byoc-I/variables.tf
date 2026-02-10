@@ -211,7 +211,7 @@ variable "s3_kms_key_arn" {
   default     = ""
 }
 
-variable "enable_aws_cse" {
+variable "enable_cse" {
   description = "Enable AWS CSE"
   type        = bool
   default     = false

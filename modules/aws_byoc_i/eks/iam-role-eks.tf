@@ -73,6 +73,12 @@ resource "aws_iam_role_policy_attachment" "eks_assume" {
   role       = aws_iam_role.eks_role[0].name
 }
 
+resource "aws_iam_role_policy_attachment" "eks_ebs_kms_policy_attachment" {
+  count      = !var.minimal_roles.enabled && var.enable_ebs_kms ? 1 : 0
+  policy_arn = aws_iam_policy.aws_ebs_csi_kms_policy[0].arn
+  role       = aws_iam_role.eks_role[0].name
+}
+
 resource "aws_iam_policy" "node_assume_role_policy" {
   name        = "${local.prefix_name}-AssumeSpecificRolePolicy"
   description = "Policy to allow assuming a specific role"

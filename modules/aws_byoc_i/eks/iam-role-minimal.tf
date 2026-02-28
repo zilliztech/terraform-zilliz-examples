@@ -100,3 +100,9 @@ resource "aws_iam_role_policy_attachment" "eks_node_role_assume" {
   policy_arn = aws_iam_policy.node_assume_role_policy.arn
   role       = aws_iam_role.eks_node_role[0].name
 }
+
+resource "aws_iam_role_policy_attachment" "eks_node_role_ebs_kms_policy" {
+  count      = var.minimal_roles.enabled && length(var.minimal_roles.node_role.use_existing_arn) == 0 && var.enable_ebs_kms ? 1 : 0
+  policy_arn = aws_iam_policy.aws_ebs_csi_kms_policy[0].arn
+  role       = aws_iam_role.eks_node_role[0].name
+}

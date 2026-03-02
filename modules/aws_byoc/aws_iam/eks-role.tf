@@ -605,3 +605,28 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_kms_policy_attachment" {
   policy_arn = aws_iam_policy.aws_ebs_csi_kms_policy[0].arn
   role       = aws_iam_role.eks_role.name
 }
+
+# https://docs.aws.amazon.com/autoscaling/ec2/userguide/key-policy-requirements-EBS-encryption.html
+# ASG uses a service-linked role (AWSServiceRoleForAutoScaling) to launch EC2 instances.
+# This role's permissions are hardcoded and do not include KMS access by default.
+# A KMS grant is required to allow ASG to create encrypted EBS root volumes.
+data "aws_iam_role" "asg_service_linked_role" {
+  count = var.enable_ebs_kms ? 1 : 0
+  name  = "AWSServiceRoleForAutoScaling"
+}
+
+resource "aws_kms_grant" "asg_ebs_kms_grant" {
+  count             = var.enable_ebs_kms ? 1 : 0
+  key_id            = var.ebs_kms_key_arn
+  grantee_principal = data.aws_iam_role.asg_service_linked_role[0].arn
+  operations = [
+    "Encrypt",
+    "Decrypt",
+    "ReEncryptFrom",
+    "ReEncryptTo",
+    "GenerateDataKey",
+    "GenerateDataKeyWithoutPlaintext",
+    "DescribeKey",
+    "CreateGrant",
+  ]
+}

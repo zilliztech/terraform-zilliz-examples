@@ -280,16 +280,16 @@ resource "aws_launch_template" "diskann" {
 }
 
 
-# Determine AMI type based on instance architecture
+# Determine AMI type for each node group:
+# - Use the explicitly provided ami_type if set
+# - Otherwise auto-detect from instance type (ARM 'g' suffix -> AL2023_ARM_64_STANDARD, else AL2023_x86_64_STANDARD)
 locals {
-  # Map instance types to their appropriate AMI types
-  # ARM instances typically have 'g' in their generation identifier (e.g., m6g, c7g, t4g)
-  # This regex matches instance types with 'g' after the number, which indicates ARM architecture
   ami_types = {
-    search      = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.search.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
-    core        = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.core.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
-    index       = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.index.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
-    fundamental = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.fundamental.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
+    for name, ng in var.k8s_node_groups : name => (
+      ng.ami_type != "" ? ng.ami_type : (
+        can(regex("^[a-z]+[0-9]+g[a-z]*\\.", ng.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
+      )
+    )
   }
 }
 

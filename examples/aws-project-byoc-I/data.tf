@@ -68,8 +68,12 @@ locals {
   }
 
   # Kubernetes node group specifications and resource quotas
-  # Defines the compute capacity and node types for the EKS cluster
-  k8s_node_groups = data.zillizcloud_byoc_i_project_settings.this.node_quotas
+  # Merges node quotas from Zilliz cloud settings with optional ami_type overrides
+  k8s_node_groups = {
+    for name, ng in data.zillizcloud_byoc_i_project_settings.this.node_quotas : name => merge(ng, {
+      ami_type = lookup(var.k8s_node_group_ami_type, name, "")
+    })
+  }
   
   # Zilliz project identifier for resource tagging and organization
   # Links AWS resources back to the specific Zilliz cloud project

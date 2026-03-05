@@ -107,6 +107,17 @@ minimal_roles = {
   }
 }
 
+# Optional AMI type override per node group (core, index, search, fundamental)
+# By default, AMI type is auto-detected from instance architecture:
+#   - ARM instances (e.g., m6g, c7g, t4g) -> AL2023_ARM_64_STANDARD
+#   - x86 instances (e.g., m6i, c5, r5)   -> AL2023_x86_64_STANDARD
+# k8s_node_group_ami_type = {
+#   fundamental = "BOTTLEROCKET_x86_64"
+#   search      = "BOTTLEROCKET_x86_64"
+#   index       = "BOTTLEROCKET_x86_64"
+#   core        = "BOTTLEROCKET_x86_64"
+# }
+
 # Enable AWS Client-Side Encryption (CSE) for Milvus data
 # When enabled without aws_cse_exiting_key_arn, a new KMS key will be created automatically
 enable_aws_cse          = false

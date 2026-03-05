@@ -222,3 +222,30 @@ variable "aws_cse_exiting_key_arn" {
   type        = string
   default     = ""
 }
+
+variable "k8s_node_group_ami_type" {
+  description = <<-EOT
+    Optional AMI type override per node group (core, index, search, fundamental).
+    By default, the AMI type is auto-detected based on instance architecture:
+      - ARM instances (e.g., m6g, c7g, t4g) -> AL2023_ARM_64_STANDARD
+      - x86 instances (e.g., m6i, c5, r5)   -> AL2023_x86_64_STANDARD
+
+    When specified, the provided value takes precedence over auto-detection.
+    Only the node groups listed in the map are overridden; others keep auto-detection.
+
+    Example - override a single node group:
+      k8s_node_group_ami_type = {
+        core = "AL2_x86_64"
+      }
+
+    Example - override multiple node groups:
+      k8s_node_group_ami_type = {
+        fundamental   = "BOTTLEROCKET_x86_64"
+        search        = "BOTTLEROCKET_x86_64"
+        index         = "BOTTLEROCKET_x86_64"
+        core          = "BOTTLEROCKET_x86_64"
+      }
+  EOT
+  type        = map(string)
+  default     = {}
+}

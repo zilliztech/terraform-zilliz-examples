@@ -85,6 +85,7 @@ variable "k8s_node_groups" {
     desired_size   = number
     instance_types = string
     capacity_type  = string
+    ami_type       = optional(string, "")
   }))
   
   default = {

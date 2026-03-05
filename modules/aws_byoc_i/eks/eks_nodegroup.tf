@@ -493,7 +493,8 @@ resource "time_sleep" "wait_init" {
 }
 
 resource "aws_eks_node_group" "init" {
-  ami_type      = "AL2023_x86_64_STANDARD"
+  # make it share the same AMI type as core node group
+  ami_type      = local.ami_types.core
   capacity_type = "ON_DEMAND"
   cluster_name  = local.eks_cluster_name
 

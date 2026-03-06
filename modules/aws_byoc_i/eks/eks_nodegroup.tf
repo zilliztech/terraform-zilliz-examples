@@ -43,6 +43,7 @@ resource "aws_launch_template" "core" {
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
   vpc_security_group_ids = local.node_security_group_ids
+  image_id = local.k8s_node_groups.core.ami_id
 
   user_data = local.core_user_data
   metadata_options {
@@ -105,6 +106,7 @@ resource "aws_launch_template" "init" {
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
   vpc_security_group_ids = local.node_security_group_ids
+  image_id = local.k8s_node_groups.core.ami_id
 
   user_data = local.init_user_data
   metadata_options {
@@ -170,6 +172,7 @@ resource "aws_launch_template" "default" {
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
   vpc_security_group_ids = local.node_security_group_ids
+  image_id = local.k8s_node_groups.fundamental.ami_id
 
   metadata_options {
     http_endpoint               = "enabled"
@@ -228,6 +231,7 @@ resource "aws_launch_template" "diskann" {
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
   user_data = "TUlNRS1WZXJzaW9uOiAxLjAKQ29udGVudC1UeXBlOiBtdWx0aXBhcnQvbWl4ZWQ7IGJvdW5kYXJ5PSI9PU1ZQk9VTkRBUlk9PSIKCi0tPT1NWUJPVU5EQVJZPT0KQ29udGVudC1UeXBlOiB0ZXh0L3gtc2hlbGxzY3JpcHQ7IGNoYXJzZXQ9InVzLWFzY2lpIgoKIyEvYmluL2Jhc2gKZWNobyAiUnVubmluZyB6aWxsaXogY3VzdG9tIHVzZXIgZGF0YSBzY3JpcHQiCmRpc2tfdm9sdW1lPSQobHNibGsgLUogLW8gTkFNRSxNT0RFTCxTSVpFIHwganEgLXIgJy5ibG9ja2RldmljZXNbXSB8IHNlbGVjdCgubW9kZWwgfCB0ZXN0KCJBbWF6b24gRUMyIE5WTWUgSW5zdGFuY2UgU3RvcmFnZSIpKSB8IC5uYW1lJykKZWNobyAke2Rpc2tfdm9sdW1lfQppZiAoIGxzYmxrIHwgZmdyZXAgLXEgJHtkaXNrX3ZvbHVtZX0gKTsgdGhlbgogICAgbWtkaXIgLXAgL21udC9kYXRhIC92YXIvbGliL2t1YmVsZXQgL3Zhci9saWIvZG9ja2VyCiAgICBta2ZzLnhmcyAvZGV2LyR7ZGlza192b2x1bWV9CiAgICBtb3VudCAvZGV2LyR7ZGlza192b2x1bWV9IC9tbnQvZGF0YQogICAgY2htb2QgMDc1NSAvbW50L2RhdGEKICAgIG12IC92YXIvbGliL2t1YmVsZXQgL21udC9kYXRhLwogICAgbXYgL3Zhci9saWIvZG9ja2VyIC9tbnQvZGF0YS8KICAgIGxuIC1zZiAvbW50L2RhdGEva3ViZWxldCAvdmFyL2xpYi9rdWJlbGV0CiAgICBsbiAtc2YgL21udC9kYXRhL2RvY2tlciAvdmFyL2xpYi9kb2NrZXIKICAgIFVVSUQ9JChsc2JsayAtZiB8IGdyZXAgJHtkaXNrX3ZvbHVtZX0gfCBhd2sgJ3twcmludCAkM30nKQogICAgZWNobyAiVVVJRD0kVVVJRCAgICAgL21udC9kYXRhICAgeGZzICAgIGRlZmF1bHRzLG5vYXRpbWUgIDEgICAxIiA+PiAvZXRjL2ZzdGFiCgpmaQplY2hvICJtb3VudCByZXN1bHRzICQoY2F0IC9ldGMvZnN0YWIpIgoKZWNobyAnVXNlciBkYXRhIHNjcmlwdCBkb25lJwotLT09TVlCT1VOREFSWT09LS0K"
+  image_id = local.k8s_node_groups.search.ami_id
   vpc_security_group_ids = local.node_security_group_ids
 
   metadata_options {
@@ -281,12 +285,12 @@ resource "aws_launch_template" "diskann" {
 
 
 # Determine AMI type for each node group:
-# - Use the explicitly provided ami_type if set
+# - set null  if provided ami_id
 # - Otherwise auto-detect from instance type (ARM 'g' suffix -> AL2023_ARM_64_STANDARD, else AL2023_x86_64_STANDARD)
 locals {
   ami_types = {
     for name, ng in var.k8s_node_groups : name => (
-      ng.ami_type != "" ? ng.ami_type : (
+      ng.ami_id != null ? null : (
         can(regex("^[a-z]+[0-9]+g[a-z]*\\.", ng.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
       )
     )

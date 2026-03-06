@@ -68,10 +68,10 @@ locals {
   }
 
   # Kubernetes node group specifications and resource quotas
-  # Merges node quotas from Zilliz cloud settings with optional ami_type overrides
+  # Merges node quotas from Zilliz cloud settings with optional ami_id overrides
   k8s_node_groups = {
     for name, ng in data.zillizcloud_byoc_i_project_settings.this.node_quotas : name => merge(ng, {
-      ami_type = lookup(var.k8s_node_group_ami_type, name, "")
+      ami_id = lookup(var.k8s_node_group_image_id, name, null)
     })
   }
   

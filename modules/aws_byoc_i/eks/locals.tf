@@ -84,21 +84,27 @@ locals {
 
   boot_config_json = jsonencode(local.boot_config)
 
-  core_user_data = base64encode(<<-EOF
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
-
+  # EKS bootstrap MIME part - only needed for custom AMI node groups
+  eks_bootstrap_mime_part = <<-EOF
 --==MYBOUNDARY==
 Content-Type: text/x-shellscript; charset="us-ascii"
 
 #!/bin/bash
 set -e
-# Bootstrap node into EKS cluster (required for CUSTOM AMI)
 if [ -f /etc/eks/bootstrap.sh ]; then
   echo "Running EKS bootstrap..."
   /etc/eks/bootstrap.sh '${local.eks_cluster_name}'
 fi
+EOF
 
+  use_custom_ami = local.k8s_node_groups.core.ami_id != null
+  eks_bootstrap  = local.use_custom_ami ? local.eks_bootstrap_mime_part : ""
+
+  core_user_data = base64encode(<<-EOF
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
+
+${local.eks_bootstrap}
 --==MYBOUNDARY==
 Content-Type: text/x-shellscript; charset="us-ascii"
 
@@ -150,6 +156,7 @@ echo "zilliz init result $?"
 MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
 
+${local.eks_bootstrap}
 --==MYBOUNDARY==
 Content-Type: text/x-shellscript; charset="us-ascii"
 

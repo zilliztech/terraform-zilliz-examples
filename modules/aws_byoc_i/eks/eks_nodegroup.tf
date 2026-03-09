@@ -106,7 +106,7 @@ resource "aws_launch_template" "init" {
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
   vpc_security_group_ids = local.node_security_group_ids
-  image_id = local.k8s_node_groups.core.ami_id
+  image_id = null
 
   user_data = local.init_user_data
   metadata_options {
@@ -174,6 +174,26 @@ resource "aws_launch_template" "default" {
   vpc_security_group_ids = local.node_security_group_ids
   image_id = local.k8s_node_groups.fundamental.ami_id
 
+  # Bootstrap user_data for CUSTOM AMI (when ami_id is specified)
+  user_data = local.k8s_node_groups.fundamental.ami_id != null ? base64encode(<<-USERDATA
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
+
+--==MYBOUNDARY==
+Content-Type: text/x-shellscript; charset="us-ascii"
+
+#!/bin/bash
+set -e
+if [ -f /etc/eks/bootstrap.sh ]; then
+  echo "Running EKS bootstrap..."
+  /etc/eks/bootstrap.sh '${local.eks_cluster_name}'
+fi
+
+--==MYBOUNDARY==--
+
+USERDATA
+  ) : null
+
   metadata_options {
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 2
@@ -230,7 +250,47 @@ resource "aws_launch_template" "diskann" {
   tags_all = merge({
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
-  user_data = "TUlNRS1WZXJzaW9uOiAxLjAKQ29udGVudC1UeXBlOiBtdWx0aXBhcnQvbWl4ZWQ7IGJvdW5kYXJ5PSI9PU1ZQk9VTkRBUlk9PSIKCi0tPT1NWUJPVU5EQVJZPT0KQ29udGVudC1UeXBlOiB0ZXh0L3gtc2hlbGxzY3JpcHQ7IGNoYXJzZXQ9InVzLWFzY2lpIgoKIyEvYmluL2Jhc2gKZWNobyAiUnVubmluZyB6aWxsaXogY3VzdG9tIHVzZXIgZGF0YSBzY3JpcHQiCmRpc2tfdm9sdW1lPSQobHNibGsgLUogLW8gTkFNRSxNT0RFTCxTSVpFIHwganEgLXIgJy5ibG9ja2RldmljZXNbXSB8IHNlbGVjdCgubW9kZWwgfCB0ZXN0KCJBbWF6b24gRUMyIE5WTWUgSW5zdGFuY2UgU3RvcmFnZSIpKSB8IC5uYW1lJykKZWNobyAke2Rpc2tfdm9sdW1lfQppZiAoIGxzYmxrIHwgZmdyZXAgLXEgJHtkaXNrX3ZvbHVtZX0gKTsgdGhlbgogICAgbWtkaXIgLXAgL21udC9kYXRhIC92YXIvbGliL2t1YmVsZXQgL3Zhci9saWIvZG9ja2VyCiAgICBta2ZzLnhmcyAvZGV2LyR7ZGlza192b2x1bWV9CiAgICBtb3VudCAvZGV2LyR7ZGlza192b2x1bWV9IC9tbnQvZGF0YQogICAgY2htb2QgMDc1NSAvbW50L2RhdGEKICAgIG12IC92YXIvbGliL2t1YmVsZXQgL21udC9kYXRhLwogICAgbXYgL3Zhci9saWIvZG9ja2VyIC9tbnQvZGF0YS8KICAgIGxuIC1zZiAvbW50L2RhdGEva3ViZWxldCAvdmFyL2xpYi9rdWJlbGV0CiAgICBsbiAtc2YgL21udC9kYXRhL2RvY2tlciAvdmFyL2xpYi9kb2NrZXIKICAgIFVVSUQ9JChsc2JsayAtZiB8IGdyZXAgJHtkaXNrX3ZvbHVtZX0gfCBhd2sgJ3twcmludCAkM30nKQogICAgZWNobyAiVVVJRD0kVVVJRCAgICAgL21udC9kYXRhICAgeGZzICAgIGRlZmF1bHRzLG5vYXRpbWUgIDEgICAxIiA+PiAvZXRjL2ZzdGFiCgpmaQplY2hvICJtb3VudCByZXN1bHRzICQoY2F0IC9ldGMvZnN0YWIpIgoKZWNobyAnVXNlciBkYXRhIHNjcmlwdCBkb25lJwotLT09TVlCT1VOREFSWT09LS0K"
+  user_data = base64encode(<<-USERDATA
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
+
+--==MYBOUNDARY==
+Content-Type: text/x-shellscript; charset="us-ascii"
+
+#!/bin/bash
+set -e
+# Bootstrap node into EKS cluster (required for CUSTOM AMI)
+if [ -f /etc/eks/bootstrap.sh ]; then
+  echo "Running EKS bootstrap..."
+  /etc/eks/bootstrap.sh '${local.eks_cluster_name}'
+fi
+
+--==MYBOUNDARY==
+Content-Type: text/x-shellscript; charset="us-ascii"
+
+#!/bin/bash
+echo "Running zilliz custom user data script"
+disk_volume=$(lsblk -J -o NAME,MODEL,SIZE | jq -r '.blockdevices[] | select(.model != null and (.model | test("Amazon EC2 NVMe Instance Storage"))) | .name')
+echo $${disk_volume}
+if [ -n "$${disk_volume}" ] && lsblk | fgrep -q $${disk_volume}; then
+    mkdir -p /mnt/data /var/lib/kubelet /var/lib/docker
+    mkfs.xfs /dev/$${disk_volume}
+    mount /dev/$${disk_volume} /mnt/data
+    chmod 0755 /mnt/data
+    mv /var/lib/kubelet /mnt/data/
+    mv /var/lib/docker /mnt/data/
+    ln -sf /mnt/data/kubelet /var/lib/kubelet
+    ln -sf /mnt/data/docker /var/lib/docker
+    UUID=$(lsblk -f | grep $${disk_volume} | awk '{print $$3}')
+    echo "UUID=$$UUID     /mnt/data   xfs    defaults,noatime  1   1" >> /etc/fstab
+fi
+echo "mount results $(cat /etc/fstab)"
+echo 'User data script done'
+
+--==MYBOUNDARY==--
+
+USERDATA
+  )
   image_id = local.k8s_node_groups.search.ami_id
   vpc_security_group_ids = local.node_security_group_ids
 
@@ -498,8 +558,8 @@ resource "time_sleep" "wait_init" {
 }
 
 resource "aws_eks_node_group" "init" {
-  # make it share the same AMI type as core node group
-  ami_type      = local.ami_types.core
+  # init node group always uses default AMI (no custom AMI)
+  ami_type      = "AL2023_x86_64_STANDARD"
   capacity_type = "ON_DEMAND"
   cluster_name  = local.eks_cluster_name
 

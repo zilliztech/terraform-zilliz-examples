@@ -93,6 +93,17 @@ Content-Type: text/x-shellscript; charset="us-ascii"
 
 #!/bin/bash
 set -e
+# Bootstrap node into EKS cluster (required for CUSTOM AMI)
+if [ -f /etc/eks/bootstrap.sh ]; then
+  echo "Running EKS bootstrap..."
+  /etc/eks/bootstrap.sh '${local.eks_cluster_name}'
+fi
+
+--==MYBOUNDARY==
+Content-Type: text/x-shellscript; charset="us-ascii"
+
+#!/bin/bash
+set -e
 echo "zilliz init start"
 
 systemctl restart containerd

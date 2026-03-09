@@ -175,20 +175,11 @@ resource "aws_launch_template" "default" {
   image_id = local.k8s_node_groups.fundamental.ami_id
 
   # Bootstrap user_data for CUSTOM AMI (when ami_id is specified)
-  user_data = local.k8s_node_groups.fundamental.ami_id != null ? base64encode(<<-USERDATA
+  user_data = local.use_custom_ami ? base64encode(<<-USERDATA
 MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
 
---==MYBOUNDARY==
-Content-Type: text/x-shellscript; charset="us-ascii"
-
-#!/bin/bash
-set -e
-if [ -f /etc/eks/bootstrap.sh ]; then
-  echo "Running EKS bootstrap..."
-  /etc/eks/bootstrap.sh '${local.eks_cluster_name}'
-fi
-
+${local.eks_bootstrap_mime_part}
 --==MYBOUNDARY==--
 
 USERDATA
@@ -254,17 +245,7 @@ resource "aws_launch_template" "diskann" {
 MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
 
---==MYBOUNDARY==
-Content-Type: text/x-shellscript; charset="us-ascii"
-
-#!/bin/bash
-set -e
-# Bootstrap node into EKS cluster (required for CUSTOM AMI)
-if [ -f /etc/eks/bootstrap.sh ]; then
-  echo "Running EKS bootstrap..."
-  /etc/eks/bootstrap.sh '${local.eks_cluster_name}'
-fi
-
+${local.eks_bootstrap}
 --==MYBOUNDARY==
 Content-Type: text/x-shellscript; charset="us-ascii"
 

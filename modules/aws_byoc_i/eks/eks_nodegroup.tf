@@ -106,7 +106,7 @@ resource "aws_launch_template" "init" {
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
   vpc_security_group_ids = local.node_security_group_ids
-  image_id = null
+  image_id = local.k8s_node_groups.core.ami_id
 
   user_data = local.init_user_data
   metadata_options {
@@ -557,8 +557,8 @@ resource "time_sleep" "wait_init" {
 }
 
 resource "aws_eks_node_group" "init" {
-  # init node group always uses default AMI (no custom AMI)
-  ami_type      = "AL2023_x86_64_STANDARD"
+  # make it share the same AMI type as core node group
+  ami_type      = local.ami_types.core
   capacity_type = "ON_DEMAND"
   cluster_name  = local.eks_cluster_name
 

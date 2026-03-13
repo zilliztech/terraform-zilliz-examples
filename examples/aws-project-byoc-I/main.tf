@@ -72,6 +72,8 @@ module "eks" {
   // kms encryption for ebs and s3
   enable_ebs_kms = var.enable_ebs_kms
   ebs_kms_key_arn = var.ebs_kms_key_arn
+  ebs_volume_size = var.ebs_volume_size
+  ebs_volume_type = var.ebs_volume_type
   enable_s3_kms = var.enable_s3_kms
   s3_kms_key_arn = var.s3_kms_key_arn
 

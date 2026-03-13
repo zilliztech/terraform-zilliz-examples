@@ -256,6 +256,18 @@ variable "ebs_kms_key_arn" {
   default     = ""
 }
 
+variable "ebs_volume_size" {
+  description = "EBS volume size in GB for node group launch templates"
+  type        = number
+  default     = 50
+}
+
+variable "ebs_volume_type" {
+  description = "EBS volume type for node group launch templates"
+  type        = string
+  default     = "gp3"
+}
+
 variable "enable_s3_kms" {
   description = "Enable S3 KMS usage"
   type        = bool

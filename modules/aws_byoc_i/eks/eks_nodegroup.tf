@@ -57,8 +57,10 @@ resource "aws_launch_template" "core" {
     content {
       device_name = "/dev/xvda"
       ebs {
-        encrypted  = "true"
-        kms_key_id = var.ebs_kms_key_arn
+        encrypted    = "true"
+        kms_key_id   = var.ebs_kms_key_arn
+        volume_size  = var.ebs_volume_size
+        volume_type  = var.ebs_volume_type
       }
     }
   }
@@ -120,8 +122,10 @@ resource "aws_launch_template" "init" {
     content {
       device_name = "/dev/xvda"
       ebs {
-        encrypted  = "true"
-        kms_key_id = var.ebs_kms_key_arn
+        encrypted    = "true"
+        kms_key_id   = var.ebs_kms_key_arn
+        volume_size  = var.ebs_volume_size
+        volume_type  = var.ebs_volume_type
       }
     }
   }
@@ -195,8 +199,10 @@ USERDATA
     content {
       device_name = "/dev/xvda"
       ebs {
-        encrypted  = "true"
-        kms_key_id = var.ebs_kms_key_arn
+        encrypted    = "true"
+        kms_key_id   = var.ebs_kms_key_arn
+        volume_size  = var.ebs_volume_size
+        volume_type  = var.ebs_volume_type
       }
     }
   }

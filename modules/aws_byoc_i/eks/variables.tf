@@ -85,6 +85,7 @@ variable "k8s_node_groups" {
     desired_size   = number
     instance_types = string
     capacity_type  = string
+    ami_id         = optional(string)
   }))
   
   default = {
@@ -253,6 +254,18 @@ variable "ebs_kms_key_arn" {
   description = "The ARN of the KMS key to use for EBS encryption"
   type        = string
   default     = ""
+}
+
+variable "ebs_volume_size" {
+  description = "EBS volume size in GB for node group launch templates"
+  type        = number
+  default     = 50
+}
+
+variable "ebs_volume_type" {
+  description = "EBS volume type for node group launch templates"
+  type        = string
+  default     = "gp3"
 }
 
 variable "enable_s3_kms" {

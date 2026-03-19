@@ -107,6 +107,15 @@ minimal_roles = {
   }
 }
 
+# Optional AMI ID override per node group (core, index, search, fundamental)
+# By default, EKS selects the AMI based on the auto-detected AMI type.
+# k8s_node_group_image_id = {
+#   fundamental = "ami-0123456789abcdef0"
+#   search      = "ami-0123456789abcdef0"
+#   index       = "ami-0123456789abcdef0"
+#   core        = "ami-0123456789abcdef0"
+# }
+
 # Enable AWS Client-Side Encryption (CSE) for Milvus data
 # When enabled without aws_cse_exiting_key_arn, a new KMS key will be created automatically
 enable_cse          = false

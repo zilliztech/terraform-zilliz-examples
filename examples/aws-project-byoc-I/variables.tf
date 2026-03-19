@@ -199,6 +199,18 @@ variable "ebs_kms_key_arn" {
   default     = ""
 }
 
+variable "ebs_volume_size" {
+  description = "EBS volume size in GB for node group launch templates"
+  type        = number
+  default     = 50
+}
+
+variable "ebs_volume_type" {
+  description = "EBS volume type for node group launch templates"
+  type        = string
+  default     = "gp3"
+}
+
 variable "enable_s3_kms" {
   description = "Enable S3 KMS usage"
   type        = bool
@@ -221,4 +233,29 @@ variable "aws_cse_exiting_key_arn" {
   description = "The ARN of the existing KMS key to use for AWS CSE"
   type        = string
   default     = ""
+}
+
+variable "k8s_node_group_image_id" {
+  description = <<-EOT
+    Optional AMI ID override per node group (core, index, search, fundamental).
+    By default, EKS selects the AMI based on the auto-detected AMI type.
+
+    When specified, the provided AMI ID takes precedence.
+    Only the node groups listed in the map are overridden; others keep the default.
+
+    Example - override a single node group:
+      k8s_node_group_image_id = {
+        core = "ami-0123456789abcdef0"
+      }
+
+    Example - override multiple node groups:
+      k8s_node_group_image_id = {
+        fundamental   = "ami-0123456789abcdef0"
+        search        = "ami-0123456789abcdef0"
+        index         = "ami-0123456789abcdef0"
+        core          = "ami-0123456789abcdef0"
+      }
+  EOT
+  type        = map(string)
+  default     = {}
 }

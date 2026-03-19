@@ -52,16 +52,14 @@ resource "aws_launch_template" "core" {
     http_tokens                 = "required"
   }
 
-  dynamic "block_device_mappings" {
-    for_each = var.enable_ebs_kms ? [1] : []
-    content {
-      device_name = "/dev/xvda"
-      ebs {
-        encrypted    = "true"
-        kms_key_id   = var.ebs_kms_key_arn
-        volume_size  = var.ebs_volume_size
-        volume_type  = var.ebs_volume_type
-      }
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = "true"
+      encrypted             = var.enable_ebs_kms ? "true" : "false"
+      kms_key_id            = var.enable_ebs_kms ? var.ebs_kms_key_arn : null
+      volume_size           = var.k8s_node_groups.core.disk_size
+      volume_type           = "gp3"
     }
   }
 
@@ -139,6 +137,7 @@ resource "aws_launch_template" "init" {
     tags = merge({
       "Name"   = "zilliz-byoc-init"
       "Vendor" = "zilliz-byoc"
+
     }, var.custom_tags)
   }
   tag_specifications {
@@ -194,16 +193,14 @@ USERDATA
     http_tokens                 = "required"
   }
 
-  dynamic "block_device_mappings" {
-    for_each = var.enable_ebs_kms ? [1] : []
-    content {
-      device_name = "/dev/xvda"
-      ebs {
-        encrypted    = "true"
-        kms_key_id   = var.ebs_kms_key_arn
-        volume_size  = var.ebs_volume_size
-        volume_type  = var.ebs_volume_type
-      }
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = "true"
+      encrypted             = var.enable_ebs_kms ? "true" : "false"
+      kms_key_id            = var.enable_ebs_kms ? var.ebs_kms_key_arn : null
+      volume_size           = max(var.k8s_node_groups.index.disk_size, var.k8s_node_groups.fundamental.disk_size)
+      volume_type           = "gp3"
     }
   }
 
@@ -295,7 +292,7 @@ USERDATA
       kms_key_id            = var.enable_ebs_kms ? var.ebs_kms_key_arn : null
       iops                  = 3000
       throughput            = 125
-      volume_size           = 100
+      volume_size           = var.k8s_node_groups.search.disk_size
       volume_type           = "gp3"
     }
   }

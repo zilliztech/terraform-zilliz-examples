@@ -1,7 +1,7 @@
 module "aws_bucket" {
   source = "../../modules/aws_byoc/aws_bucket"
 
-  region      = var.region
+  region          = var.region
   name            = var.name
   s3_bucket_names = ["milvus"]
 }
@@ -18,9 +18,9 @@ module "aws_iam" {
 module "aws_vpc" {
   source = "../../modules/aws_byoc/aws_vpc"
 
-  region = var.region
-  vpc_cidr   = var.vpc_cidr
-  name       = var.name
+  region              = var.region
+  vpc_cidr            = var.vpc_cidr
+  name                = var.name
   enable_private_link = var.enable_private_link
 
 }
@@ -55,7 +55,7 @@ output "storage_role_arn" {
 
 output "external_id" {
   value = module.aws_iam.external_id
-  
+
 }
 
 output "endpoint_id" {

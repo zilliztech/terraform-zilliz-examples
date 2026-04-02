@@ -68,8 +68,8 @@ variable "enable_private_link" {
 variable "agent_config" {
   description = "Configuration for the agent including server host, auth token, and k8s token"
   type = object({
-    auth_token  = string
-    tag         = string
+    auth_token = string
+    tag        = string
   })
 
   nullable = false
@@ -87,7 +87,7 @@ variable "k8s_node_groups" {
     capacity_type  = string
     ami_id         = optional(string)
   }))
-  
+
   default = {
     core = {
       disk_size      = 100
@@ -113,6 +113,14 @@ variable "k8s_node_groups" {
       instance_types = "m6i.2xlarge"
       capacity_type  = "SPOT"
     }
+    tiered = {
+      disk_size      = 100
+      min_size       = 0
+      max_size       = 100
+      desired_size   = 0
+      instance_types = "m6i.2xlarge"
+      capacity_type  = "SPOT"
+    }
     fundamental = {
       disk_size      = 50
       min_size       = 0
@@ -122,19 +130,31 @@ variable "k8s_node_groups" {
       capacity_type  = "SPOT"
     }
   }
-  
+
   validation {
     condition = alltrue([
-      for k, v in var.k8s_node_groups : 
-        v.disk_size > 0 && 
-        v.min_size >= 0 && 
-        v.max_size > 0 && 
-        v.desired_size >= 0 && 
-        v.desired_size <= v.max_size &&
-        contains(["ON_DEMAND", "SPOT"], v.capacity_type)
+      for k, v in var.k8s_node_groups :
+      v.disk_size > 0 &&
+      v.min_size >= 0 &&
+      v.max_size >= 0 &&
+      v.desired_size >= 0 &&
+      v.desired_size <= v.max_size &&
+      contains(["ON_DEMAND", "SPOT"], v.capacity_type)
     ])
     error_message = "Invalid node group configuration. Ensure disk sizes are positive, sizes are valid, and capacity_type is either ON_DEMAND or SPOT."
   }
+}
+
+variable "enable_search" {
+  description = "Whether to create the search node group. Only created when present in node_quotas with max_size > 0."
+  type        = bool
+  default     = true
+}
+
+variable "enable_tiered" {
+  description = "Whether to create the tiered node group. Only created when present in node_quotas with max_size > 0."
+  type        = bool
+  default     = false
 }
 
 variable "s3_bucket_id" {
@@ -221,19 +241,19 @@ variable "minimal_roles" {
     enabled = optional(bool, false)
     # Cluster role configuration
     cluster_role = optional(object({
-      name    = optional(string, "")
-      use_existing_arn = optional(string, "")  # Use existing role by ARN
+      name             = optional(string, "")
+      use_existing_arn = optional(string, "") # Use existing role by ARN
     }), {})
     # Node role configuration  
     node_role = optional(object({
-      name    = optional(string, "")
-      use_existing_arn = optional(string, "")  # Use existing role by ARN
+      name             = optional(string, "")
+      use_existing_arn = optional(string, "") # Use existing role by ARN
     }), {})
   })
   default = {
     enabled = false
   }
-  
+
   validation {
     condition = alltrue([
       length(var.minimal_roles.cluster_role.use_existing_arn) == 0 || can(regex("^arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9+=,.@_-]+$", var.minimal_roles.cluster_role.use_existing_arn)),

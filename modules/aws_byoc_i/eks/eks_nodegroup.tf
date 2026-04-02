@@ -43,7 +43,7 @@ resource "aws_launch_template" "core" {
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
   vpc_security_group_ids = local.node_security_group_ids
-  image_id = local.k8s_node_groups.core.ami_id
+  image_id               = local.k8s_node_groups.core.ami_id
 
   user_data = local.core_user_data
   metadata_options {
@@ -89,7 +89,7 @@ resource "aws_launch_template" "core" {
     }, var.custom_tags)
   }
 
-  depends_on = [ aws_iam_role_policy_attachment.maintenance_policy_attachment_2, aws_iam_role_policy_attachment.maintenance_policy_attachment_1 ]
+  depends_on = [aws_iam_role_policy_attachment.maintenance_policy_attachment_2, aws_iam_role_policy_attachment.maintenance_policy_attachment_1]
 }
 
 
@@ -106,7 +106,7 @@ resource "aws_launch_template" "init" {
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
   vpc_security_group_ids = local.node_security_group_ids
-  image_id = local.k8s_node_groups.core.ami_id
+  image_id               = local.k8s_node_groups.core.ami_id
 
   user_data = local.init_user_data
   metadata_options {
@@ -155,7 +155,7 @@ resource "aws_launch_template" "init" {
     }, var.custom_tags)
   }
 
-  depends_on = [ aws_iam_role_policy_attachment.maintenance_policy_attachment_2, aws_iam_role_policy_attachment.maintenance_policy_attachment_1 ]
+  depends_on = [aws_iam_role_policy_attachment.maintenance_policy_attachment_2, aws_iam_role_policy_attachment.maintenance_policy_attachment_1]
 
 
 }
@@ -174,7 +174,7 @@ resource "aws_launch_template" "default" {
     "Vendor" = "zilliz-byoc"
   }, var.custom_tags)
   vpc_security_group_ids = local.node_security_group_ids
-  image_id = local.k8s_node_groups.fundamental.ami_id
+  image_id               = local.k8s_node_groups.fundamental.ami_id
 
   # Bootstrap user_data for CUSTOM AMI (when ami_id is specified)
   user_data = local.use_custom_ami ? base64encode(<<-USERDATA
@@ -340,14 +340,15 @@ locals {
   }
 }
 
-# aws_eks_node_group.milvus:
+# aws_eks_node_group.search: conditionally created when search is in node_quotas with max > 0
 resource "aws_eks_node_group" "search" {
-  ami_type      = local.ami_types.search
-  capacity_type = local.k8s_node_groups.search.capacity_type
+  count         = var.enable_search ? 1 : 0
+  ami_type      = lookup(local.ami_types, "search", "AL2023_x86_64_STANDARD")
+  capacity_type = var.k8s_node_groups["search"].capacity_type
   cluster_name  = local.eks_cluster_name
 
   instance_types = [
-    local.k8s_node_groups.search.instance_types,
+    var.k8s_node_groups["search"].instance_types,
   ]
   labels = {
     "zilliz-group-name"    = "search"
@@ -371,9 +372,57 @@ resource "aws_eks_node_group" "search" {
   }
 
   scaling_config {
-    desired_size = local.k8s_node_groups.search.min_size
-    max_size     = local.k8s_node_groups.search.max_size
-    min_size     = local.k8s_node_groups.search.min_size
+    desired_size = var.k8s_node_groups["search"].min_size
+    max_size     = var.k8s_node_groups["search"].max_size
+    min_size     = var.k8s_node_groups["search"].min_size
+  }
+
+  update_config {
+    max_unavailable_percentage = 33
+  }
+
+  lifecycle {
+    ignore_changes = [scaling_config[0].desired_size]
+
+  }
+
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
+}
+
+# aws_eks_node_group.tiered: conditionally created when tiered is in node_quotas with max > 0
+resource "aws_eks_node_group" "tiered" {
+  count         = var.enable_tiered ? 1 : 0
+  ami_type      = lookup(local.ami_types, "tiered", "AL2023_x86_64_STANDARD")
+  capacity_type = var.k8s_node_groups["tiered"].capacity_type
+  cluster_name  = local.eks_cluster_name
+
+  instance_types = [
+    var.k8s_node_groups["tiered"].instance_types,
+  ]
+  labels = {
+    "zilliz-group-name" = "tiered"
+    "node-role/tiered"  = "true"
+    "node-role/milvus"  = "true"
+  }
+  node_group_name_prefix = "${local.prefix_name}-tiered-"
+  node_role_arn          = local.eks_node_role_arn
+  subnet_ids             = local.subnet_ids
+  tags = merge({
+    "Vendor" = "zilliz-byoc"
+  }, var.custom_tags)
+  tags_all = merge({
+    "Vendor" = "zilliz-byoc"
+  }, var.custom_tags)
+
+  launch_template {
+    id      = aws_launch_template.diskann.id
+    version = aws_launch_template.diskann.latest_version
+  }
+
+  scaling_config {
+    desired_size = var.k8s_node_groups["tiered"].min_size
+    max_size     = var.k8s_node_groups["tiered"].max_size
+    min_size     = var.k8s_node_groups["tiered"].min_size
   }
 
   update_config {
@@ -551,7 +600,7 @@ resource "aws_eks_node_group" "init" {
   ]
   labels = {
     "zilliz-group-name" = "init"
-    "node-role/init" = "true"
+    "node-role/init"    = "true"
   }
   node_group_name_prefix = "${local.prefix_name}-init-"
   node_role_arn          = local.eks_node_role_arn

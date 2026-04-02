@@ -17,7 +17,7 @@ resource "aws_iam_role" "storage_role" {
       {
         "Effect" : "Allow",
         "Principal" : {
-          "Federated": "arn:aws:iam::${local.account_id}:oidc-provider/${local.eks_oidc_url}"
+          "Federated" : "arn:aws:iam::${local.account_id}:oidc-provider/${local.eks_oidc_url}"
         },
         "Action" : "sts:AssumeRoleWithWebIdentity",
         "Condition" : {
@@ -49,7 +49,7 @@ resource "aws_iam_policy" "storage_policy" {
         "Action" : [
           "s3:ListBucket"
         ],
-        "Resource": "arn:aws:s3:::${local.bucket_id}"
+        "Resource" : "arn:aws:s3:::${local.bucket_id}"
       },
       {
         "Sid" : "AllowS3ReadWrite",

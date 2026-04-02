@@ -567,32 +567,32 @@ resource "aws_iam_policy" "aws_ebs_csi_kms_policy" {
     Vendor = "zilliz-byoc"
   }
   policy = jsonencode({
-    "Version":"2012-10-17",
-    "Statement": [
+    "Version" : "2012-10-17",
+    "Statement" : [
       {
-        "Effect": "Allow",
-        "Action": [
+        "Effect" : "Allow",
+        "Action" : [
           "kms:CreateGrant",
           "kms:ListGrants",
           "kms:RevokeGrant"
         ],
-        "Resource": [var.ebs_kms_key_arn],
-        "Condition": {
-          "Bool": {
-            "kms:GrantIsForAWSResource": "true"
+        "Resource" : [var.ebs_kms_key_arn],
+        "Condition" : {
+          "Bool" : {
+            "kms:GrantIsForAWSResource" : "true"
           }
         }
       },
       {
-        "Effect": "Allow",
-        "Action": [
+        "Effect" : "Allow",
+        "Action" : [
           "kms:Encrypt",
           "kms:Decrypt",
           "kms:ReEncrypt*",
           "kms:GenerateDataKey*",
           "kms:DescribeKey"
         ],
-        "Resource": [var.ebs_kms_key_arn]
+        "Resource" : [var.ebs_kms_key_arn]
       }
     ]
   })

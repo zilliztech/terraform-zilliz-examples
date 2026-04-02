@@ -7,7 +7,7 @@ resource "aws_iam_role" "maintenance_role" {
       {
         "Effect" : "Allow",
         "Principal" : {
-          "Federated": "arn:aws:iam::${local.account_id}:oidc-provider/${local.eks_oidc_url}"
+          "Federated" : "arn:aws:iam::${local.account_id}:oidc-provider/${local.eks_oidc_url}"
         },
         "Action" : "sts:AssumeRoleWithWebIdentity",
         "Condition" : {

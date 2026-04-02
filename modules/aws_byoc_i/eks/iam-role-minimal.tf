@@ -16,11 +16,11 @@ resource "aws_iam_role" "eks_cluster_role" {
   name  = local.minimal_cluster_role_name
 
   tags = merge({
-    Vendor = "zilliz-byoc"
-    Caller = data.aws_caller_identity.current.arn
+    Vendor   = "zilliz-byoc"
+    Caller   = data.aws_caller_identity.current.arn
     RoleType = "cluster"
   }, var.custom_tags)
-  
+
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -42,11 +42,11 @@ resource "aws_iam_role" "eks_node_role" {
   name  = local.minimal_node_role_name
 
   tags = merge({
-    Vendor = "zilliz-byoc"
-    Caller = data.aws_caller_identity.current.arn
+    Vendor   = "zilliz-byoc"
+    Caller   = data.aws_caller_identity.current.arn
     RoleType = "node"
   }, var.custom_tags)
-  
+
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [

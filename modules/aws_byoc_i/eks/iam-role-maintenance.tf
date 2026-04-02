@@ -306,6 +306,19 @@ resource "aws_iam_policy" "maintenance_policy_2" {
         ]
       },
       {
+        "Sid" : "IAMReadNodeRole",
+        "Effect" : "Allow",
+        "Action" : [
+          "iam:GetRole",
+          "iam:ListAttachedRolePolicies"
+        ],
+        "Resource" : [
+          "arn:aws:iam::*:role/${local.eks_role_name}",
+          "arn:aws:iam::*:role/${local.minimal_node_role_name}",
+          "arn:aws:iam::*:role/aws-service-role/eks-nodegroup.amazonaws.com/AWSServiceRoleForAmazonEKSNodegroup"
+        ]
+      },
+      {
         "Sid" : "S3CheckBucketLocation",
         "Effect" : "Allow",
         "Action" : [

@@ -67,29 +67,50 @@ locals {
     tag        = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
   }
 
-  # Tiered node quota from API (separate provider field, null when not enabled)
-  tiered_node_quota = (
-    data.zillizcloud_byoc_i_project_settings.this.tiered_node_quota != null
-    ? { tiered = data.zillizcloud_byoc_i_project_settings.this.tiered_node_quota }
-    : {}
-  )
+  # Placeholder configs for optional node groups (search, tiered).
+  # Ensures the keys always exist in k8s_node_groups so Terraform doesn't error on references.
+  # Actual creation is controlled by enable_search/enable_tiered flags.
+  _optional_ng_defaults = {
+    search = {
+      disk_size      = 100
+      min_size       = 0
+      max_size       = 0
+      desired_size   = 0
+      instance_types = "m6i.2xlarge"
+      capacity_type  = "ON_DEMAND"
+    }
+    tiered = {
+      disk_size      = 100
+      min_size       = 0
+      max_size       = 0
+      desired_size   = 0
+      instance_types = "i4i.2xlarge"
+      capacity_type  = "ON_DEMAND"
+    }
+  }
 
   # Kubernetes node group specifications and resource quotas
+  # node_quotas contains core, index, search, fundamental (no tiered — tiered is a separate field)
+  # Merge: defaults (search/tiered max=0 placeholders) <- API node_quotas <- ami_id overrides
+  # tiered_node_quota is injected from the separate provider field
+  _tiered_from_api = data.zillizcloud_byoc_i_project_settings.this.tiered_node_quota != null ? {
+    tiered = data.zillizcloud_byoc_i_project_settings.this.tiered_node_quota
+  } : {}
+
   k8s_node_groups = {
     for name, ng in merge(
-      # Tiered placeholder (max_size=0 → count=0, not created unless API enables it)
-      { tiered = { disk_size = 100, min_size = 0, max_size = 0, desired_size = 0, instance_types = "i4i.2xlarge", capacity_type = "ON_DEMAND" } },
-      # API returns: core, index, search, fundamental
+      local._optional_ng_defaults,
       data.zillizcloud_byoc_i_project_settings.this.node_quotas,
-      # API tiered quota overwrites placeholder when present
-      local.tiered_node_quota,
+      local._tiered_from_api,
     ) : name => merge(ng, {
       ami_id    = lookup(var.k8s_node_group_image_id, name, null)
       disk_size = max(ng.disk_size, 100)
     })
   }
 
-  # Placeholder has max_size=0, so this is false unless API returns tiered with max_size>0
+  # search: always in node_quotas, check max_size > 0
+  enable_search = local.k8s_node_groups["search"].max_size > 0
+  # tiered: placeholder has max_size=0, so this is false unless API returns tiered with max_size > 0
   enable_tiered = local.k8s_node_groups["tiered"].max_size > 0
 
   # Zilliz project identifier for resource tagging and organization

@@ -339,14 +339,15 @@ locals {
   }
 }
 
-# aws_eks_node_group.search: always created (max >= 1 guaranteed by data.tf)
+# aws_eks_node_group.search: conditionally created when search is in node_quotas with max > 0
 resource "aws_eks_node_group" "search" {
-  ami_type      = local.ami_types.search
-  capacity_type = local.k8s_node_groups.search.capacity_type
+  count         = var.enable_search ? 1 : 0
+  ami_type      = lookup(local.ami_types, "search", "AL2023_x86_64_STANDARD")
+  capacity_type = var.k8s_node_groups["search"].capacity_type
   cluster_name  = local.eks_cluster_name
 
   instance_types = [
-    local.k8s_node_groups.search.instance_types,
+    var.k8s_node_groups["search"].instance_types,
   ]
   labels = {
     "zilliz-group-name"    = "search"
@@ -370,9 +371,57 @@ resource "aws_eks_node_group" "search" {
   }
 
   scaling_config {
-    desired_size = local.k8s_node_groups.search.min_size
-    max_size     = local.k8s_node_groups.search.max_size
-    min_size     = local.k8s_node_groups.search.min_size
+    desired_size = var.k8s_node_groups["search"].min_size
+    max_size     = var.k8s_node_groups["search"].max_size
+    min_size     = var.k8s_node_groups["search"].min_size
+  }
+
+  update_config {
+    max_unavailable_percentage = 33
+  }
+
+  lifecycle {
+    ignore_changes = [scaling_config[0].desired_size]
+
+  }
+
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
+}
+
+# aws_eks_node_group.tiered: conditionally created when tiered is in node_quotas with max > 0
+resource "aws_eks_node_group" "tiered" {
+  count         = var.enable_tiered ? 1 : 0
+  ami_type      = lookup(local.ami_types, "tiered", "AL2023_x86_64_STANDARD")
+  capacity_type = var.k8s_node_groups["tiered"].capacity_type
+  cluster_name  = local.eks_cluster_name
+
+  instance_types = [
+    var.k8s_node_groups["tiered"].instance_types,
+  ]
+  labels = {
+    "zilliz-group-name" = "tiered"
+    "node-role/tiered"  = "true"
+    "node-role/milvus"  = "true"
+  }
+  node_group_name_prefix = "${local.prefix_name}-tiered-"
+  node_role_arn          = local.eks_node_role_arn
+  subnet_ids             = local.subnet_ids
+  tags = merge({
+    "Vendor" = "zilliz-byoc"
+  }, var.custom_tags)
+  tags_all = merge({
+    "Vendor" = "zilliz-byoc"
+  }, var.custom_tags)
+
+  launch_template {
+    id      = aws_launch_template.diskann.id
+    version = aws_launch_template.diskann.latest_version
+  }
+
+  scaling_config {
+    desired_size = var.k8s_node_groups["tiered"].min_size
+    max_size     = var.k8s_node_groups["tiered"].max_size
+    min_size     = var.k8s_node_groups["tiered"].min_size
   }
 
   update_config {

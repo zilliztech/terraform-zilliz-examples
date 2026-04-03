@@ -105,7 +105,9 @@ locals {
       ami_id = lookup(var.k8s_node_group_image_id, name, null)
       # search nodegroup must always exist (max >= 1) to avoid state migration;
       # desired=0 means no running nodes when quota is 0
-      max_size = name == "search" ? max(ng.max_size, 1) : ng.max_size
+      max_size  = name == "search" ? max(ng.max_size, 1) : ng.max_size
+      # tiered (i4i) uses NVMe local disks, API returns disk_size=0; floor to 100 for EBS root volume
+      disk_size = ng.disk_size > 0 ? ng.disk_size : 100
     })
   }
 

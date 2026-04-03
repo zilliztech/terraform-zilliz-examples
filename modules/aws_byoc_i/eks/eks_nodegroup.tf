@@ -340,15 +340,14 @@ locals {
   }
 }
 
-# aws_eks_node_group.search: conditionally created when search is in node_quotas with max > 0
+# aws_eks_node_group.search: always created (max >= 1 guaranteed by data.tf)
 resource "aws_eks_node_group" "search" {
-  count         = var.enable_search ? 1 : 0
-  ami_type      = lookup(local.ami_types, "search", "AL2023_x86_64_STANDARD")
-  capacity_type = var.k8s_node_groups["search"].capacity_type
+  ami_type      = local.ami_types.search
+  capacity_type = local.k8s_node_groups.search.capacity_type
   cluster_name  = local.eks_cluster_name
 
   instance_types = [
-    var.k8s_node_groups["search"].instance_types,
+    local.k8s_node_groups.search.instance_types,
   ]
   labels = {
     "zilliz-group-name"    = "search"
@@ -372,9 +371,9 @@ resource "aws_eks_node_group" "search" {
   }
 
   scaling_config {
-    desired_size = var.k8s_node_groups["search"].min_size
-    max_size     = var.k8s_node_groups["search"].max_size
-    min_size     = var.k8s_node_groups["search"].min_size
+    desired_size = local.k8s_node_groups.search.min_size
+    max_size     = local.k8s_node_groups.search.max_size
+    min_size     = local.k8s_node_groups.search.min_size
   }
 
   update_config {

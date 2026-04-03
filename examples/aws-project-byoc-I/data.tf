@@ -67,14 +67,14 @@ locals {
     tag        = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
   }
 
-  # Placeholder configs for optional node groups (search, tiered).
-  # Ensures the keys always exist in k8s_node_groups so Terraform doesn't error on references.
-  # Actual creation is controlled by enable_search/enable_tiered flags.
+  # Placeholder defaults for optional node groups.
+  # search: always created — if API returns max=0 we floor to max=1/desired=0 to keep the nodegroup alive.
+  # tiered: only created when enable_tiered=true (new resource, no state migration concern).
   _optional_ng_defaults = {
     search = {
       disk_size      = 100
       min_size       = 0
-      max_size       = 0
+      max_size       = 1
       desired_size   = 0
       instance_types = "m6i.2xlarge"
       capacity_type  = "ON_DEMAND"
@@ -91,8 +91,7 @@ locals {
 
   # Kubernetes node group specifications and resource quotas
   # node_quotas contains core, index, search, fundamental (no tiered — tiered is a separate field)
-  # Merge: defaults (search/tiered max=0 placeholders) <- API node_quotas <- ami_id overrides
-  # tiered_node_quota is injected from the separate provider field
+  # Merge order: defaults <- API node_quotas <- tiered_from_api <- ami_id/max_size overrides
   _tiered_from_api = data.zillizcloud_byoc_i_project_settings.this.tiered_node_quota != null ? {
     tiered = data.zillizcloud_byoc_i_project_settings.this.tiered_node_quota
   } : {}
@@ -102,14 +101,15 @@ locals {
       local._optional_ng_defaults,
       data.zillizcloud_byoc_i_project_settings.this.node_quotas,
       local._tiered_from_api,
-      ) : name => merge(ng, {
-        ami_id = lookup(var.k8s_node_group_image_id, name, null)
+    ) : name => merge(ng, {
+      ami_id = lookup(var.k8s_node_group_image_id, name, null)
+      # search nodegroup must always exist (max >= 1) to avoid state migration;
+      # desired=0 means no running nodes when quota is 0
+      max_size = name == "search" ? max(ng.max_size, 1) : ng.max_size
     })
   }
 
-  # search: always in node_quotas, check max_size > 0
-  enable_search = local.k8s_node_groups["search"].max_size > 0
-  # tiered: separate field, only create when non-null and max_size > 0
+  # tiered: separate provider field, only create when non-null and max_size > 0
   enable_tiered = data.zillizcloud_byoc_i_project_settings.this.tiered_node_quota != null && local.k8s_node_groups["tiered"].max_size > 0
 
   # Zilliz project identifier for resource tagging and organization

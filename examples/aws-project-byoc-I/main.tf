@@ -54,7 +54,6 @@ module "eks" {
   agent_config                 = local.agent_config
   enable_private_link          = local.enable_private_link
   k8s_node_groups              = local.k8s_node_groups
-  enable_search                = local.enable_search
   enable_tiered                = local.enable_tiered
   s3_bucket_id                 = local.s3_bucket_id
   // eks name

@@ -145,12 +145,6 @@ variable "k8s_node_groups" {
   }
 }
 
-variable "enable_search" {
-  description = "Whether to create the search node group. Only created when present in node_quotas with max_size > 0."
-  type        = bool
-  default     = true
-}
-
 variable "enable_tiered" {
   description = "Whether to create the tiered node group. Only created when present in node_quotas with max_size > 0."
   type        = bool

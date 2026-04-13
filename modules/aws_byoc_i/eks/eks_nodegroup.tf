@@ -247,12 +247,11 @@ resource "aws_launch_template" "diskann" {
 MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
 
-${local.eks_bootstrap}
 --==MYBOUNDARY==
 Content-Type: text/x-shellscript; charset="us-ascii"
 
 #!/bin/bash
-echo "Running zilliz custom user data script"
+echo "Running zilliz NVMe mount script"
 disk_volume=$(lsblk -J -o NAME,MODEL,SIZE | jq -r '.blockdevices[] | select(.model != null and (.model | test("Amazon EC2 NVMe Instance Storage"))) | .name')
 echo $${disk_volume}
 if [ -n "$${disk_volume}" ] && lsblk | fgrep -q $${disk_volume}; then
@@ -268,8 +267,8 @@ if [ -n "$${disk_volume}" ] && lsblk | fgrep -q $${disk_volume}; then
     echo "UUID=$$UUID     /mnt/data   xfs    defaults,noatime  1   1" >> /etc/fstab
 fi
 echo "mount results $(cat /etc/fstab)"
-echo 'User data script done'
-
+echo 'NVMe mount done'
+${local.eks_bootstrap}
 --==MYBOUNDARY==--
 
 USERDATA

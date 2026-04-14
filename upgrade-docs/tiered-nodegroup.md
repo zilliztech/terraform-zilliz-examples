@@ -5,24 +5,20 @@ This guide is for users who have already deployed a BYOC-I cluster using a previ
 ## Prerequisites
 
 - Zilliz has enabled tiered storage for your project (the API returns a `tiered_node_quota` field).
-- Terraform provider `zillizcloud` version `>= 0.6.30`.
+- Terraform provider `zillizcloud` version `>= 0.6.34`.
 
-## Option A: Manage via Terraform (Recommended)
+## Step 1 — Upgrade the Provider
 
-Best for users who maintain their own copy of the Terraform examples and want the tiered node group tracked in Terraform state.
-
-### Step 1 — Upgrade the Provider
-
-Update the version constraint in your `versions.tf` or `required_providers` block:
+Update the version constraint in your `versions.tf` or `required_providers` block. Note that Terraform's `~>` constraint does **not** match pre-release versions, so pin explicitly if you are testing an `-rc` build:
 
 ```hcl
 zillizcloud = {
   source  = "zilliztech/zillizcloud"
-  version = ">= 0.6.30"
+  version = ">= 0.6.34"
 }
 ```
 
-### Step 2 — Update `data.tf`
+## Step 2 — Update `data.tf`
 
 In your `locals {}` block, replace the existing `k8s_node_groups` assignment:
 
@@ -75,7 +71,7 @@ With the following merge logic:
 > **Note:** If your code uses a custom AMI variable (e.g. `var.k8s_node_group_image_id`), you can add
 > `ami_id = lookup(var.k8s_node_group_image_id, name, null)` inside the inner `merge(ng, { ... })` block.
 
-### Step 3 — Update EKS Module Variables
+## Step 3 — Update EKS Module Variables
 
 Open `modules/aws_byoc_i/eks/variables.tf` and make the following changes.
 
@@ -106,7 +102,7 @@ variable "enable_tiered" {
 }
 ```
 
-### Step 4 — Pass `enable_tiered` to the EKS Module
+## Step 4 — Pass `enable_tiered` to the EKS Module
 
 In your root `main.tf`, add the argument to the `module "eks"` block:
 
@@ -117,7 +113,7 @@ module "eks" {
 }
 ```
 
-### Step 5 — Add the Tiered Node Group Resource
+## Step 5 — Add the Tiered Node Group Resource
 
 In `modules/aws_byoc_i/eks/eks_nodegroup.tf`, append the following resource (for example, after the `search` node group):
 
@@ -174,7 +170,7 @@ resource "aws_eks_node_group" "tiered" {
 }
 ```
 
-### Step 6 — Verify
+## Step 6 — Verify
 
 ```bash
 terraform init -upgrade
@@ -189,79 +185,3 @@ Expected plan output:
 | Tiered storage **enabled** | `aws_eks_node_group.tiered[0]` will be created (1 to add) |
 
 Existing resources should show **no destroy or recreate** actions.
-
----
-
-## Option B: Automatic Creation by Zilliz Agent (Zero Code Changes)
-
-Best for users who prefer not to modify their Terraform code. The Zilliz infra-agent creates the tiered node group automatically using the existing maintenance IAM role.
-
-### IAM Permission Update Required
-
-The maintenance role already has `eks:CreateNodegroup` permission. However, the agent also needs to read the EKS node role when creating a node group. Add the following statement to `maintenance_policy_2` in `modules/aws_byoc_i/eks/iam-role-maintenance.tf`:
-
-Find the `S3CheckBucketLocation` statement in `maintenance_policy_2`, and add the new block **after** it:
-
-```hcl
-      {
-        "Sid" : "S3CheckBucketLocation",
-        "Effect" : "Allow",
-        "Action" : [
-          "s3:GetBucketLocation"
-        ],
-        "Resource" : "arn:aws:s3:::${local.bucket_id}"
-      },
-      # ---- ADD THIS BLOCK ----
-      {
-        "Sid" : "IAMReadNodeRole",
-        "Effect" : "Allow",
-        "Action" : [
-          "iam:GetRole",
-          "iam:ListAttachedRolePolicies"
-        ],
-        "Resource" : [
-          "arn:aws:iam::*:role/${local.eks_role_name}",
-          "arn:aws:iam::*:role/${local.minimal_node_role_name}",
-          "arn:aws:iam::*:role/aws-service-role/eks-nodegroup.amazonaws.com/AWSServiceRoleForAmazonEKSNodegroup"
-        ]
-      }
-```
-
-`local.eks_role_name` and `local.minimal_node_role_name` are already defined in the EKS module's `locals.tf` and resolve to the actual role names used by your cluster.
-
-> **Tip:** This is the only change from [PR #129](https://github.com/zilliztech/terraform-zilliz-examples/pull/129). You can cherry-pick just this IAM update and run `terraform apply`.
-
-### What to Do
-
-1. **Update IAM permissions** — Add the `IAMReadNodeRole` statement above to your maintenance policy, then run `terraform apply` to deploy the IAM change.
-2. **Contact Zilliz to enable tiered storage** — Once the backend configuration is in place, the infra-agent will automatically:
-   - Detect the tiered node quota.
-   - Read the node role via `iam:GetRole` to configure the new node group.
-   - Call the EKS `CreateNodegroup` API via the maintenance role.
-   - Provision the tiered node group using the existing launch template (with NVMe mount configuration).
-3. **No other Terraform changes required.**
-
-### Caveats
-
-- The tiered node group is **not tracked in Terraform state**. Running `terraform plan` will not show it, and `terraform apply` will not modify it.
-- If you later decide to manage it via Terraform, you can import it:
-
-  ```bash
-  terraform import 'aws_eks_node_group.tiered[0]' \
-    <cluster-name>:<node-group-name>
-  ```
-
-  You must first add the corresponding Terraform resource definition (see Option A, Step 5).
-
----
-
-## Comparison
-
-| | Option A: Terraform | Option B: Agent |
-|---|---|---|
-| Code changes | ~5 files, ~60 lines | IAM policy only (~15 lines) |
-| State management | Tiered node group in Terraform state | Not in state |
-| Auditability | Preview with `terraform plan` | Check agent logs |
-| Rollback | `terraform destroy -target` | Manual or agent-initiated |
-| Best for | Teams that maintain IaC governance | Quick enablement, minimal changes |
-| IAM requirement | Standard (Terraform already has permissions) | Maintenance role needs `CreateNodegroup` + `iam:GetRole` |

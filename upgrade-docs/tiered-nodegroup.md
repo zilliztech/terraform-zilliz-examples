@@ -213,7 +213,7 @@ InvalidParameterException: You cannot specify an AMI Type other than CUSTOM,
 when specifying an image id in your Launch template
 ```
 
-Two things must be true for the tiered node group to use the custom AMI:
+Three things must be true for the tiered node group to use the custom AMI:
 
 1. **`var.k8s_node_group_image_id` must include a `tiered` entry.** When you run `terraform apply`, pass the same AMI you are using for `search` (both share the `diskann` launch template), for example:
 
@@ -226,3 +226,45 @@ Two things must be true for the tiered node group to use the custom AMI:
    ```
 
 2. **`local.ami_types.tiered` must resolve to `null`** when an override is set. The `lookup(var.k8s_node_group_image_id, "tiered", null)` check in Step 5a handles this automatically — tiered's `ami_type` becomes `null` (i.e. `CUSTOM`) as soon as you pass a tiered AMI, matching what EKS expects when the launch template supplies an `image_id`.
+
+3. **The `diskann` launch template userdata must run the NVMe mount *before* `${local.eks_bootstrap}`.** When EKS uses a custom AMI, kubelet is started by the bootstrap command you embed in userdata — not by EKS. If the NVMe mount script runs after kubelet has already started, `/var/lib/kubelet` is already on the EBS root volume and the symlink swap has no effect, so ephemeral storage ends up sized to the 100 GB root disk instead of the ~1.8 TB NVMe. Worse, if `${local.eks_bootstrap}` appears *outside* the `multipart/mixed` MIME part it will be silently ignored and the node will fail to register.
+
+   The correct layout for the `aws_launch_template.diskann` userdata heredoc:
+
+   ```hcl
+   user_data = base64encode(<<-USERDATA
+   MIME-Version: 1.0
+   Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
+
+   --==MYBOUNDARY==
+   Content-Type: text/x-shellscript; charset="us-ascii"
+
+   #!/bin/bash
+   echo "Running zilliz NVMe mount script"
+   disk_volume=$(lsblk -J -o NAME,MODEL,SIZE | jq -r '.blockdevices[] | select(.model != null and (.model | test("Amazon EC2 NVMe Instance Storage"))) | .name')
+   echo $${disk_volume}
+   if [ -n "$${disk_volume}" ] && lsblk | fgrep -q $${disk_volume}; then
+       mkdir -p /mnt/data /var/lib/kubelet /var/lib/docker
+       mkfs.xfs /dev/$${disk_volume}
+       mount /dev/$${disk_volume} /mnt/data
+       chmod 0755 /mnt/data
+       mv /var/lib/kubelet /mnt/data/
+       mv /var/lib/docker /mnt/data/
+       ln -sf /mnt/data/kubelet /var/lib/kubelet
+       ln -sf /mnt/data/docker /var/lib/docker
+       UUID=$(lsblk -f | grep $${disk_volume} | awk '{print $$3}')
+       echo "UUID=$$UUID     /mnt/data   xfs    defaults,noatime  1   1" >> /etc/fstab
+   fi
+   echo "mount results $(cat /etc/fstab)"
+   echo 'NVMe mount done'
+   ${local.eks_bootstrap}
+   --==MYBOUNDARY==--
+
+   USERDATA
+   )
+   ```
+
+   Key points:
+   - `${local.eks_bootstrap}` is **inside** the MIME part, **after** the NVMe mount — never above the `--==MYBOUNDARY==` header.
+   - `$${...}` escapes bash variables so Terraform doesn't try to interpolate them; `${local.eks_bootstrap}` is a real Terraform interpolation.
+   - Verify on a running node: `df -h /var/lib/kubelet` should show a ~1.8 TB mount backed by the NVMe device, and `kubectl describe node` should report ephemeral-storage in the same range.

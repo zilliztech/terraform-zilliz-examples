@@ -115,20 +115,38 @@ module "eks" {
 
 ## Step 5 — Add the Tiered Node Group Resource
 
-In `modules/aws_byoc_i/eks/eks_nodegroup.tf`, append the following resource (for example, after the `search` node group):
+All of the changes in this step are in `modules/aws_byoc_i/eks/eks_nodegroup.tf`.
+
+**5a.** Add a `tiered` entry to the existing `local.ami_types` block so the new node group can reuse the same AMI-selection logic as the others:
+
+```hcl
+locals {
+  ami_types = {
+    search      = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.search.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
+    core        = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.core.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
+    index       = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.index.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
+    fundamental = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.fundamental.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
+    # --- ADD THIS LINE ---
+    # When the diskann launch template carries a custom image_id (e.g. FIPS AMI),
+    # EKS requires ami_type to be null ("CUSTOM"). Fall back to null whenever the
+    # caller provides a tiered AMI via var.k8s_node_group_image_id.
+    tiered = lookup(var.k8s_node_group_image_id, "tiered", null) != null ? null : (
+      can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.tiered.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
+    )
+  }
+}
+```
+
+> If the EKS module doesn't already accept `var.k8s_node_group_image_id`, either thread it through from the root module or replace the `lookup(...)` call with your own equivalent. The point is: when the diskann launch template supplies an `image_id`, tiered's `ami_type` must be `null`.
+
+**5b.** Append the following resource (for example, after the `search` node group):
 
 ```hcl
 resource "aws_eks_node_group" "tiered" {
   count         = var.enable_tiered ? 1 : 0
+  ami_type      = local.ami_types.tiered
   capacity_type = var.k8s_node_groups["tiered"].capacity_type
   cluster_name  = local.eks_cluster_name
-
-  # Auto-detect AMI type from instance architecture
-  ami_type = (
-    can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups["tiered"].instance_types))
-    ? "AL2023_ARM_64_STANDARD"
-    : "AL2023_x86_64_STANDARD"
-  )
 
   instance_types = [var.k8s_node_groups["tiered"].instance_types]
 
@@ -185,3 +203,26 @@ Expected plan output:
 | Tiered storage **enabled** | `aws_eks_node_group.tiered[0]` will be created (1 to add) |
 
 Existing resources should show **no destroy or recreate** actions.
+
+## Custom AMI (FIPS) Users — Extra Steps
+
+If your cluster uses a custom AMI (for example, a FIPS-compliant image) and the `diskann` launch template carries a non-null `image_id`, AWS will reject node group creation with:
+
+```
+InvalidParameterException: You cannot specify an AMI Type other than CUSTOM,
+when specifying an image id in your Launch template
+```
+
+Two things must be true for the tiered node group to use the custom AMI:
+
+1. **`var.k8s_node_group_image_id` must include a `tiered` entry.** When you run `terraform apply`, pass the same AMI you are using for `search` (both share the `diskann` launch template), for example:
+
+   ```hcl
+   k8s_node_group_image_id = {
+     search = "ami-015074ee112ce706a"
+     tiered = "ami-015074ee112ce706a"
+     # ... other node groups as needed
+   }
+   ```
+
+2. **`local.ami_types.tiered` must resolve to `null`** when an override is set. The `lookup(var.k8s_node_group_image_id, "tiered", null)` check in Step 5a handles this automatically — tiered's `ami_type` becomes `null` (i.e. `CUSTOM`) as soon as you pass a tiered AMI, matching what EKS expects when the launch template supplies an `image_id`.

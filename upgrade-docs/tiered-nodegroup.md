@@ -30,21 +30,8 @@ k8s_node_groups = data.zillizcloud_byoc_i_project_settings.this.node_quotas
 With the following merge logic:
 
 ```hcl
-  # Default for the tiered node group.
-  # max_size = 0 means the node group will not be created unless the API provides a quota.
-  _tiered_default = {
-    tiered = {
-      disk_size      = 100
-      min_size       = 0
-      max_size       = 0
-      desired_size   = 0
-      instance_types = "m6i.2xlarge"
-      capacity_type  = "ON_DEMAND"
-    }
-  }
-
-  # Pull the tiered quota from the provider when available.
-  _tiered_from_api = (
+  # Tiered node quota from API (separate provider field, null when not enabled)
+  tiered_node_quota = (
     data.zillizcloud_byoc_i_project_settings.this.tiered_node_quota != null
     ? { tiered = data.zillizcloud_byoc_i_project_settings.this.tiered_node_quota }
     : {}
@@ -52,24 +39,21 @@ With the following merge logic:
 
   k8s_node_groups = {
     for name, ng in merge(
-      local._tiered_default,
+      # Tiered placeholder (max_size=0 → count=0, not created unless API enables it)
+      { tiered = { disk_size = 100, min_size = 0, max_size = 0, desired_size = 0, instance_types = "i4i.2xlarge", capacity_type = "ON_DEMAND" } },
+      # API returns: core, index, search, fundamental
       data.zillizcloud_byoc_i_project_settings.this.node_quotas,
-      local._tiered_from_api,
+      # API tiered quota overwrites placeholder when present
+      local.tiered_node_quota,
     ) : name => merge(ng, {
-      # Tiered instances (e.g. i4i) use NVMe local disks; the API may return disk_size = 0.
-      # Floor to 100 GB so the EBS root volume has a sensible size.
-      disk_size = ng.disk_size > 0 ? ng.disk_size : 100
+      ami_id    = lookup(var.k8s_node_group_image_id, name, null)
+      disk_size = max(ng.disk_size, 100)
     })
   }
 
-  enable_tiered = (
-    data.zillizcloud_byoc_i_project_settings.this.tiered_node_quota != null
-    && local.k8s_node_groups["tiered"].max_size > 0
-  )
+  # Placeholder has max_size=0, so this is false unless API returns tiered with max_size>0
+  enable_tiered = local.k8s_node_groups["tiered"].max_size > 0
 ```
-
-> **Note:** If your code uses a custom AMI variable (e.g. `var.k8s_node_group_image_id`), you can add
-> `ami_id = lookup(var.k8s_node_group_image_id, name, null)` inside the inner `merge(ng, { ... })` block.
 
 ## Step 3 — Update EKS Module Variables
 
@@ -188,7 +172,18 @@ resource "aws_eks_node_group" "tiered" {
 }
 ```
 
-## Step 6 — Verify
+## Step 6 — Enable Tiered Storage in Zilliz Cloud Console
+
+1. Log in to the [Zilliz Cloud console](https://cloud.zilliz.com/).
+2. In the top-right corner, select the correct **BYOC organization**.
+3. Navigate to **Projects** and locate the project you want to enable tiered storage for.
+4. Click the **"..."** button in the bottom-right corner of the project card, then click **View Project Details**.
+5. In the **Resource Settings** section, click **Edit**.
+6. In the dialog, check **Tiered** and click **Save** in the bottom-right corner.
+
+After saving, the API will return a `tiered_node_quota` for this project.
+
+## Step 7 — Verify
 
 ```bash
 terraform init -upgrade

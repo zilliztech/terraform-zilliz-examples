@@ -55,36 +55,9 @@ With the following merge logic:
   enable_tiered = local.k8s_node_groups["tiered"].max_size > 0
 ```
 
-## Step 3 — Update EKS Module Variables
+## Step 3 — Update EKS Module
 
-Open `modules/aws_byoc_i/eks/variables.tf` and make the following changes.
-
-**3a.** Relax the `max_size` validation from `> 0` to `>= 0` (tiered may have `max_size = 0` when disabled):
-
-```hcl
-  validation {
-    condition = alltrue([
-      for k, v in var.k8s_node_groups :
-      v.disk_size > 0 &&
-      v.min_size >= 0 &&
-      v.max_size >= 0 &&          # was: v.max_size > 0
-      v.desired_size >= 0 &&
-      v.desired_size <= v.max_size &&
-      contains(["ON_DEMAND", "SPOT"], v.capacity_type)
-    ])
-    error_message = "Invalid node group configuration."
-  }
-```
-
-**3b.** Add the `enable_tiered` variable:
-
-```hcl
-variable "enable_tiered" {
-  description = "Whether to create the tiered node group."
-  type        = bool
-  default     = false
-}
-```
+Copy the latest `modules/aws_byoc_i/eks/` directory from the master branch of [terraform-zilliz-examples](https://github.com/zilliztech/terraform-zilliz-examples) to replace your local copy. This adds the tiered node group resource, `enable_tiered` variable, and updated validation rules.
 
 ## Step 4 — Pass `enable_tiered` to the EKS Module
 
@@ -97,82 +70,7 @@ module "eks" {
 }
 ```
 
-## Step 5 — Add the Tiered Node Group Resource
-
-All of the changes in this step are in `modules/aws_byoc_i/eks/eks_nodegroup.tf`.
-
-**5a.** Add a `tiered` entry to the existing `local.ami_types` block so the new node group can reuse the same AMI-selection logic as the others:
-
-```hcl
-locals {
-  ami_types = {
-    search      = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.search.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
-    core        = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.core.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
-    index       = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.index.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
-    fundamental = can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.fundamental.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
-    # --- ADD THIS LINE ---
-    # When the diskann launch template carries a custom image_id (e.g. FIPS AMI),
-    # EKS requires ami_type to be null ("CUSTOM"). Fall back to null whenever the
-    # caller provides a tiered AMI via var.k8s_node_group_image_id.
-    tiered = lookup(var.k8s_node_group_image_id, "tiered", null) != null ? null : (
-      can(regex("^[a-z]+[0-9]+g[a-z]*\\.", var.k8s_node_groups.tiered.instance_types)) ? "AL2023_ARM_64_STANDARD" : "AL2023_x86_64_STANDARD"
-    )
-  }
-}
-```
-
-> If the EKS module doesn't already accept `var.k8s_node_group_image_id`, either thread it through from the root module or replace the `lookup(...)` call with your own equivalent. The point is: when the diskann launch template supplies an `image_id`, tiered's `ami_type` must be `null`.
-
-**5b.** Append the following resource (for example, after the `search` node group):
-
-```hcl
-resource "aws_eks_node_group" "tiered" {
-  count         = var.enable_tiered ? 1 : 0
-  ami_type      = local.ami_types.tiered
-  capacity_type = var.k8s_node_groups["tiered"].capacity_type
-  cluster_name  = local.eks_cluster_name
-
-  instance_types = [var.k8s_node_groups["tiered"].instance_types]
-
-  labels = {
-    "zilliz-group-name" = "tiered"
-    "node-role/tiered"  = "true"
-    "node-role/milvus"  = "true"
-  }
-
-  node_group_name_prefix = "${local.prefix_name}-tiered-"
-  node_role_arn          = local.eks_node_role_arn
-  subnet_ids             = local.subnet_ids
-
-  tags = merge({
-    "Vendor" = "zilliz-byoc"
-  }, var.custom_tags)
-
-  # Reuses the "diskann" launch template (includes NVMe mount user-data)
-  launch_template {
-    id      = aws_launch_template.diskann.id
-    version = aws_launch_template.diskann.latest_version
-  }
-
-  scaling_config {
-    desired_size = var.k8s_node_groups["tiered"].min_size
-    max_size     = var.k8s_node_groups["tiered"].max_size
-    min_size     = var.k8s_node_groups["tiered"].min_size
-  }
-
-  update_config {
-    max_unavailable_percentage = 33
-  }
-
-  lifecycle {
-    ignore_changes = [scaling_config[0].desired_size]
-  }
-
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
-}
-```
-
-## Step 6 — Enable Tiered Storage in Zilliz Cloud Console
+## Step 5 — Enable Tiered Storage in Zilliz Cloud Console
 
 1. Log in to the [Zilliz Cloud console](https://cloud.zilliz.com/).
 2. In the top-right corner, select the correct **BYOC organization**.
@@ -183,7 +81,7 @@ resource "aws_eks_node_group" "tiered" {
 
 After saving, the API will return a `tiered_node_quota` for this project.
 
-## Step 7 — Verify
+## Step 6 — Verify
 
 ```bash
 terraform init -upgrade
@@ -220,7 +118,7 @@ Three things must be true for the tiered node group to use the custom AMI:
    }
    ```
 
-2. **`local.ami_types.tiered` must resolve to `null`** when an override is set. The `lookup(var.k8s_node_group_image_id, "tiered", null)` check in Step 5a handles this automatically — tiered's `ami_type` becomes `null` (i.e. `CUSTOM`) as soon as you pass a tiered AMI, matching what EKS expects when the launch template supplies an `image_id`.
+2. **`local.ami_types.tiered` must resolve to `null`** when an override is set. The `lookup(var.k8s_node_group_image_id, "tiered", null)` check in the EKS module handles this automatically — tiered's `ami_type` becomes `null` (i.e. `CUSTOM`) as soon as you pass a tiered AMI, matching what EKS expects when the launch template supplies an `image_id`.
 
 3. **The `diskann` launch template userdata must run the NVMe mount *before* `${local.eks_bootstrap}`.** When EKS uses a custom AMI, kubelet is started by the bootstrap command you embed in userdata — not by EKS. If the NVMe mount script runs after kubelet has already started, `/var/lib/kubelet` is already on the EBS root volume and the symlink swap has no effect, so ephemeral storage ends up sized to the 100 GB root disk instead of the ~1.8 TB NVMe. Worse, if `${local.eks_bootstrap}` appears *outside* the `multipart/mixed` MIME part it will be silently ignored and the node will fail to register.
 

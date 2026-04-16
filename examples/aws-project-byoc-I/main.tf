@@ -5,87 +5,88 @@ data "zillizcloud_byoc_i_project_settings" "this" {
 data "zillizcloud_external_id" "current" {}
 
 module "vpc" {
-  count = local.is_existing_vpc ? 0 : 1
-  source = "../../modules/aws_byoc_i/vpc"
-  prefix_name = local.prefix_name
-  dataplane_id = local.dataplane_id
-  vpc_cidr = var.vpc_cidr
-  custom_tags = var.custom_tags
-  region = local.region
+  count           = local.is_existing_vpc ? 0 : 1
+  source          = "../../modules/aws_byoc_i/vpc"
+  prefix_name     = local.prefix_name
+  dataplane_id    = local.dataplane_id
+  vpc_cidr        = var.vpc_cidr
+  custom_tags     = var.custom_tags
+  region          = local.region
   enable_endpoint = local.enable_endpoint
 }
 
 module "s3" {
-  source = "../../modules/aws_byoc_i/s3"
-  prefix_name = local.prefix_name
-  dataplane_id = local.dataplane_id
+  source               = "../../modules/aws_byoc_i/s3"
+  prefix_name          = local.prefix_name
+  dataplane_id         = local.dataplane_id
   customer_bucket_name = var.customer_bucket_name
-  custom_tags = var.custom_tags
-  enable_s3_kms = var.enable_s3_kms
-  s3_kms_key_arn = var.s3_kms_key_arn
+  custom_tags          = var.custom_tags
+  enable_s3_kms        = var.enable_s3_kms
+  s3_kms_key_arn       = var.s3_kms_key_arn
 }
 
 module "private_link" {
-  count = local.enable_private_link? 1: 0
+  count                      = local.enable_private_link ? 1 : 0
   enable_private_hosted_zone = !var.enable_manual_private_link
-  source = "../../modules/aws_byoc_i/privatelink"
-  prefix_name = local.prefix_name
-  dataplane_id = local.dataplane_id
-  region = local.region
-  vpc_id = local.vpc_id
-  subnet_ids = local.private_link_subnet_ids
-  security_group_ids = local.private_link_security_group_ids
-  create_security_group = var.create_private_link_security_group
-  security_group_name = var.private_link_security_group_name
-  custom_tags = var.custom_tags
+  source                     = "../../modules/aws_byoc_i/privatelink"
+  prefix_name                = local.prefix_name
+  dataplane_id               = local.dataplane_id
+  region                     = local.region
+  vpc_id                     = local.vpc_id
+  subnet_ids                 = local.private_link_subnet_ids
+  security_group_ids         = local.private_link_security_group_ids
+  create_security_group      = var.create_private_link_security_group
+  security_group_name        = var.private_link_security_group_name
+  custom_tags                = var.custom_tags
 }
 
 module "eks" {
-  source = "../../modules/aws_byoc_i/eks"
-  prefix_name = local.prefix_name
-  dataplane_id = local.dataplane_id
-  region = local.region
-  node_security_group_ids = local.node_security_group_ids
-  vpc_id = local.vpc_id
-  subnet_ids = local.subnet_ids
-  customer_pod_subnet_ids = local.customer_pod_subnet_ids
+  source                       = "../../modules/aws_byoc_i/eks"
+  prefix_name                  = local.prefix_name
+  dataplane_id                 = local.dataplane_id
+  region                       = local.region
+  node_security_group_ids      = local.node_security_group_ids
+  vpc_id                       = local.vpc_id
+  subnet_ids                   = local.subnet_ids
+  customer_pod_subnet_ids      = local.customer_pod_subnet_ids
   eks_control_plane_subnet_ids = local.eks_control_plane_subnet_ids
-  external_id = local.external_id
-  agent_config = local.agent_config
-  enable_private_link = local.enable_private_link
-  k8s_node_groups = local.k8s_node_groups
-  s3_bucket_id = local.s3_bucket_id
+  external_id                  = local.external_id
+  agent_config                 = local.agent_config
+  enable_private_link          = local.enable_private_link
+  k8s_node_groups              = local.k8s_node_groups
+  enable_tiered                = local.enable_tiered
+  s3_bucket_id                 = local.s3_bucket_id
   // eks name
   customer_eks_cluster_name = var.customer_eks_cluster_name
   // role names
-  customer_eks_role_name = var.customer_eks_role_name
-  customer_eks_addon_role_name = var.customer_eks_addon_role_name
+  customer_eks_role_name         = var.customer_eks_role_name
+  customer_eks_addon_role_name   = var.customer_eks_addon_role_name
   customer_maintenance_role_name = var.customer_maintenance_role_name
-  customer_storage_role_name = var.customer_storage_role_name
-  custom_tags = var.custom_tags
+  customer_storage_role_name     = var.customer_storage_role_name
+  custom_tags                    = var.custom_tags
   // ecr
   customer_ecr = var.customer_ecr
-  booter = var.booter
+  booter       = var.booter
   // minimal roles configuration
   minimal_roles = var.minimal_roles
 
   // kms encryption for ebs and s3
-  enable_ebs_kms = var.enable_ebs_kms
+  enable_ebs_kms  = var.enable_ebs_kms
   ebs_kms_key_arn = var.ebs_kms_key_arn
   ebs_volume_size = var.ebs_volume_size
   ebs_volume_type = var.ebs_volume_type
-  enable_s3_kms = var.enable_s3_kms
-  s3_kms_key_arn = var.s3_kms_key_arn
+  enable_s3_kms   = var.enable_s3_kms
+  s3_kms_key_arn  = var.s3_kms_key_arn
 
   // depend on private link to establish agent tunnel connection
   depends_on = [module.private_link]
 }
 
 module "kms" {
-  count = var.enable_cse ? 1 : 0
-  source = "../../modules/aws_byoc_i/kms"
-  prefix = local.prefix_name
-  trust_role_arn = local.storage_role.arn
+  count                   = var.enable_cse ? 1 : 0
+  source                  = "../../modules/aws_byoc_i/kms"
+  prefix                  = local.prefix_name
+  trust_role_arn          = local.storage_role.arn
   aws_cse_exiting_key_arn = var.aws_cse_exiting_key_arn
 }
 
@@ -119,18 +120,18 @@ resource "zillizcloud_byoc_i_project" "this" {
       bucket_id = local.s3_bucket_id
     }
     cse = var.enable_cse ? {
-      default_aws_cse_key_arn     = module.kms[0].cse_key_arn
-      aws_cse_role_arn    = module.kms[0].cse_role_arn
-      external_id = module.kms[0].external_id
+      default_aws_cse_key_arn = module.kms[0].cse_key_arn
+      aws_cse_role_arn        = module.kms[0].cse_role_arn
+      external_id             = module.kms[0].external_id
     } : null
   }
 
   // depend on private link to establish agent tunnel connection
   depends_on = [zillizcloud_byoc_i_project_agent.this,
-    module.eks, module.private_link, module.vpc, module.s3, module.kms]
+  module.eks, module.private_link, module.vpc, module.s3, module.kms]
   lifecycle {
-     ignore_changes = [data_plane_id, project_id, aws, ext_config]
-     prevent_destroy = true
+    ignore_changes  = [data_plane_id, project_id, aws, ext_config]
+    prevent_destroy = true
   }
 
   ext_config = base64encode(jsonencode(local.ext_config))

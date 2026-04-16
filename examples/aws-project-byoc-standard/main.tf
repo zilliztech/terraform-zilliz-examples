@@ -1,7 +1,7 @@
 module "aws_bucket" {
   source = "../../modules/aws_byoc/aws_bucket"
 
-  region      = var.region
+  region          = var.region
   name            = var.name
   s3_bucket_names = ["milvus"]
 }
@@ -20,7 +20,7 @@ module "aws_iam" {
 module "aws_vpc" {
   source = "../../modules/aws_byoc/aws_vpc"
 
-  region          = var.region
+  region              = var.region
   vpc_cidr            = var.vpc_cidr
   name                = var.name
   enable_private_link = var.enable_private_link
@@ -28,7 +28,7 @@ module "aws_vpc" {
 
 
 resource "zillizcloud_byoc_project" "this" {
-  name = var.name
+  name   = var.name
   status = "RUNNING"
 
 
@@ -51,36 +51,36 @@ resource "zillizcloud_byoc_project" "this" {
       bucket_id = module.aws_bucket.s3_bucket_ids
     }
 
-   
+
   }
 
-   instances = {
+  instances = {
     core = {
-      vm = var.instances.core.vm
+      vm    = var.instances.core.vm
       count = var.instances.core.count
     }
     fundamental = {
-      vm = var.instances.fundamental.vm
+      vm        = var.instances.fundamental.vm
       min_count = var.instances.fundamental.min_count
       max_count = var.instances.fundamental.max_count
     }
     search = {
-      vm = var.instances.search.vm
+      vm        = var.instances.search.vm
       min_count = var.instances.search.min_count
       max_count = var.instances.search.max_count
     }
     index = {
-      vm = var.instances.index.vm
+      vm        = var.instances.index.vm
       min_count = var.instances.index.min_count
       max_count = var.instances.index.max_count
     }
     auto_scaling = var.instances.auto_scaling
-    arch = var.instances.arch
-   }
+    arch         = var.instances.arch
+  }
 
   depends_on = [module.aws_vpc, module.aws_bucket, module.aws_iam]
   lifecycle {
-     prevent_destroy = true
+    prevent_destroy = true
   }
 }
 

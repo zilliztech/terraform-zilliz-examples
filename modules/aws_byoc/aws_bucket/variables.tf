@@ -4,7 +4,7 @@ variable "region" {
 }
 
 variable "s3_bucket_names" {
-  type = set(string)
+  type    = set(string)
   default = ["milvus"]
 }
 

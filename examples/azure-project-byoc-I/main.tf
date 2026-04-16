@@ -126,7 +126,7 @@ module "milvus_aks" {
 
   # Instance storage identities for federated credentials
   instance_storage_identity_ids = local.instance_storage_identity_ids
-  storage_identity_id = local.common_storage_identity_id
+  storage_identity_id           = local.common_storage_identity_id
 
   # Optional AKS configuration
   env          = var.env

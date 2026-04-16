@@ -37,10 +37,10 @@ output "storage_role" {
 # Minimal roles outputs
 output "eks_cluster_role" {
   description = "EKS cluster role (created role or external role when minimal_roles.enabled is true)"
-  value = local.eks_cluster_role
+  value       = local.eks_cluster_role
 }
 
 output "eks_node_role" {
   description = "EKS node role (created role or external role when minimal_roles.enabled is true)"
-  value = local.eks_node_role
+  value       = local.eks_node_role
 }

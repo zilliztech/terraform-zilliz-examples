@@ -1,12 +1,12 @@
 resource "aws_iam_role" "eks_role" {
   count = var.minimal_roles.enabled ? 0 : 1
-  name = local.eks_role_name
+  name  = local.eks_role_name
 
   tags = merge({
     Vendor = "zilliz-byoc"
     Caller = data.aws_caller_identity.current.arn
   }, var.custom_tags)
-  
+
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -82,7 +82,7 @@ resource "aws_iam_role_policy_attachment" "eks_ebs_kms_policy_attachment" {
 resource "aws_iam_policy" "node_assume_role_policy" {
   name        = "${local.prefix_name}-AssumeSpecificRolePolicy"
   description = "Policy to allow assuming a specific role"
-  policy      = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {

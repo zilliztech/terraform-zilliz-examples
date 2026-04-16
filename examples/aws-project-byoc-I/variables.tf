@@ -164,19 +164,19 @@ variable "minimal_roles" {
     enabled = optional(bool, false)
     # Cluster role configuration
     cluster_role = optional(object({
-      name    = optional(string, "")
-      use_existing_arn = optional(string, "")  # Use existing role by ARN
+      name             = optional(string, "")
+      use_existing_arn = optional(string, "") # Use existing role by ARN
     }), {})
     # Node role configuration  
     node_role = optional(object({
-      name    = optional(string, "")
-      use_existing_arn = optional(string, "")  # Use existing role by ARN
+      name             = optional(string, "")
+      use_existing_arn = optional(string, "") # Use existing role by ARN
     }), {})
   })
   default = {
     enabled = false
   }
-  
+
   validation {
     condition = alltrue([
       length(var.minimal_roles.cluster_role.use_existing_arn) == 0 || can(regex("^arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9+=,.@_-]+$", var.minimal_roles.cluster_role.use_existing_arn)),

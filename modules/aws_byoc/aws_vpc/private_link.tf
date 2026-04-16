@@ -1,4 +1,4 @@
-data aws_caller_identity "current" {}
+data "aws_caller_identity" "current" {}
 
 locals {
   config = yamldecode(file("${path.module}/../../conf.yaml"))
@@ -7,7 +7,7 @@ locals {
 resource "aws_vpc_endpoint" "byoc_endpoint" {
   count = var.enable_private_link ? 1 : 0
 
-  vpc_id              = module.vpc.vpc_id
+  vpc_id = module.vpc.vpc_id
   // get the vpce service id from the vpce_config
   service_name        = "com.amazonaws.vpce.${var.region}.${local.config.vpce_service_ids[var.region]}"
   vpc_endpoint_type   = "Interface"

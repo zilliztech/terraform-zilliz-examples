@@ -92,17 +92,17 @@ custom_tags = {
 # This feature allows you to use separate IAM roles for EKS cluster and node groups
 # instead of the default unified role, providing better security isolation
 minimal_roles = {
-  enabled = false  # Set to true to enable minimal roles feature
-  
+  enabled = false # Set to true to enable minimal roles feature
+
   # Cluster role configuration (for EKS control plane)
   cluster_role = {
-    name = ""  # Custom name for cluster role (optional)
+    name = "" # Custom name for cluster role (optional)
     # use_existing_arn = "arn:aws:iam::123456789012:role/your-existing-cluster-role"  # Use existing role by ARN (optional)
   }
-  
+
   # Node role configuration (for EKS worker nodes)
   node_role = {
-    name = ""  # Custom name for node role (optional)
+    name = "" # Custom name for node role (optional)
     # use_existing_arn = "arn:aws:iam::123456789012:role/your-existing-node-role"  # Use existing role by ARN (optional)
   }
 }
@@ -118,5 +118,5 @@ minimal_roles = {
 
 # Enable AWS Client-Side Encryption (CSE) for Milvus data
 # When enabled without aws_cse_exiting_key_arn, a new KMS key will be created automatically
-enable_cse          = false
-aws_cse_exiting_key_arn = ""  # Optional: Use existing KMS key ARN for CSE
+enable_cse              = false
+aws_cse_exiting_key_arn = "" # Optional: Use existing KMS key ARN for CSE

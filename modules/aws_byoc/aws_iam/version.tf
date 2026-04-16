@@ -13,7 +13,7 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Vendor    = "zilliz-byoc"
+      Vendor = "zilliz-byoc"
     }
   }
 }

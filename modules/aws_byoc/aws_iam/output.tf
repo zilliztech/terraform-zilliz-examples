@@ -9,5 +9,5 @@ output "external_id" {
 
 output "storage_role_arn" {
   value = aws_iam_role.storage_role.arn
-  
+
 }

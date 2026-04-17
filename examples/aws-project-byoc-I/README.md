@@ -177,7 +177,6 @@ The example automatically creates **4 IAM roles** with specific purposes:
 - **Use Existing VPC** (recommended):
   ```hcl
   customer_vpc_id               = "vpc-12345678"
-  customer_security_group_id    = "sg-12345678"
   customer_private_subnet_ids   = ["subnet-111", "subnet-222", "subnet-333"]
   ```
 
@@ -333,7 +332,6 @@ The example automatically creates **4 IAM roles** with specific purposes:
 | `project_id` | Zilliz Cloud project ID | `string` | `proj-123456` |
 | `dataplane_id` | Zilliz Cloud data plane ID | `string` | `dp-123456` |
 | `customer_vpc_id` | Your existing VPC ID (or `""` to create new) | `string` | `vpc-12345678` or `""` |
-| `customer_security_group_id` | Security group ID (required if using existing VPC) | `string` | `sg-12345678` |
 | `customer_private_subnet_ids` | Private subnet IDs (required if using existing VPC) | `list(string)` | `["subnet-111", "subnet-222"]` |
 
 ### Optional Variables
@@ -451,7 +449,6 @@ minimal_roles = {
    project_id                  = "your-project-id"
    dataplane_id                = "your-dataplane-id"
    customer_vpc_id             = "vpc-12345678"
-   customer_security_group_id  = "sg-12345678"
    customer_private_subnet_ids = ["subnet-111", "subnet-222", "subnet-333"]
    ```
 
@@ -460,7 +457,6 @@ minimal_roles = {
    project_id                  = "your-project-id"
    dataplane_id                = "your-dataplane-id"
    customer_vpc_id             = "vpc-12345678"
-   customer_security_group_id  = "sg-12345678"
    customer_private_subnet_ids = ["subnet-111", "subnet-222", "subnet-333"]
    
    # Custom resource names

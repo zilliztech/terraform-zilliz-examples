@@ -25,3 +25,6 @@ Azure:
       acr_name: zillizsoutheastasia-cgfbbjgsd6h7abf6
       acr_prefix: zilliz-byoc
 
+GCP:
+  private_service_connect:
+    service_attachment_ids: {}

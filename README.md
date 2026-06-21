@@ -24,6 +24,7 @@ See [`examples/README.md`](./examples/README.md) for complete documentation of a
 - **AWS BYOC-I** - Customer-managed VPC with full customization
 - **AWS BYOC Standard** - Automated full-stack deployment
 - **AWS BYOC Manual** - Deployment with existing infrastructure
+- **GCP BYOC-I** - Customer-managed GCP infrastructure with VM booter
 - **GCP BYOC Manual** - Google Cloud Platform deployment
 - **Azure BYOC-I** - Azure deployment (coming soon)
 
@@ -32,7 +33,7 @@ See [`examples/README.md`](./examples/README.md) for complete documentation of a
 Reusable Terraform modules are available in [`modules/`](./modules/):
 
 - **AWS**: `aws_byoc/` and `aws_byoc_i/` modules
-- **GCP**: `gcp/` modules (VPC, GCS, GKE, IAM, PrivateLink)
+- **GCP**: `gcp/` and `gcp_byoc_i/` modules (VPC, GCS, GKE, IAM, PrivateLink, VM booter)
 - **Azure**: `azure/` modules (coming soon)
 
 Each module includes its own documentation.

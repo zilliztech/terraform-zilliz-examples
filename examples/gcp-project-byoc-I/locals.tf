@@ -36,6 +36,13 @@ locals {
 
   dataplane_suffix = regex("[^-]+$", local.data_plane_id)
   env_domain       = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
+  module_config    = yamldecode(file("${path.module}/../../modules/conf.yaml"))
+  agent_image_url  = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
+  agent_image = (
+    can(regex("/", local.agent_image_url))
+    ? local.agent_image_url
+    : "${local.module_config.agent_config.repository}:${local.agent_image_url}"
+  )
   agent_server_host = (
     var.agent_server_host != ""
     ? var.agent_server_host
@@ -60,7 +67,7 @@ locals {
 
   agent_config = {
     auth_token     = data.zillizcloud_byoc_i_project_settings.this.op_config.token
-    image          = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
+    image          = local.agent_image
     server_host    = local.agent_server_host
     tunnel_host    = local.agent_tunnel_host
     endpoint_ip    = local.psc_endpoint_ip == null ? "" : local.psc_endpoint_ip

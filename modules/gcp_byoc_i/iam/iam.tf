@@ -144,10 +144,4 @@ resource "google_project_iam_member" "booter_container_admin" {
   project = var.gcp_project_id
   role    = "roles/container.admin"
   member  = "serviceAccount:${google_service_account.booter.email}"
-
-  condition {
-    title       = "zilliz_byoc_i_booter_target_cluster"
-    description = "Limit booter Kubernetes install permissions to the target BYOC-I GKE cluster"
-    expression  = "resource.name.startsWith(\"projects/${var.gcp_project_id}/locations/${var.gke_location}/clusters/${var.gke_cluster_name}\") || resource.name.startsWith(\"projects/${var.gcp_project_id}/locations/${var.gke_location}/operations/\")"
-  }
 }

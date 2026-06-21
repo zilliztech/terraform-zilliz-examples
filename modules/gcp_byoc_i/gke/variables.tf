@@ -67,6 +67,15 @@ variable "master_ipv4_cidr_block" {
   default     = "172.16.0.0/28"
 }
 
+variable "master_authorized_networks" {
+  description = "CIDR blocks authorized to access the private GKE control plane."
+  type = list(object({
+    cidr_block   = string
+    display_name = optional(string, "byoc-primary-subnet")
+  }))
+  default = []
+}
+
 variable "deletion_protection" {
   description = "Whether to enable GKE deletion protection."
   type        = bool

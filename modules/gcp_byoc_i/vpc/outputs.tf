@@ -22,6 +22,10 @@ output "primary_subnet_self_link" {
   value = google_compute_subnetwork.primary.self_link
 }
 
+output "primary_subnet_cidr" {
+  value = local.primary_subnet_cidr
+}
+
 output "pod_subnet_name" {
   value = local.pod_subnet_name
 }

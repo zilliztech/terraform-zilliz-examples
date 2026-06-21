@@ -62,6 +62,12 @@ module "gke" {
   k8s_node_groups          = local.k8s_node_groups
   kubernetes_version       = var.kubernetes_version
   labels                   = local.common_labels
+  master_authorized_networks = [
+    {
+      cidr_block   = module.vpc.primary_subnet_cidr
+      display_name = "byoc-primary-subnet"
+    }
+  ]
 
   depends_on = [google_project_service.required, module.iam]
 }

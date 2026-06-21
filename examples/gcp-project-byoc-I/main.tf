@@ -15,6 +15,8 @@ module "vpc" {
   service_subnet = var.service_subnet
   lb_subnet      = var.lb_subnet
   labels         = local.common_labels
+
+  depends_on = [google_project_service.required]
 }
 
 module "gcs" {
@@ -24,6 +26,8 @@ module "gcs" {
   gcp_region    = local.gcp_region
   force_destroy = var.bucket_force_destroy
   labels        = local.common_labels
+
+  depends_on = [google_project_service.required]
 }
 
 module "iam" {
@@ -39,6 +43,8 @@ module "iam" {
   storage_service_account_name    = var.customer_storage_service_account_name
   booter_service_account_name     = var.customer_booter_service_account_name
   enable_direct_mig_resize        = var.enable_direct_mig_resize
+
+  depends_on = [google_project_service.required]
 }
 
 module "gke" {
@@ -57,7 +63,7 @@ module "gke" {
   kubernetes_version       = var.kubernetes_version
   labels                   = local.common_labels
 
-  depends_on = [module.iam]
+  depends_on = [google_project_service.required, module.iam]
 }
 
 module "private_link" {
@@ -70,7 +76,7 @@ module "private_link" {
   subnet_name           = module.vpc.primary_subnet_name
   service_attachment_id = var.gcp_psc_service_attachment_id
 
-  depends_on = [module.vpc]
+  depends_on = [google_project_service.required, module.vpc]
 }
 
 module "booter_vm" {
@@ -89,7 +95,7 @@ module "booter_vm" {
   agent_config                 = local.agent_config
   labels                       = local.common_labels
 
-  depends_on = [module.gke, module.private_link]
+  depends_on = [google_project_service.required, module.gke, module.private_link]
 }
 
 resource "zillizcloud_byoc_i_project_agent" "this" {

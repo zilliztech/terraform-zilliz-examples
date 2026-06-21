@@ -26,5 +26,8 @@ Azure:
       acr_prefix: zilliz-byoc
 
 GCP:
+  agent_config:
+    repository: gcr.io/zilliz-public/cloud-agent
+    uat_repository: gcr.io/zilliz-byoc-uat/cloud-agent
   private_service_connect:
     service_attachment_ids: {}

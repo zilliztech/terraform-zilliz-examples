@@ -38,10 +38,16 @@ locals {
   env_domain       = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
   module_config    = yamldecode(file("${path.module}/../../modules/conf.yaml"))
   agent_image_url  = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
+  gcp_agent_config = try(local.module_config.GCP.agent_config, {})
+  agent_image_repository = (
+    var.env == "UAT"
+    ? try(local.gcp_agent_config.uat_repository, try(local.gcp_agent_config.repository, local.module_config.agent_config.repository))
+    : try(local.gcp_agent_config.repository, local.module_config.agent_config.repository)
+  )
   agent_image = (
     can(regex("/", local.agent_image_url))
     ? local.agent_image_url
-    : "${local.module_config.agent_config.repository}:${local.agent_image_url}"
+    : "${local.agent_image_repository}:${local.agent_image_url}"
   )
   agent_server_host = (
     var.agent_server_host != ""

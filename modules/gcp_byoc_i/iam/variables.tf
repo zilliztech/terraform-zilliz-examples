@@ -23,6 +23,11 @@ variable "storage_bucket_name" {
   type        = string
 }
 
+variable "zilliz_byoc_service_account_email" {
+  description = "Zilliz Cloud BYOC service account email allowed to impersonate the maintenance service account."
+  type        = string
+}
+
 variable "gke_node_service_account_name" {
   description = "GKE node service account account_id. Defaults to <prefix_name>-node."
   type        = string

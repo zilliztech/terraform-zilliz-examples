@@ -70,10 +70,33 @@ resource "google_project_iam_member" "maintenance_operations" {
   }
 }
 
+resource "google_project_iam_custom_role" "maintenance_project_reader" {
+  project     = var.gcp_project_id
+  role_id     = "zillizByocIProjectReader${local.role_suffix}"
+  title       = "Zilliz BYOC-I Project Reader ${var.prefix_name}"
+  description = "Minimum project metadata read permission for BYOC-I bootstrap"
+
+  permissions = [
+    "resourcemanager.projects.get",
+  ]
+}
+
+resource "google_project_iam_member" "maintenance_project_reader" {
+  project = var.gcp_project_id
+  role    = google_project_iam_custom_role.maintenance_project_reader.id
+  member  = "serviceAccount:${google_service_account.management.email}"
+}
+
 resource "google_service_account_iam_member" "management_can_use_node_sa" {
   service_account_id = google_service_account.gke_node.name
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.management.email}"
+}
+
+resource "google_service_account_iam_member" "zilliz_byoc_can_impersonate_management" {
+  service_account_id = google_service_account.management.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = "serviceAccount:${var.zilliz_byoc_service_account_email}"
 }
 
 resource "google_project_iam_custom_role" "maintenance_mig_resize" {

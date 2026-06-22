@@ -16,6 +16,12 @@ variable "gcp_project_id" {
   nullable    = false
 }
 
+variable "zilliz_byoc_service_account_email" {
+  description = "Zilliz Cloud BYOC service account email for this organization. The example grants it permission to impersonate the customer maintenance service account during bootstrap."
+  type        = string
+  nullable    = false
+}
+
 variable "booter_image" {
   description = "Container image for the GCP-capable BYOC-I booter. Defaults to the latest public image published in GCR."
   type        = string

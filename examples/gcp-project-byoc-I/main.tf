@@ -33,16 +33,18 @@ module "gcs" {
 module "iam" {
   source = "../../modules/gcp_byoc_i/iam"
 
-  gcp_project_id                  = var.gcp_project_id
-  prefix_name                     = local.prefix_name
-  gke_location                    = local.gcp_region
-  gke_cluster_name                = local.gke_cluster_name
-  storage_bucket_name             = module.gcs.bucket_id
-  gke_node_service_account_name   = var.customer_gke_node_service_account_name
-  management_service_account_name = var.customer_management_service_account_name
-  storage_service_account_name    = var.customer_storage_service_account_name
-  booter_service_account_name     = var.customer_booter_service_account_name
-  enable_direct_mig_resize        = var.enable_direct_mig_resize
+  gcp_project_id                    = var.gcp_project_id
+  prefix_name                       = local.prefix_name
+  gke_location                      = local.gcp_region
+  gke_cluster_name                  = local.gke_cluster_name
+  storage_bucket_name               = module.gcs.bucket_id
+  zilliz_byoc_service_account_email = var.zilliz_byoc_service_account_email
+  gke_node_service_account_name     = var.customer_gke_node_service_account_name
+  management_service_account_name   = var.customer_management_service_account_name
+  storage_service_account_name      = var.customer_storage_service_account_name
+  booter_service_account_name       = var.customer_booter_service_account_name
+  storage_workload_identity_ksas    = local.storage_workload_identity_ksas
+  enable_direct_mig_resize          = var.enable_direct_mig_resize
 
   depends_on = [google_project_service.required]
 }

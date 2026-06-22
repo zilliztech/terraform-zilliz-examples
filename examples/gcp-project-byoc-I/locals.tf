@@ -60,6 +60,20 @@ locals {
     : "k8s${local.dataplane_suffix}.gcp-${local.gcp_region}.byoc.${local.env_domain}"
   )
   psc_endpoint_ip = local.enable_private_link ? module.private_link[0].byoc_endpoint_ip : null
+  storage_workload_identity_ksas = [
+    {
+      namespace = "index-pool"
+      name      = "milvus-bucket"
+    },
+    {
+      namespace = "milvus-tool"
+      name      = "milvus-bucket"
+    },
+    {
+      namespace = "loki"
+      name      = "loki-loki-distributed"
+    },
+  ]
 
   common_labels = merge(
     {

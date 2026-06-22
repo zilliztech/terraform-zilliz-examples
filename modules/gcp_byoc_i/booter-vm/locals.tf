@@ -30,6 +30,7 @@ locals {
     set +e
     docker run --rm --network=host \
       -e BOOT_CONFIG="$(cat /var/lib/zilliz-byoc-i-booter/boot-config.json)" \
+      -e KUBECTL_PROXY_IMAGE='${var.booter_image}' \
       '${var.booter_image}'
     status=$?
     set -e

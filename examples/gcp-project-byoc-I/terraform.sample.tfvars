@@ -9,5 +9,6 @@ zilliz_byoc_service_account_email = "org-xxxxxxxxxxxxxxxxxxxxxxxx@zilliz-byoc-pr
 # customer_vpc_name = "zilliz-byoc-vpc"
 # customer_gke_cluster_name = "zilliz-byoc-gke"
 # customer_bucket_name = "zilliz-byoc-gcp-bucket"
+# bucket_force_destroy = true
 # agent_server_host = "cloud-tunnel.gcp-us-west1.byoc.cloud.zilliz.com"
 # agent_tunnel_host = "k8sxxxxxxxx.gcp-us-west1.byoc.cloud.zilliz.com"

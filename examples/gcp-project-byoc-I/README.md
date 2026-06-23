@@ -38,3 +38,12 @@ The example grants the storage service account to the fixed BYOC-I Kubernetes se
 The booter image defaults to the public `gcr.io/zilliz-public/gcp-byoc-i-booter:latest` image and is not required in `terraform.tfvars`. For development testing only, override `booter_image` locally.
 
 If the provider version has not been released yet, use a local Terraform provider development override that points to a locally built `terraform-provider-zillizcloud`.
+
+## Destroy Notes
+
+Terraform will not delete a non-empty GCS bucket unless `bucket_force_destroy` has already been applied to that bucket resource. If you need `terraform destroy` to remove dataplane objects in the bucket, set `bucket_force_destroy = true` before destroy and apply that change first:
+
+```bash
+terraform apply -target=module.gcs.google_storage_bucket.this
+terraform destroy
+```

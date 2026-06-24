@@ -41,7 +41,7 @@ The booter VM always uses a dedicated booter service account. The Zilliz BYOC or
 
 The booter image defaults to the public `gcr.io/zilliz-public/gcp-byoc-i-booter:latest` image and is not required in `terraform.tfvars`. For development testing only, override `booter_image` locally.
 
-Resource Manager tags are enabled by default. If your Terraform runner cannot manage tags, either set both `vendor_tag_key_id` and `vendor_tag_value_id` to use a pre-created `vendor=zilliz-byoc` tag, or set `enable_resource_manager_tags = false`. When tags are disabled, booter self-delete permission is scoped to the exact booter VM instance name instead of tag matching.
+Resource Manager tags are enabled by default. If your Terraform runner cannot manage tags, either set both `vendor_tag_key_id` and `vendor_tag_value_id` to use a pre-created `vendor=zilliz-byoc` tag, or set `enable_resource_manager_tags = false`. With tags enabled, booter self-delete permission is scoped to the exact booter VM instance name plus the Resource Manager tag. When tags are disabled, booter self-delete permission is scoped to the exact booter VM instance name only.
 
 When Private Service Connect is enabled, the example still bootstraps `cloud-agent` through the public regional tunnel host by default, then reports the PSC endpoint IP in `zillizcloud_byoc_i_project`. This avoids blocking first connect while the PSC endpoint is still pending producer acceptance. To force agent bootstrap through PSC, set `agent_server_host` to the `.byoc.` tunnel host.
 

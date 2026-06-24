@@ -11,7 +11,7 @@ locals {
 
   booter_self_delete_condition = (
     var.enable_resource_manager_tags
-    ? "resource.type == \"compute.googleapis.com/Instance\" && resource.matchTagId(\"${var.vendor_tag_key_id}\", \"${var.vendor_tag_value_id}\")"
+    ? "resource.type == \"compute.googleapis.com/Instance\" && resource.name == \"projects/${var.gcp_project_id}/zones/${var.booter_zone}/instances/${var.booter_instance_name}\" && resource.matchTagId(\"${var.vendor_tag_key_id}\", \"${var.vendor_tag_value_id}\")"
     : "resource.type == \"compute.googleapis.com/Instance\" && resource.name == \"projects/${var.gcp_project_id}/zones/${var.booter_zone}/instances/${var.booter_instance_name}\""
   )
 }

@@ -15,6 +15,7 @@ locals {
 
   vpc_name         = var.customer_vpc_name != "" ? var.customer_vpc_name : "${local.prefix_name}-vpc"
   gke_cluster_name = var.customer_gke_cluster_name != "" ? var.customer_gke_cluster_name : "${local.prefix_name}-gke"
+  booter_vm_name   = "${local.prefix_name}-booter"
   bucket_name_raw  = var.customer_bucket_name != "" ? var.customer_bucket_name : "${local.prefix_name}-bucket"
   bucket_name      = substr(lower(replace(local.bucket_name_raw, "_", "-")), 0, min(length(local.bucket_name_raw), 63))
 

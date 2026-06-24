@@ -166,6 +166,34 @@ variable "enable_direct_mig_resize" {
   default     = false
 }
 
+variable "enable_resource_manager_tags" {
+  description = "Enable Resource Manager tags for BYOC-I resources and use tag-scoped booter self-delete permissions."
+  type        = bool
+  default     = true
+}
+
+variable "vendor_tag_key_id" {
+  description = "Optional pre-created Resource Manager tag key ID, for example tagKeys/123. Leave empty to let Terraform create project-scoped vendor=zilliz-byoc tags."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.vendor_tag_key_id == "" || can(regex("^tagKeys/[0-9]+$", var.vendor_tag_key_id))
+    error_message = "vendor_tag_key_id must be empty or use the format tagKeys/<numeric-id>."
+  }
+}
+
+variable "vendor_tag_value_id" {
+  description = "Optional pre-created Resource Manager tag value ID, for example tagValues/456. Leave empty to let Terraform create project-scoped vendor=zilliz-byoc tags."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.vendor_tag_value_id == "" || can(regex("^tagValues/[0-9]+$", var.vendor_tag_value_id))
+    error_message = "vendor_tag_value_id must be empty or use the format tagValues/<numeric-id>."
+  }
+}
+
 variable "bucket_force_destroy" {
   description = "Whether to force destroy non-empty GCS buckets."
   type        = bool

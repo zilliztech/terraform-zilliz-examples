@@ -9,7 +9,8 @@ This example provisions a GCP BYOC-I dataplane with customer-managed infrastruct
 - GKE private regional cluster and node pools from BYOC-I quota settings
 - GCP service accounts for GKE nodes, maintenance, storage, and the booter VM
 - Optional Private Service Connect endpoint
-- GCE booter VM that installs `cloud-agent` into GKE and stops itself on success
+- Short-lived GCE booter VM that uses a dedicated booter service account to install `cloud-agent` into GKE, then self-deletes after a TTL
+- Resource Manager tag `vendor=zilliz-byoc` for tag-scoped booter self-delete permissions by default
 - `zillizcloud_byoc_i_project_agent` and `zillizcloud_byoc_i_project`
 
 ## Requirements
@@ -18,6 +19,7 @@ This example provisions a GCP BYOC-I dataplane with customer-managed infrastruct
 - Google provider `~> 6.32.0`
 - Zilliz Cloud provider version that includes `zillizcloud_byoc_i_project.gcp`
 - A GCP project with the APIs needed for Compute Engine, GKE, IAM, Service Usage, and Cloud Storage
+- By default, the Terraform runner needs `roles/resourcemanager.tagAdmin` and `roles/resourcemanager.tagUser` to create and bind Resource Manager tags
 - For Private Service Connect, set `gcp_psc_service_attachment_id` or add the region entry in `modules/conf.yaml`
 
 ## Usage
@@ -33,9 +35,11 @@ The booter VM receives the BYOC-I agent token through Terraform-managed VM metad
 
 The GCP region is read from `zillizcloud_byoc_i_project_settings`. Set `gcp_project_id` and `zilliz_byoc_service_account_email` in `terraform.tfvars`. The service account email is the Zilliz Cloud BYOC service account for your organization.
 
-The example grants the storage service account to the fixed BYOC-I Kubernetes service accounts used by Loki and Milvus bootstrap through GKE Workload Identity.
+The example grants the storage service account to the fixed BYOC-I Kubernetes service accounts used by Loki and Milvus bootstrap through GKE Workload Identity. It also grants storage Workload Identity access to the target GKE cluster because instance namespaces and service accounts are created at runtime.
 
 The booter image defaults to the public `gcr.io/zilliz-public/gcp-byoc-i-booter:latest` image and is not required in `terraform.tfvars`. For development testing only, override `booter_image` locally.
+
+Resource Manager tags are enabled by default. If your Terraform runner cannot manage tags, either set both `vendor_tag_key_id` and `vendor_tag_value_id` to use a pre-created `vendor=zilliz-byoc` tag, or set `enable_resource_manager_tags = false`. When tags are disabled, booter self-delete permission is scoped to the exact booter VM instance name instead of tag matching.
 
 If the provider version has not been released yet, use a local Terraform provider development override that points to a locally built `terraform-provider-zillizcloud`.
 

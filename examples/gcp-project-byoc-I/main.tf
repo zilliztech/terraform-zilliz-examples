@@ -45,6 +45,11 @@ module "iam" {
   booter_service_account_name       = var.customer_booter_service_account_name
   storage_workload_identity_ksas    = local.storage_workload_identity_ksas
   enable_direct_mig_resize          = var.enable_direct_mig_resize
+  booter_instance_name              = local.booter_vm_name
+  booter_zone                       = local.gcp_zones[0]
+  enable_resource_manager_tags      = var.enable_resource_manager_tags
+  vendor_tag_key_id                 = local.vendor_tag_key_id
+  vendor_tag_value_id               = local.vendor_tag_value_id
 
   depends_on = [google_project_service.required]
 }
@@ -88,9 +93,11 @@ module "private_link" {
 }
 
 module "booter_vm" {
+  count  = data.zillizcloud_byoc_i_project_settings.this.agent_bootstrap_required ? 1 : 0
   source = "../../modules/gcp_byoc_i/booter-vm"
 
   prefix_name                  = local.prefix_name
+  instance_name                = local.booter_vm_name
   gcp_project_id               = var.gcp_project_id
   gcp_region                   = local.gcp_region
   gcp_zone                     = local.gcp_zones[0]
@@ -102,8 +109,9 @@ module "booter_vm" {
   dataplane_id                 = local.data_plane_id
   agent_config                 = local.agent_config
   labels                       = local.common_labels
+  resource_manager_tags        = local.vendor_resource_manager_tags
 
-  depends_on = [google_project_service.required, module.gke, module.private_link]
+  depends_on = [google_project_service.required, module.iam, module.gke, module.private_link]
 }
 
 resource "zillizcloud_byoc_i_project_agent" "this" {

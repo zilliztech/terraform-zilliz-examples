@@ -26,8 +26,12 @@ output "gke_node_sa" {
   value = module.iam.gke_node_sa_email
 }
 
+output "booter_sa" {
+  value = module.iam.booter_sa_email
+}
+
 output "booter_vm_name" {
-  value = module.booter_vm.instance_name
+  value = try(module.booter_vm[0].instance_name, null)
 }
 
 output "psc_endpoint_ip" {

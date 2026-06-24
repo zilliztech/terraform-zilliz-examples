@@ -66,3 +66,31 @@ variable "enable_direct_mig_resize" {
   type        = bool
   default     = false
 }
+
+variable "booter_instance_name" {
+  description = "Booter VM instance name used to scope fallback self-delete permissions."
+  type        = string
+}
+
+variable "booter_zone" {
+  description = "Booter VM zone used to scope fallback self-delete operation permissions."
+  type        = string
+}
+
+variable "enable_resource_manager_tags" {
+  description = "Whether booter self-delete permissions use Resource Manager tag conditions."
+  type        = bool
+  default     = true
+}
+
+variable "vendor_tag_key_id" {
+  description = "Resource Manager tag key ID used by booter self-delete IAM condition."
+  type        = string
+  default     = ""
+}
+
+variable "vendor_tag_value_id" {
+  description = "Resource Manager tag value ID used by booter self-delete IAM condition."
+  type        = string
+  default     = ""
+}

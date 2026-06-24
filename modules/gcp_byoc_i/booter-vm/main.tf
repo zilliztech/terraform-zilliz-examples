@@ -31,6 +31,13 @@ resource "google_compute_instance" "this" {
     scopes = ["https://www.googleapis.com/auth/cloud-platform"]
   }
 
+  dynamic "params" {
+    for_each = length(var.resource_manager_tags) > 0 ? [1] : []
+    content {
+      resource_manager_tags = var.resource_manager_tags
+    }
+  }
+
   metadata = {
     block-project-ssh-keys = "true"
     startup-script         = local.startup_script

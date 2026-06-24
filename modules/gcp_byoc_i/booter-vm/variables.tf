@@ -3,6 +3,11 @@ variable "prefix_name" {
   type        = string
 }
 
+variable "instance_name" {
+  description = "Booter VM instance name."
+  type        = string
+}
+
 variable "gcp_project_id" {
   description = "Customer GCP project ID."
   type        = string
@@ -72,4 +77,16 @@ variable "labels" {
   description = "Labels to apply to the booter VM."
   type        = map(string)
   default     = {}
+}
+
+variable "resource_manager_tags" {
+  description = "Resource Manager tags to bind to the booter VM."
+  type        = map(string)
+  default     = {}
+}
+
+variable "self_delete_ttl_seconds" {
+  description = "Seconds to keep the booter VM after a successful bootstrap before self-delete."
+  type        = number
+  default     = 1800
 }

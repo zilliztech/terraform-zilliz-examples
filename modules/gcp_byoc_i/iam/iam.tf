@@ -132,12 +132,6 @@ resource "google_project_iam_member" "booter_kubernetes_bootstrap" {
   project = var.gcp_project_id
   role    = google_project_iam_custom_role.booter_kubernetes_bootstrap.id
   member  = "serviceAccount:${google_service_account.booter.email}"
-
-  condition {
-    title       = "zilliz_byoc_i_booter_target_cluster"
-    description = "Limit booter Kubernetes bootstrap to the target BYOC-I GKE cluster"
-    expression  = "resource.name.startsWith(\"projects/${var.gcp_project_id}/locations/${var.gke_location}/clusters/${var.gke_cluster_name}\")"
-  }
 }
 
 resource "google_project_iam_custom_role" "maintenance_project_reader" {

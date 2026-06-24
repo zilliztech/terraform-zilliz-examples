@@ -50,12 +50,12 @@ locals {
 
     delete_self() {
       echo "requesting booter VM self-delete"
-      /var/lib/zilliz-byoc-i-booter/self-delete.sh
+      bash /var/lib/zilliz-byoc-i-booter/self-delete.sh
     }
 
     schedule_self_delete() {
       delay="$${1}"
-      nohup bash -c "sleep '$${delay}'; /var/lib/zilliz-byoc-i-booter/self-delete.sh" \
+      nohup bash -c "sleep '$${delay}'; bash /var/lib/zilliz-byoc-i-booter/self-delete.sh" \
         >/var/log/zilliz-byoc-i-booter-self-delete.log 2>&1 &
     }
 

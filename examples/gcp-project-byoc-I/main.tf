@@ -51,7 +51,7 @@ module "iam" {
   vendor_tag_key_id                 = local.vendor_tag_key_id
   vendor_tag_value_id               = local.vendor_tag_value_id
 
-  depends_on = [google_project_service.required]
+  depends_on = [google_project_service.required, terraform_data.vendor_tag_input_validation]
 }
 
 module "gke" {
@@ -111,7 +111,7 @@ module "booter_vm" {
   labels                       = local.common_labels
   resource_manager_tags        = local.vendor_resource_manager_tags
 
-  depends_on = [google_project_service.required, module.iam, module.gke, module.private_link]
+  depends_on = [google_project_service.required, terraform_data.vendor_tag_input_validation, module.iam, module.gke, module.private_link]
 }
 
 resource "zillizcloud_byoc_i_project_agent" "this" {

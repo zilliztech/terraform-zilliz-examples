@@ -53,7 +53,12 @@ locals {
   agent_server_host = (
     var.agent_server_host != ""
     ? var.agent_server_host
-    : "cloud-tunnel.gcp-${local.gcp_region}${local.enable_private_link ? ".byoc" : ""}.${local.env_domain}"
+    : "cloud-tunnel.gcp-${local.gcp_region}.${local.env_domain}"
+  )
+  agent_endpoint_ip = (
+    local.psc_endpoint_ip != null && can(regex("\\.byoc\\.", local.agent_server_host))
+    ? local.psc_endpoint_ip
+    : ""
   )
   agent_tunnel_host = (
     var.agent_tunnel_host != ""
@@ -91,7 +96,7 @@ locals {
     image          = local.agent_image
     server_host    = local.agent_server_host
     tunnel_host    = local.agent_tunnel_host
-    endpoint_ip    = local.psc_endpoint_ip == null ? "" : local.psc_endpoint_ip
+    endpoint_ip    = local.agent_endpoint_ip
     gcp_project_id = var.gcp_project_id
   }
 

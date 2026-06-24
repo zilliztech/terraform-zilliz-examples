@@ -26,9 +26,12 @@ resource "terraform_data" "vendor_tag_input_validation" {
       condition = (
         !var.enable_resource_manager_tags ||
         (var.vendor_tag_key_id == "" && var.vendor_tag_value_id == "") ||
-        (var.vendor_tag_key_id != "" && var.vendor_tag_value_id != "")
+        (
+          can(regex("^tagKeys/[0-9]+$", var.vendor_tag_key_id)) &&
+          can(regex("^tagValues/[0-9]+$", var.vendor_tag_value_id))
+        )
       )
-      error_message = "vendor_tag_key_id and vendor_tag_value_id must either both be empty or both be set when enable_resource_manager_tags is true."
+      error_message = "vendor_tag_key_id and vendor_tag_value_id must either both be empty or both be set as tagKeys/<numeric-id> and tagValues/<numeric-id> when enable_resource_manager_tags is true."
     }
   }
 }

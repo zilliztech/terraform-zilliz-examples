@@ -87,10 +87,20 @@ variable "vendor_tag_key_id" {
   description = "Resource Manager tag key ID used by booter self-delete IAM condition."
   type        = string
   default     = ""
+
+  validation {
+    condition     = var.vendor_tag_key_id == "" || can(regex("^tagKeys/[0-9]+$", var.vendor_tag_key_id))
+    error_message = "vendor_tag_key_id must be empty or use the format tagKeys/<numeric-id>."
+  }
 }
 
 variable "vendor_tag_value_id" {
   description = "Resource Manager tag value ID used by booter self-delete IAM condition."
   type        = string
   default     = ""
+
+  validation {
+    condition     = var.vendor_tag_value_id == "" || can(regex("^tagValues/[0-9]+$", var.vendor_tag_value_id))
+    error_message = "vendor_tag_value_id must be empty or use the format tagValues/<numeric-id>."
+  }
 }

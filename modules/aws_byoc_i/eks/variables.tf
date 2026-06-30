@@ -68,8 +68,9 @@ variable "enable_private_link" {
 variable "agent_config" {
   description = "Configuration for the agent including server host, auth token, and k8s token"
   type = object({
-    auth_token = string
-    tag        = string
+    auth_token              = string
+    tag                     = string
+    tunnel_client_image_url = optional(string, "")
   })
 
   nullable = false

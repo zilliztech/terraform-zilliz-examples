@@ -124,7 +124,55 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 5
           successThreshold: 1
-          timeoutSeconds: 1   
+          timeoutSeconds: 1
+{{- if .Values.image.tunnelClientTag }}
+      - name: tunnel-client
+        image: {{ .Values.image.repository }}/vdc/tunnel-client:{{ .Values.image.tunnelClientTag }}
+        imagePullPolicy: Always
+        env:
+        - name: OTEL_TRACES_EXPORTER
+          value: none
+        - name: OTEL_METRICS_EXPORTER
+          value: none
+        - name: OTEL_LOGS_EXPORTER
+          value: none
+        - name: OTEL_SERVICE_NAME
+          value: tunnel-client
+        - name: SPRING_CONFIG_LOCATION
+          value: file:///spring-config/application.yml
+        # Override configmap's server.port(9501); tunnel-client listens on 9999
+        - name: SERVER_PORT
+          value: "9999"
+        - name: BYOC_K8S_KEY
+          value: "{{ .Values.config.tunnel.authToken }}"
+        ports:
+        - containerPort: 9999
+        livenessProbe:
+          httpGet:
+            path: /cloud/check_healthy_db
+            port: 9999
+          initialDelaySeconds: 90
+          periodSeconds: 30
+          failureThreshold: 5
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /cloud/check_healthy_db
+            port: 9999
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: 2
+            memory: 2Gi
+          requests:
+            cpu: 1
+            memory: 1Gi
+        volumeMounts:
+        - mountPath: /spring-config
+          name: spring-config
+{{- end }}
       nodeSelector:
         node-role/vdc: "true"
       tolerations:

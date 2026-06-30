@@ -1,6 +1,7 @@
 image:
   repository: "test"
   tag: "test"
+  tunnelClientTag: ""
   registrykey: ""
 
 config:

@@ -258,6 +258,12 @@ variable "minimal_roles" {
 }
 
 # https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html
+variable "env" {
+  description = "Environment name (UAT or empty for production)"
+  type        = string
+  default     = ""
+}
+
 variable "enable_ebs_kms" {
   description = "Enable EBS KMS usage"
   type        = bool

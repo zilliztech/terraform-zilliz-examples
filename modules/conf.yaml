@@ -4,9 +4,9 @@ vpce_service_ids:
   us-west-2: vpce-svc-0654fb016640c364a
   eu-west-1: vpce-svc-0a1c8f7a8830b16b9
   eu-central-1: vpce-svc-0d5ce1ec4decbc7df 
-private_zone_name: byoc.zillizcloud.com
-agent_config: 
-  server_host: zilliz-byoc-us.byoc.zillizcloud.com
+private_zone_name: cloud-uat3.zilliz.com
+agent_config:
+  server_host: cloud-tunnel.aws-us-west-2.cloud-uat3.zilliz.com
   repository: 965570967084.dkr.ecr.us-west-2.amazonaws.com/zilliz-byoc/vdc/cloud-agent
 eks_cluster_oidc_issuer_thumbprint:
   eu-west-1: 06b25927c42a721631c1efd9431e648fa62e1e39

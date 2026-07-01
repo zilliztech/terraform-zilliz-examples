@@ -68,6 +68,12 @@ locals {
 
 
   agent_config_json = jsonencode(var.agent_config)
+
+  # Environment-aware tunnel address (following Azure module pattern)
+  env_domain  = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
+  # UAT3 does not use .byoc subdomain; production uses .byoc when private link is enabled
+  server_host = "cloud-tunnel.aws-${var.region}${var.env != "UAT" && var.enable_private_link ? ".byoc" : ""}.${local.env_domain}"
+
   boot_config = {
     EKS_CLUSTER_NAME    = local.eks_cluster_name
     DATAPLANE_ID        = var.dataplane_id
@@ -78,6 +84,7 @@ locals {
     EXTERNAL_ID         = var.external_id
     enable_private_link = var.enable_private_link
     ecr                 = jsonencode(var.customer_ecr)
+    SERVER_HOST         = local.server_host
   }
 
   # security_group_id = module.my_vpc.security_group_id

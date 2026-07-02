@@ -90,3 +90,9 @@ variable "self_delete_ttl_seconds" {
   type        = number
   default     = 1800
 }
+
+variable "failure_self_delete_ttl_seconds" {
+  description = "Seconds to keep the booter VM after bootstrap failure before self-delete. Set to 0 to delete immediately."
+  type        = number
+  default     = 0
+}

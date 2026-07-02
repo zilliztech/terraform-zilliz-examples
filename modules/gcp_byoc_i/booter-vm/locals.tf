@@ -20,6 +20,7 @@ locals {
     PROJECT='${var.gcp_project_id}'
     BOOTER_IMAGE='${var.booter_image}'
     SELF_DELETE_TTL_SECONDS='${var.self_delete_ttl_seconds}'
+    FAILURE_SELF_DELETE_TTL_SECONDS='${var.failure_self_delete_ttl_seconds}'
 
     mkdir -p /var/lib/zilliz-byoc-i-booter
     cat >/var/lib/zilliz-byoc-i-booter/boot-config.json <<'BOOT_CONFIG'
@@ -94,8 +95,13 @@ locals {
       fi
     done
 
-    echo "booter failed after 3 attempts; deleting VM"
-    delete_self || echo "booter VM self-delete failed after bootstrap failure" >&2
+    if [ "$${FAILURE_SELF_DELETE_TTL_SECONDS}" -gt 0 ]; then
+      echo "booter failed after 3 attempts; scheduling VM self-delete in $${FAILURE_SELF_DELETE_TTL_SECONDS}s"
+      schedule_self_delete "$${FAILURE_SELF_DELETE_TTL_SECONDS}"
+    else
+      echo "booter failed after 3 attempts; deleting VM"
+      delete_self || echo "booter VM self-delete failed after bootstrap failure" >&2
+    fi
 
     exit "$${status}"
   EOF

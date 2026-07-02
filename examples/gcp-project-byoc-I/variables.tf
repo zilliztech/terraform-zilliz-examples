@@ -23,9 +23,9 @@ variable "zilliz_byoc_service_account_email" {
 }
 
 variable "booter_image" {
-  description = "Container image for the GCP-capable BYOC-I booter. Defaults to the latest public image published in GCR."
+  description = "Optional container image for the GCP-capable BYOC-I booter. Defaults by env when unset."
   type        = string
-  default     = "gcr.io/zilliz-public/gcp-byoc-i-booter:latest"
+  default     = ""
 }
 
 variable "gcp_zones" {

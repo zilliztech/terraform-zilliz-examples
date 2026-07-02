@@ -29,5 +29,8 @@ GCP:
   agent_config:
     repository: gcr.io/zilliz-public/cloud-agent
     uat_repository: gcr.io/zilliz-byoc-uat/cloud-agent
+  booter_config:
+    repository: gcr.io/zilliz-public/gcp-byoc-i-booter
+    uat_repository: gcr.io/zilliz-byoc-uat/gcp-byoc-i-booter
   private_service_connect:
     service_attachment_ids: {}

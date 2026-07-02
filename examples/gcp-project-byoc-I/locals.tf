@@ -40,6 +40,17 @@ locals {
   module_config    = yamldecode(file("${path.module}/../../modules/conf.yaml"))
   agent_image_url  = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
   gcp_agent_config = try(local.module_config.GCP.agent_config, {})
+  gcp_booter_config = try(local.module_config.GCP.booter_config, {})
+  booter_image_repository = (
+    var.env == "UAT"
+    ? try(local.gcp_booter_config.uat_repository, local.gcp_booter_config.repository)
+    : local.gcp_booter_config.repository
+  )
+  booter_image = (
+    var.booter_image != ""
+    ? var.booter_image
+    : "${local.booter_image_repository}:latest"
+  )
   agent_image_repository = (
     var.env == "UAT"
     ? try(local.gcp_agent_config.uat_repository, try(local.gcp_agent_config.repository, local.module_config.agent_config.repository))

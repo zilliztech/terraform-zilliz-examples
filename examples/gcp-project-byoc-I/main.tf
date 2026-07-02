@@ -103,7 +103,7 @@ module "booter_vm" {
   gcp_zone                     = local.gcp_zones[0]
   subnet_self_link             = module.vpc.primary_subnet_self_link
   booter_service_account_email = module.iam.booter_sa_email
-  booter_image                 = var.booter_image
+  booter_image                 = local.booter_image
   machine_type                 = var.booter_machine_type
   failure_self_delete_ttl_seconds = var.booter_failure_self_delete_ttl_seconds
   gke_cluster_name             = module.gke.cluster_name

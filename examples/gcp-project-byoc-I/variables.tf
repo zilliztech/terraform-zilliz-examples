@@ -173,7 +173,7 @@ variable "enable_resource_manager_tags" {
 }
 
 variable "vendor_tag_key_id" {
-  description = "Optional pre-created Resource Manager tag key ID, for example tagKeys/123. Leave empty to let Terraform create project-scoped vendor=zilliz-byoc tags."
+  description = "Optional pre-created Resource Manager tag key ID, for example tagKeys/123. Leave empty to let Terraform create a per-dataplane tag key."
   type        = string
   default     = ""
 
@@ -184,7 +184,7 @@ variable "vendor_tag_key_id" {
 }
 
 variable "vendor_tag_value_id" {
-  description = "Optional pre-created Resource Manager tag value ID, for example tagValues/456. Leave empty to let Terraform create project-scoped vendor=zilliz-byoc tags."
+  description = "Optional pre-created Resource Manager tag value ID, for example tagValues/456. Leave empty to let Terraform create a per-dataplane booter tag value."
   type        = string
   default     = ""
 

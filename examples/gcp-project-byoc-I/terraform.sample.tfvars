@@ -11,6 +11,7 @@ zilliz_byoc_service_account_email = "org-xxxxxxxxxxxxxxxxxxxxxxxx@zilliz-byoc-pr
 # customer_bucket_name = "zilliz-byoc-gcp-bucket"
 # bucket_force_destroy = true
 # enable_resource_manager_tags = true
+# Leave tag IDs empty to let Terraform create a per-dataplane tag.
 # vendor_tag_key_id = "tagKeys/1234567890"
 # vendor_tag_value_id = "tagValues/1234567890"
 # agent_server_host = "cloud-tunnel.gcp-us-west1.byoc.cloud.zilliz.com"

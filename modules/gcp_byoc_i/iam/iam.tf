@@ -188,7 +188,7 @@ resource "google_project_iam_member" "maintenance_mig_resize" {
   condition {
     title       = "zilliz_byoc_i_gke_mig_only"
     description = "Limit direct MIG resize to this GKE cluster managed instance groups"
-    expression  = "resource.name.extract(\"instanceGroupManagers/{name}\").startsWith(\"gke-${var.gke_cluster_name}\")"
+    expression  = local.gke_mig_resize_condition
   }
 }
 

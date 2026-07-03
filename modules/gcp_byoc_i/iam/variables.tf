@@ -62,9 +62,9 @@ variable "storage_workload_identity_ksas" {
 }
 
 variable "enable_direct_mig_resize" {
-  description = "Enable optional direct GKE-managed MIG resize permissions for maintenance_sa."
+  description = "Enable direct GKE-managed MIG resize permissions for maintenance_sa. Required for node group scale operations."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "booter_instance_name" {

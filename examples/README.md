@@ -84,6 +84,22 @@ Uses your existing AWS resources:
 
 ### GCP Examples
 
+#### [GCP BYOC-I](./gcp-project-byoc-I/)
+**Customer-managed GCP infrastructure with VM booter**
+
+Deploys Zilliz BYOC-I on Google Cloud Platform:
+- VPC-native GKE networking and GCS storage
+- Private GKE cluster and node pools from BYOC-I quota settings
+- Maintenance, storage, node, and booter service accounts
+- VM booter for private-cluster cloud-agent installation
+- Private Service Connect support
+
+**Best for**: GCP BYOC-I deployments where the Terraform runner cannot reach the private GKE API server.
+
+**Documentation**: [README](./gcp-project-byoc-I/README.md)
+
+---
+
 #### [GCP BYOC Manual](./gcp-project-byoc-manual/)
 **Google Cloud Platform deployment**
 
@@ -201,6 +217,7 @@ example-name/
 | AWS BYOC-I | AWS | Customer-managed | Enterprise, compliance, customization |
 | AWS BYOC Standard | AWS | Automated | Quick deployments, testing |
 | AWS BYOC Manual | AWS | Existing | Production with existing resources |
+| GCP BYOC-I | GCP | Customer-managed | Private GKE API with VM booter |
 | GCP BYOC Manual | GCP | Customer-managed | GCP infrastructure |
 | Azure BYOC-I | Azure | Customer-managed | Azure infrastructure |
 
@@ -212,4 +229,3 @@ For issues or questions:
 2. Review [AWS Requirements](./AWS Requirements.md)
 3. Consult [Zilliz Cloud Documentation](https://docs.zilliz.com/)
 4. Contact Zilliz Support with specific error messages
-

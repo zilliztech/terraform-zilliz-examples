@@ -3,6 +3,10 @@ data "zillizcloud_byoc_i_project_settings" "this" {
   data_plane_id = var.dataplane_id
 }
 
+data "zillizcloud_gcp_service_account" "current" {
+
+}
+
 module "vpc" {
   source = "../../modules/gcp_byoc_i/vpc"
 
@@ -38,7 +42,7 @@ module "iam" {
   gke_location                      = local.gcp_region
   gke_cluster_name                  = local.gke_cluster_name
   storage_bucket_name               = module.gcs.bucket_id
-  zilliz_byoc_service_account_email = var.zilliz_byoc_service_account_email
+  zilliz_byoc_service_account_email = data.zillizcloud_gcp_service_account.current.service_account
   gke_node_service_account_name     = var.customer_gke_node_service_account_name
   management_service_account_name   = var.customer_management_service_account_name
   storage_service_account_name      = var.customer_storage_service_account_name

@@ -157,12 +157,6 @@ resource "google_service_account_iam_member" "management_can_use_node_sa" {
   member             = "serviceAccount:${google_service_account.management.email}"
 }
 
-resource "google_service_account_iam_member" "zilliz_byoc_can_impersonate_management" {
-  service_account_id = google_service_account.management.name
-  role               = "roles/iam.serviceAccountTokenCreator"
-  member             = "serviceAccount:${var.zilliz_byoc_service_account_email}"
-}
-
 resource "google_project_iam_custom_role" "maintenance_mig_resize" {
   count = var.enable_direct_mig_resize ? 1 : 0
 
@@ -223,6 +217,17 @@ resource "google_service_account_iam_member" "storage_workload_identity" {
   }
 
   service_account_id = google_service_account.storage.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.gcp_project_id}.svc.id.goog[${each.value.namespace}/${each.value.name}]"
+}
+
+resource "google_service_account_iam_member" "management_workload_identity" {
+  for_each = {
+    for ksa in var.management_workload_identity_ksas :
+    "${ksa.namespace}/${ksa.name}" => ksa
+  }
+
+  service_account_id = google_service_account.management.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.gcp_project_id}.svc.id.goog[${each.value.namespace}/${each.value.name}]"
 }

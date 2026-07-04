@@ -1,7 +1,6 @@
 project_id                        = "proj-xxxxxxxx"
 dataplane_id                      = "zilliz-byoc-gcp-us-west1-xxxxxxxx"
 gcp_project_id                    = "customer-gcp-project"
-zilliz_byoc_service_account_email = "org-xxxxxxxxxxxxxxxxxxxxxxxx@zilliz-byoc-prod.iam.gserviceaccount.com"
 
 # Optional overrides.
 # gcp_zones = ["us-west1-a", "us-west1-b", "us-west1-c"]

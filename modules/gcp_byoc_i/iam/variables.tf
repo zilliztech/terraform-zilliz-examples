@@ -23,11 +23,6 @@ variable "storage_bucket_name" {
   type        = string
 }
 
-variable "zilliz_byoc_service_account_email" {
-  description = "Zilliz Cloud BYOC service account email allowed to impersonate the maintenance service account."
-  type        = string
-}
-
 variable "gke_node_service_account_name" {
   description = "GKE node service account account_id. Defaults to <prefix_name>-node."
   type        = string
@@ -59,6 +54,20 @@ variable "storage_workload_identity_ksas" {
     name      = string
   }))
   default = []
+}
+
+variable "management_workload_identity_ksas" {
+  description = "Kubernetes service accounts allowed to impersonate management_sa via GKE Workload Identity."
+  type = list(object({
+    namespace = string
+    name      = string
+  }))
+  default = [
+    {
+      namespace = "infra"
+      name      = "infra-agent-sa"
+    }
+  ]
 }
 
 variable "enable_direct_mig_resize" {

@@ -91,8 +91,10 @@ Deploys Zilliz BYOC-I on Google Cloud Platform:
 - VPC-native GKE networking and GCS storage
 - Private GKE cluster and node pools from BYOC-I quota settings
 - Maintenance, storage, node, and booter service accounts
-- VM booter for private-cluster cloud-agent installation
-- Private Service Connect support
+- VM booter for private-cluster cloud-agent installation with configurable failure self-delete TTL
+- Optional Private Service Connect endpoint with environment-based default service attachment
+- Per-dataplane Resource Manager tags for scoped booter self-delete permissions
+- Workload Identity for infra-agent access through the management service account
 
 **Best for**: GCP BYOC-I deployments where the Terraform runner cannot reach the private GKE API server.
 
@@ -143,7 +145,7 @@ Azure deployment with customer-managed resources.
 
 ### AWS Deployment Requirements
 
-See [AWS Requirements.md](./AWS Requirements.md) for detailed AWS deployment requirements including:
+See [AWS-Requirements.md](./AWS-Requirements.md) for detailed AWS deployment requirements including:
 - VPC high availability best practices
 - Private EKS cluster support
 - Security group configurations
@@ -197,7 +199,7 @@ example-name/
 ├── main.tf                # Main Terraform configuration
 ├── variables.tf           # Variable definitions
 ├── provider.tf            # Provider configuration (if applicable)
-├── terraform.tfvars.json  # Example variable values
+├── terraform.tfvars*      # Example variable values, format varies by example
 └── terraform-permissions/ # IAM policy templates (if applicable)
     └── README.md          # Permissions documentation
 ```

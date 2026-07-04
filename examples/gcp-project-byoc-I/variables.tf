@@ -133,7 +133,7 @@ variable "booter_machine_type" {
 variable "booter_failure_self_delete_ttl_seconds" {
   description = "Seconds to keep the booter VM after bootstrap failure before self-delete. Set to 0 to delete immediately."
   type        = number
-  default     = 0
+  default     = 7200
 }
 
 variable "agent_server_host" {

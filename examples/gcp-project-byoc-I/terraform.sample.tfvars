@@ -3,10 +3,13 @@ dataplane_id                      = "zilliz-byoc-gcp-us-west1-xxxxxxxx"
 gcp_project_id                    = "customer-gcp-project"
 
 # Optional overrides.
+# env = "Production"
+# enable_private_link = true
 # gcp_zones = ["us-west1-a", "us-west1-b", "us-west1-c"]
 # Defaults to projects/vdc-dev-test/regions/<region>/serviceAttachments/zilliz-byoc-psc when env = "UAT",
 # otherwise projects/zilliz-public/regions/<region>/serviceAttachments/zilliz-byoc-psc.
 # gcp_psc_service_attachment_id = "projects/<producer-project>/regions/us-west1/serviceAttachments/<service-attachment>"
+# booter_failure_self_delete_ttl_seconds = 7200
 # customer_vpc_name = "zilliz-byoc-vpc"
 # customer_gke_cluster_name = "zilliz-byoc-gke"
 # customer_bucket_name = "zilliz-byoc-gcp-bucket"

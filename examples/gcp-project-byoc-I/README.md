@@ -33,11 +33,11 @@ terraform apply
 
 The booter VM receives the BYOC-I agent token through Terraform-managed VM metadata. This is intentional for v1 and means the token is visible in Terraform state and VM metadata.
 
-The GCP region is read from `zillizcloud_byoc_i_project_settings`. Set `gcp_project_id` and `zilliz_byoc_service_account_email` in `terraform.tfvars`. The service account email is the Zilliz Cloud BYOC service account for your organization.
+The GCP region is read from `zillizcloud_byoc_i_project_settings`. Set `gcp_project_id` in `terraform.tfvars`.
 
 The example grants the storage service account to the fixed BYOC-I Kubernetes service accounts used by Loki and Milvus bootstrap through GKE Workload Identity. It also grants storage Workload Identity access to the target GKE cluster because instance namespaces and service accounts are created at runtime.
 
-The booter VM always uses a dedicated booter service account. The Zilliz BYOC organization service account is only allowed to impersonate the maintenance service account, not the booter service account.
+The booter VM always uses a dedicated booter service account. The Zilliz BYOC organization service account is not granted permission to impersonate the maintenance service account. The in-cluster `infra/infra-agent-sa` Kubernetes service account uses GKE Workload Identity to access the maintenance service account instead.
 
 The booter image is not required in `terraform.tfvars`. Production defaults to `gcr.io/zilliz-public/gcp-byoc-i-booter:latest`; UAT defaults to `gcr.io/zilliz-byoc-uat/gcp-byoc-i-booter:latest`. For development testing only, override `booter_image` locally.
 

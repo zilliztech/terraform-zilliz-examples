@@ -86,7 +86,7 @@ module "private_link" {
   gcp_region            = local.gcp_region
   vpc_name              = module.vpc.vpc_name
   subnet_name           = module.vpc.primary_subnet_name
-  service_attachment_id = var.gcp_psc_service_attachment_id
+  service_attachment_id = local.gcp_psc_service_attachment_id
 
   depends_on = [google_project_service.required, module.vpc]
 }

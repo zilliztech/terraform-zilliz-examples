@@ -20,7 +20,7 @@ This example provisions a GCP BYOC-I dataplane with customer-managed infrastruct
 - Zilliz Cloud provider version that includes `zillizcloud_byoc_i_project.gcp`
 - A GCP project with the APIs needed for Artifact Registry, Compute Engine, GKE, IAM, Service Usage, and Cloud Storage
 - By default, the Terraform runner needs `roles/resourcemanager.tagAdmin` and `roles/resourcemanager.tagUser` to create and bind Resource Manager tags
-- For Private Service Connect, set `gcp_psc_service_attachment_id` or add the region entry in `modules/conf.yaml`
+- For Private Service Connect, `gcp_psc_service_attachment_id` is optional. When unset, it defaults to `projects/vdc-dev-test/regions/<region>/serviceAttachments/zilliz-byoc-psc` for `env = "UAT"` and `projects/zilliz-public/regions/<region>/serviceAttachments/zilliz-byoc-psc` otherwise.
 
 ## Usage
 
@@ -34,6 +34,8 @@ terraform apply
 The booter VM receives the BYOC-I agent token through Terraform-managed VM metadata. This is intentional for v1 and means the token is visible in Terraform state and VM metadata.
 
 The GCP region is read from `zillizcloud_byoc_i_project_settings`. Set `gcp_project_id` in `terraform.tfvars`.
+
+The PSC service attachment ID can be overridden with `gcp_psc_service_attachment_id`. When it is not set, Terraform builds the ID from the current BYOC-I project region and environment.
 
 The example grants the storage service account to the fixed BYOC-I Kubernetes service accounts used by Loki and Milvus bootstrap through GKE Workload Identity. It also grants storage Workload Identity access to the target GKE cluster because instance namespaces and service accounts are created at runtime.
 

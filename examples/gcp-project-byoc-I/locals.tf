@@ -38,6 +38,12 @@ locals {
   dataplane_suffix = regex("[^-]+$", local.data_plane_id)
   env_domain       = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
   module_config    = yamldecode(file("${path.module}/../../modules/conf.yaml"))
+  psc_service_attachment_project = var.env == "UAT" ? "vdc-dev-test" : "zilliz-public"
+  gcp_psc_service_attachment_id = (
+    var.gcp_psc_service_attachment_id != ""
+    ? var.gcp_psc_service_attachment_id
+    : "projects/${local.psc_service_attachment_project}/regions/${local.gcp_region}/serviceAttachments/zilliz-byoc-psc"
+  )
   agent_image_url  = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
   gcp_agent_config = try(local.module_config.GCP.agent_config, {})
   gcp_booter_config = try(local.module_config.GCP.booter_config, {})

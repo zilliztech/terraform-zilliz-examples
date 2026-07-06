@@ -39,10 +39,11 @@ locals {
   env_domain       = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
   module_config    = yamldecode(file("${path.module}/../../modules/conf.yaml"))
   psc_service_attachment_project = var.env == "UAT" ? "vdc-dev-test" : "vdc-prod"
+  psc_service_attachment_name    = var.env == "UAT" ? "zilliz-byoc-psc" : "zilliz-byoc-psc-service"
   gcp_psc_service_attachment_id = (
     var.gcp_psc_service_attachment_id != ""
     ? var.gcp_psc_service_attachment_id
-    : "projects/${local.psc_service_attachment_project}/regions/${local.gcp_region}/serviceAttachments/zilliz-byoc-psc"
+    : "projects/${local.psc_service_attachment_project}/regions/${local.gcp_region}/serviceAttachments/${local.psc_service_attachment_name}"
   )
   agent_image_url  = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
   gcp_agent_config = try(local.module_config.GCP.agent_config, {})

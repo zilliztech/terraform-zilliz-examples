@@ -38,7 +38,7 @@ locals {
   dataplane_suffix = regex("[^-]+$", local.data_plane_id)
   env_domain       = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
   module_config    = yamldecode(file("${path.module}/../../modules/conf.yaml"))
-  psc_service_attachment_project = var.env == "UAT" ? "vdc-dev-test" : "zilliz-public"
+  psc_service_attachment_project = var.env == "UAT" ? "vdc-dev-test" : "vdc-prod"
   gcp_psc_service_attachment_id = (
     var.gcp_psc_service_attachment_id != ""
     ? var.gcp_psc_service_attachment_id

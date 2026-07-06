@@ -119,7 +119,7 @@ variable "enable_private_link" {
 }
 
 variable "gcp_psc_service_attachment_id" {
-  description = "Optional PSC service attachment ID. Defaults to projects/<zilliz-project>/regions/<region>/serviceAttachments/zilliz-byoc-psc."
+  description = "Optional PSC service attachment ID. Defaults by environment and region when unset."
   type        = string
   default     = ""
 }

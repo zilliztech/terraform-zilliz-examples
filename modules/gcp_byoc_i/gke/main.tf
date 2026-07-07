@@ -131,9 +131,9 @@ resource "google_container_node_pool" "this" {
     }
 
     dynamic "ephemeral_storage_local_ssd_config" {
-      for_each = each.key == "search" ? [1] : []
+      for_each = contains(keys(local.node_group_local_ssd_counts), each.key) ? [local.node_group_local_ssd_counts[each.key]] : []
       content {
-        local_ssd_count = 4
+        local_ssd_count = ephemeral_storage_local_ssd_config.value
       }
     }
 

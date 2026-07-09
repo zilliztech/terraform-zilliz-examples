@@ -10,6 +10,7 @@ gcp_project_id                    = "customer-gcp-project"
 # otherwise projects/vdc-prod/regions/<region>/serviceAttachments/zilliz-byoc-psc-service.
 # gcp_psc_service_attachment_id = "projects/<producer-project>/regions/us-west1/serviceAttachments/<service-attachment>"
 # booter_failure_self_delete_ttl_seconds = 7200
+# Default resource names use zilliz-dp-<last-12-chars-of-dataplane_id>. Set these to keep existing names.
 # customer_vpc_name = "zilliz-byoc-vpc"
 # customer_gke_cluster_name = "zilliz-byoc-gke"
 # customer_bucket_name = "zilliz-byoc-gcp-bucket"

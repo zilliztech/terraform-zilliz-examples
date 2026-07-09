@@ -51,9 +51,35 @@ If the provider version has not been released yet, use a local Terraform provide
 
 ## Destroy Notes
 
-Terraform will not delete a non-empty GCS bucket unless `bucket_force_destroy` has already been applied to that bucket resource. If you need `terraform destroy` to remove dataplane objects in the bucket, set `bucket_force_destroy = true` before destroy and apply that change first:
+Before destroying this example, edit `main.tf` and temporarily change the `zillizcloud_byoc_i_project.this` lifecycle protection from `prevent_destroy = true` to `prevent_destroy = false`.
+
+If you want `terraform destroy` to delete the GCS bucket and all objects in it, `bucket_force_destroy = true` must already be applied to the bucket resource before the destroy plan runs. Apply that bucket setting first:
 
 ```bash
-terraform apply -target=module.gcs.google_storage_bucket.this
-terraform destroy
+ZILLIZCLOUD_API_KEY=<YourZillizApiKey> \
+terraform apply \
+  -target=module.gcs.google_storage_bucket.this \
+  -var="dataplane_id=<YourZillizDataPlaneId>" \
+  -var="project_id=<YourZillizProjectId>" \
+  -var="gcp_project_id=<YourGcpProjectId>" \
+  -var="bucket_force_destroy=true"
 ```
+
+Then run destroy with the same required variables:
+
+```bash
+ZILLIZCLOUD_API_KEY=<YourZillizApiKey> \
+terraform destroy \
+  -var="dataplane_id=<YourZillizDataPlaneId>" \
+  -var="project_id=<YourZillizProjectId>" \
+  -var="gcp_project_id=<YourGcpProjectId>" \
+  -var="bucket_force_destroy=true"
+```
+
+If you do not want Terraform to delete the GCS bucket, do not rely only on `bucket_force_destroy = false`: Terraform can still delete an empty bucket during destroy. Remove the bucket from Terraform state before running destroy, or move its state to another Terraform workspace/configuration that will continue to manage it:
+
+```bash
+terraform state rm module.gcs.google_storage_bucket.this
+```
+
+After the bucket is removed from this state, run `terraform destroy` with `bucket_force_destroy = false` or omit the variable and use the default value.

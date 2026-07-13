@@ -73,7 +73,7 @@ locals {
     : "cloud-tunnel.gcp-${local.gcp_region}.${local.env_domain}"
   )
   agent_endpoint_ip = (
-    local.psc_endpoint_ip != null && can(regex("\\.byoc\\.", local.agent_server_host))
+    local.psc_endpoint_ip != null
     ? local.psc_endpoint_ip
     : ""
   )

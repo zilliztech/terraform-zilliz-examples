@@ -47,7 +47,7 @@ The booter image is not required in `terraform.tfvars`. Production defaults to `
 
 Resource Manager tags are enabled by default. When no tag IDs are provided, Terraform creates a per-dataplane tag key derived from `data_plane_id` and a `booter` tag value, so multiple BYOC-I dataplanes can be created in the same GCP project without sharing a fixed project-level tag key. If your Terraform runner cannot manage tags, either set both `vendor_tag_key_id` and `vendor_tag_value_id` to use a pre-created tag, or set `enable_resource_manager_tags = false`. With tags enabled, booter self-delete permission is scoped to the exact booter VM instance name plus the Resource Manager tag. When tags are disabled, booter self-delete permission is scoped to the exact booter VM instance name only.
 
-When Private Service Connect is enabled, the example still bootstraps `cloud-agent` through the public regional tunnel host by default, then reports the PSC endpoint IP in `zillizcloud_byoc_i_project`. This avoids blocking first connect while the PSC endpoint is still pending producer acceptance. To force agent bootstrap through PSC, set `agent_server_host` to the `.byoc.` tunnel host.
+When Private Service Connect is enabled, Terraform passes the PSC endpoint IP to the booter. The booter chart renders `hostAliases` for `cloud-agent` and `cloud-agent-backup`, so the configured `agent_server_host` resolves to the PSC endpoint IP inside those pods. The PSC endpoint IP is also reported in `zillizcloud_byoc_i_project`.
 
 If the provider version has not been released yet, use a local Terraform provider development override that points to a locally built `terraform-provider-zillizcloud`.
 

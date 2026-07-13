@@ -88,7 +88,7 @@ variable "resource_manager_tags" {
 variable "self_delete_ttl_seconds" {
   description = "Seconds to keep the booter VM after a successful bootstrap before self-delete."
   type        = number
-  default     = 1800
+  default     = 60
 }
 
 variable "failure_self_delete_ttl_seconds" {

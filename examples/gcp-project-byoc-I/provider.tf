@@ -6,10 +6,6 @@ terraform {
       source  = "hashicorp/google"
       version = "~> 6.32.0"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = ">= 3.0.0"
-    }
     zillizcloud = {
       source  = "zilliztech/zillizcloud"
       version = ">= 0.6.27"

@@ -39,6 +39,11 @@ locals {
     }
   }
 
+  node_group_local_ssd_counts = {
+    search = 4
+    tiered = 8
+  }
+
   node_groups = {
     for name, group in var.k8s_node_groups : name => group
     if group.max_size > 0 && contains(keys(local.node_group_labels), name)

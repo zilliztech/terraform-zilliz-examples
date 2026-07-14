@@ -1,15 +1,14 @@
-resource "random_id" "short_uuid" {
-  byte_length = 3
-}
-
 locals {
-  short_project_id = substr(data.zillizcloud_byoc_i_project_settings.this.id, 0, 10)
-  prefix_name      = "zilliz-${local.short_project_id}-${random_id.short_uuid.hex}"
-  gcp_region       = trimprefix(data.zillizcloud_byoc_i_project_settings.this.region, "gcp-")
-  gcp_zones        = var.gcp_zones != null ? var.gcp_zones : ["${local.gcp_region}-a", "${local.gcp_region}-b", "${local.gcp_region}-c"]
-
   project_id    = data.zillizcloud_byoc_i_project_settings.this.project_id
   data_plane_id = data.zillizcloud_byoc_i_project_settings.this.data_plane_id
+  data_plane_id_last12 = substr(
+    local.data_plane_id,
+    max(length(local.data_plane_id) - 12, 0),
+    min(length(local.data_plane_id), 12),
+  )
+  prefix_name = "zilliz-dp-${local.data_plane_id_last12}"
+  gcp_region  = trimprefix(data.zillizcloud_byoc_i_project_settings.this.region, "gcp-")
+  gcp_zones   = var.gcp_zones != null ? var.gcp_zones : ["${local.gcp_region}-a", "${local.gcp_region}-b", "${local.gcp_region}-c"]
 
   enable_private_link = var.enable_private_link && data.zillizcloud_byoc_i_project_settings.this.private_link_enabled
 
@@ -35,9 +34,9 @@ locals {
     })
   }
 
-  dataplane_suffix = regex("[^-]+$", local.data_plane_id)
-  env_domain       = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
-  module_config    = yamldecode(file("${path.module}/../../modules/conf.yaml"))
+  dataplane_suffix               = regex("[^-]+$", local.data_plane_id)
+  env_domain                     = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
+  module_config                  = yamldecode(file("${path.module}/../../modules/conf.yaml"))
   psc_service_attachment_project = var.env == "UAT" ? "vdc-dev-test" : "vdc-prod"
   psc_service_attachment_name    = var.env == "UAT" ? "zilliz-byoc-psc" : "zilliz-byoc-psc-service"
   gcp_psc_service_attachment_id = (
@@ -45,8 +44,8 @@ locals {
     ? var.gcp_psc_service_attachment_id
     : "projects/${local.psc_service_attachment_project}/regions/${local.gcp_region}/serviceAttachments/${local.psc_service_attachment_name}"
   )
-  agent_image_url  = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
-  gcp_agent_config = try(local.module_config.GCP.agent_config, {})
+  agent_image_url   = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
+  gcp_agent_config  = try(local.module_config.GCP.agent_config, {})
   gcp_booter_config = try(local.module_config.GCP.booter_config, {})
   booter_image_repository = (
     var.env == "UAT"
@@ -74,7 +73,7 @@ locals {
     : "cloud-tunnel.gcp-${local.gcp_region}.${local.env_domain}"
   )
   agent_endpoint_ip = (
-    local.psc_endpoint_ip != null && can(regex("\\.byoc\\.", local.agent_server_host))
+    local.psc_endpoint_ip != null
     ? local.psc_endpoint_ip
     : ""
   )

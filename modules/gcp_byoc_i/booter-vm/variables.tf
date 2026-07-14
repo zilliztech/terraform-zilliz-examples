@@ -88,11 +88,28 @@ variable "resource_manager_tags" {
 variable "self_delete_ttl_seconds" {
   description = "Seconds to keep the booter VM after a successful bootstrap before self-delete."
   type        = number
-  default     = 1800
+  default     = 60
 }
 
 variable "failure_self_delete_ttl_seconds" {
   description = "Seconds to keep the booter VM after bootstrap failure before self-delete. Set to 0 to delete immediately."
   type        = number
   default     = 7200
+}
+
+variable "print_serial_logs_on_apply" {
+  description = "Print booter VM serial console logs during terraform apply. Requires gcloud on the Terraform runner."
+  type        = bool
+  default     = false
+}
+
+variable "serial_log_timeout_seconds" {
+  description = "Maximum seconds to stream booter VM serial console logs when print_serial_logs_on_apply is enabled."
+  type        = number
+  default     = 1200
+
+  validation {
+    condition     = var.serial_log_timeout_seconds > 0
+    error_message = "serial_log_timeout_seconds must be greater than 0."
+  }
 }

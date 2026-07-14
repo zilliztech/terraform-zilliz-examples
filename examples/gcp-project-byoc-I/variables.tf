@@ -136,6 +136,12 @@ variable "booter_failure_self_delete_ttl_seconds" {
   default     = 7200
 }
 
+variable "booter_print_serial_logs_on_apply" {
+  description = "Print booter VM serial console logs during terraform apply for troubleshooting. Requires gcloud on the Terraform runner."
+  type        = bool
+  default     = false
+}
+
 variable "agent_server_host" {
   description = "Optional cloud-agent tunnel server host override."
   type        = string

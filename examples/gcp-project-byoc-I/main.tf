@@ -105,6 +105,7 @@ module "booter_vm" {
   booter_image                 = local.booter_image
   machine_type                 = var.booter_machine_type
   failure_self_delete_ttl_seconds = var.booter_failure_self_delete_ttl_seconds
+  print_serial_logs_on_apply      = var.booter_print_serial_logs_on_apply
   gke_cluster_name             = module.gke.cluster_name
   dataplane_id                 = local.data_plane_id
   agent_config                 = local.agent_config

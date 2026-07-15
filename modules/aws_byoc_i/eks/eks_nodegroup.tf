@@ -120,10 +120,10 @@ resource "aws_launch_template" "init" {
     content {
       device_name = "/dev/xvda"
       ebs {
-        encrypted    = "true"
-        kms_key_id   = var.ebs_kms_key_arn
-        volume_size  = var.ebs_volume_size
-        volume_type  = var.ebs_volume_type
+        encrypted   = "true"
+        kms_key_id  = var.ebs_kms_key_arn
+        volume_size = var.ebs_volume_size
+        volume_type = var.ebs_volume_type
       }
     }
   }
@@ -273,7 +273,7 @@ ${local.eks_bootstrap}
 
 USERDATA
   )
-  image_id = local.k8s_node_groups.search.ami_id
+  image_id               = local.k8s_node_groups.search.ami_id
   vpc_security_group_ids = local.node_security_group_ids
 
   metadata_options {
@@ -373,54 +373,6 @@ resource "aws_eks_node_group" "search" {
     desired_size = local.k8s_node_groups.search.min_size
     max_size     = local.k8s_node_groups.search.max_size
     min_size     = local.k8s_node_groups.search.min_size
-  }
-
-  update_config {
-    max_unavailable_percentage = 33
-  }
-
-  lifecycle {
-    ignore_changes = [scaling_config[0].desired_size]
-
-  }
-
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
-}
-
-# aws_eks_node_group.tiered: conditionally created when tiered is in node_quotas with max > 0
-resource "aws_eks_node_group" "tiered" {
-  count         = var.enable_tiered ? 1 : 0
-  ami_type      = lookup(local.ami_types, "tiered", "AL2023_x86_64_STANDARD")
-  capacity_type = var.k8s_node_groups["tiered"].capacity_type
-  cluster_name  = local.eks_cluster_name
-
-  instance_types = [
-    var.k8s_node_groups["tiered"].instance_types,
-  ]
-  labels = {
-    "zilliz-group-name" = "tiered"
-    "node-role/tiered"  = "true"
-    "node-role/milvus"  = "true"
-  }
-  node_group_name_prefix = "${local.prefix_name}-tiered-"
-  node_role_arn          = local.eks_node_role_arn
-  subnet_ids             = local.subnet_ids
-  tags = merge({
-    "Vendor" = "zilliz-byoc"
-  }, var.custom_tags)
-  tags_all = merge({
-    "Vendor" = "zilliz-byoc"
-  }, var.custom_tags)
-
-  launch_template {
-    id      = aws_launch_template.diskann.id
-    version = aws_launch_template.diskann.latest_version
-  }
-
-  scaling_config {
-    desired_size = var.k8s_node_groups["tiered"].min_size
-    max_size     = var.k8s_node_groups["tiered"].max_size
-    min_size     = var.k8s_node_groups["tiered"].min_size
   }
 
   update_config {

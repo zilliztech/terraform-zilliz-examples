@@ -65,6 +65,12 @@ variable "enable_private_link" {
   default     = false
 }
 
+variable "env" {
+  description = "Environment name. UAT uses cloud-uat3.zilliz.com, all other values use cloud.zilliz.com."
+  type        = string
+  default     = "Production"
+}
+
 variable "agent_config" {
   description = "Configuration for the agent including server host, auth token, and k8s token"
   type = object({

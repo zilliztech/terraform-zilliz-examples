@@ -72,6 +72,7 @@ locals {
     EKS_CLUSTER_NAME    = local.eks_cluster_name
     DATAPLANE_ID        = var.dataplane_id
     REGION              = var.region
+    ENV                 = var.env
     AGENT_CONFIG        = local.agent_config_json
     MAINTAINCE_ROLE     = local.maintenance_role.arn
     OP_CONFIG           = jsonencode(local.config)

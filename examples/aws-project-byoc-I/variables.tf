@@ -11,6 +11,12 @@ variable "dataplane_id" {
   nullable    = false
 }
 
+variable "env" {
+  description = "Environment name. UAT uses cloud-uat3.zilliz.com, all other values use cloud.zilliz.com."
+  type        = string
+  default     = "Production"
+}
+
 variable "vpc_cidr" {
   description = "The CIDR block for the customer VPC"
   type        = string

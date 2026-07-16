@@ -20,6 +20,9 @@
 # For detailed setup instructions, refer to the README.md file
 #
 
+# Environment name. Defaults to Production. Set to UAT only for UAT dataplanes.
+# env = "Production"
+
 # The ID of the existing customer VPC, otherwise it will create a new VPC if not provided
 customer_vpc_id = "vpc-xxxxxxxxxxxxxxxxx"
 

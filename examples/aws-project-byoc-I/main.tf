@@ -53,6 +53,7 @@ module "eks" {
   external_id                  = local.external_id
   agent_config                 = local.agent_config
   enable_private_link          = local.enable_private_link
+  env                          = var.env
   k8s_node_groups              = local.k8s_node_groups
   enable_tiered                = local.enable_tiered
   s3_bucket_id                 = local.s3_bucket_id

@@ -30,3 +30,28 @@ resource "google_compute_forwarding_rule" "byoc_endpoint" {
     }
   }
 }
+
+resource "google_dns_managed_zone" "psc" {
+  count = var.enable_private_dns && local.private_dns_domain != "" ? 1 : 0
+
+  name        = local.private_dns_zone_name
+  dns_name    = local.private_dns_domain
+  description = "Private DNS zone for Zilliz BYOC Private Service Connect hosts."
+  visibility  = "private"
+
+  private_visibility_config {
+    networks {
+      network_url = data.google_compute_network.this.id
+    }
+  }
+}
+
+resource "google_dns_record_set" "psc" {
+  for_each = var.enable_private_dns && local.private_dns_domain != "" ? toset(var.private_dns_record_names) : toset([])
+
+  name         = endswith(each.value, ".") ? each.value : "${each.value}."
+  managed_zone = google_dns_managed_zone.psc[0].name
+  type         = "A"
+  ttl          = 300
+  rrdatas      = [google_compute_address.psc.address]
+}

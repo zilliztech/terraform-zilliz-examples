@@ -38,12 +38,22 @@ locals {
   env_domain                     = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
   module_config                  = yamldecode(file("${path.module}/../../modules/conf.yaml"))
   psc_service_attachment_project = var.env == "UAT" ? "vdc-dev-test" : "vdc-prod"
-  psc_service_attachment_name    = var.env == "UAT" ? "zilliz-byoc-psc" : "zilliz-byoc-psc-service"
+  psc_service_attachment_name    = var.env == "UAT" ? "zilliz-byoc-psc-dns" : "zilliz-byoc-psc-service"
   gcp_psc_service_attachment_id = (
     var.gcp_psc_service_attachment_id != ""
     ? var.gcp_psc_service_attachment_id
     : "projects/${local.psc_service_attachment_project}/regions/${local.gcp_region}/serviceAttachments/${local.psc_service_attachment_name}"
   )
+  gcp_private_service_domain = "gcp-${local.gcp_region}.byoc.${local.env_domain}"
+  psc_private_dns_domain = (
+    var.gcp_psc_private_dns_domain != ""
+    ? var.gcp_psc_private_dns_domain
+    : "${local.gcp_private_service_domain}."
+  )
+  psc_private_dns_record_names = length(var.gcp_psc_private_dns_record_names) > 0 ? var.gcp_psc_private_dns_record_names : [
+    "cloud-tunnel.${local.gcp_private_service_domain}.",
+    "cloud-open-api.${local.gcp_private_service_domain}.",
+  ]
   agent_image_url   = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
   gcp_agent_config  = try(local.module_config.GCP.agent_config, {})
   gcp_booter_config = try(local.module_config.GCP.booter_config, {})
@@ -70,7 +80,7 @@ locals {
   agent_server_host = (
     var.agent_server_host != ""
     ? var.agent_server_host
-    : "cloud-tunnel.gcp-${local.gcp_region}.${local.env_domain}"
+    : "cloud-tunnel.gcp-${local.gcp_region}${local.enable_private_link ? ".byoc" : ""}.${local.env_domain}"
   )
   agent_endpoint_ip = (
     local.psc_endpoint_ip != null

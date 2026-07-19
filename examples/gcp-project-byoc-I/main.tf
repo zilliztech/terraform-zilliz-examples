@@ -87,6 +87,9 @@ module "private_link" {
   vpc_name              = module.vpc.vpc_name
   subnet_name           = module.vpc.primary_subnet_name
   service_attachment_id = local.gcp_psc_service_attachment_id
+  enable_private_dns    = var.enable_private_dns
+  private_dns_domain    = local.psc_private_dns_domain
+  private_dns_record_names = local.psc_private_dns_record_names
 
   depends_on = [google_project_service.required, module.vpc]
 }

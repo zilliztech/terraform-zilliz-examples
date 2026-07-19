@@ -20,7 +20,7 @@ This example provisions a GCP BYOC-I dataplane with customer-managed infrastruct
 - Zilliz Cloud provider version that includes `zillizcloud_byoc_i_project.gcp`
 - A GCP project with the APIs needed for Artifact Registry, Compute Engine, Cloud DNS, GKE, IAM, Service Usage, and Cloud Storage
 - By default, the Terraform runner needs `roles/resourcemanager.tagAdmin` and `roles/resourcemanager.tagUser` to create and bind Resource Manager tags
-- For Private Service Connect, `gcp_psc_service_attachment_id` is optional. When unset, it defaults to `projects/vdc-dev-test/regions/<region>/serviceAttachments/zilliz-byoc-psc-dns` for `env = "UAT"` and `projects/vdc-prod/regions/<region>/serviceAttachments/zilliz-byoc-psc-service` otherwise.
+- For Private Service Connect, `gcp_psc_service_attachment_id` is optional. When unset, it defaults to `projects/vdc-dev-test/regions/<region>/serviceAttachments/zilliz-byoc-psc-dns` for `env = "UAT"` and `projects/vdc-prod/regions/<region>/serviceAttachments/zilliz-byoc-psc-dns` otherwise.
 
 ## Usage
 

@@ -7,7 +7,7 @@ gcp_project_id                    = "customer-gcp-project"
 # enable_private_link = true
 # gcp_zones = ["us-west1-a", "us-west1-b", "us-west1-c"]
 # Defaults to projects/vdc-dev-test/regions/<region>/serviceAttachments/zilliz-byoc-psc-dns when env = "UAT",
-# otherwise projects/vdc-prod/regions/<region>/serviceAttachments/zilliz-byoc-psc-service.
+# otherwise projects/vdc-prod/regions/<region>/serviceAttachments/zilliz-byoc-psc-dns.
 # gcp_psc_service_attachment_id = "projects/<producer-project>/regions/us-west1/serviceAttachments/<service-attachment>"
 # enable_private_dns = true
 # gcp_psc_private_dns_domain = "gcp-us-west1.byoc.cloud.zilliz.com."

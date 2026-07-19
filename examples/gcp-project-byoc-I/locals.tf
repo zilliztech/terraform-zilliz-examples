@@ -38,7 +38,7 @@ locals {
   env_domain                     = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
   module_config                  = yamldecode(file("${path.module}/../../modules/conf.yaml"))
   psc_service_attachment_project = var.env == "UAT" ? "vdc-dev-test" : "vdc-prod"
-  psc_service_attachment_name    = var.env == "UAT" ? "zilliz-byoc-psc-dns" : "zilliz-byoc-psc-service"
+  psc_service_attachment_name    = "zilliz-byoc-psc-dns"
   gcp_psc_service_attachment_id = (
     var.gcp_psc_service_attachment_id != ""
     ? var.gcp_psc_service_attachment_id

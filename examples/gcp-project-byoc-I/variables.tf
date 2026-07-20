@@ -124,6 +124,24 @@ variable "gcp_psc_service_attachment_id" {
   default     = ""
 }
 
+variable "enable_private_dns" {
+  description = "Whether to create Cloud DNS private records for Private Service Connect service hosts."
+  type        = bool
+  default     = true
+}
+
+variable "gcp_psc_private_dns_domain" {
+  description = "Optional Cloud DNS private zone DNS name for PSC service hosts. Defaults to gcp-<region>.byoc.<env_domain>."
+  type        = string
+  default     = ""
+}
+
+variable "gcp_psc_private_dns_record_names" {
+  description = "Optional PSC private DNS A record FQDNs. Defaults to cloud-tunnel and cloud-open-api under the PSC private DNS domain."
+  type        = list(string)
+  default     = []
+}
+
 variable "booter_machine_type" {
   description = "Booter VM machine type."
   type        = string

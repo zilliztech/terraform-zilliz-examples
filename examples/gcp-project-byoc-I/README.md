@@ -18,9 +18,9 @@ This example provisions a GCP BYOC-I dataplane with customer-managed infrastruct
 - Terraform `>= 1.6.0`
 - Google provider `~> 6.32.0`
 - Zilliz Cloud provider version that includes `zillizcloud_byoc_i_project.gcp`
-- A GCP project with the APIs needed for Artifact Registry, Compute Engine, GKE, IAM, Service Usage, and Cloud Storage
+- A GCP project with the APIs needed for Artifact Registry, Compute Engine, Cloud DNS, GKE, IAM, Service Usage, and Cloud Storage
 - By default, the Terraform runner needs `roles/resourcemanager.tagAdmin` and `roles/resourcemanager.tagUser` to create and bind Resource Manager tags
-- For Private Service Connect, `gcp_psc_service_attachment_id` is optional. When unset, it defaults to `projects/vdc-dev-test/regions/<region>/serviceAttachments/zilliz-byoc-psc` for `env = "UAT"` and `projects/vdc-prod/regions/<region>/serviceAttachments/zilliz-byoc-psc-service` otherwise.
+- For Private Service Connect, `gcp_psc_service_attachment_id` is optional. When unset, it defaults to `projects/vdc-dev-test/regions/<region>/serviceAttachments/zilliz-byoc-psc-dns` for `env = "UAT"` and `projects/vdc-prod/regions/<region>/serviceAttachments/zilliz-byoc-psc-dns` otherwise.
 
 ## Usage
 
@@ -49,7 +49,7 @@ For booter troubleshooting, set `booter_print_serial_logs_on_apply = true` to pr
 
 Resource Manager tags are enabled by default. When no tag IDs are provided, Terraform creates a per-dataplane tag key derived from `data_plane_id` and a `booter` tag value, so multiple BYOC-I dataplanes can be created in the same GCP project without sharing a fixed project-level tag key. If your Terraform runner cannot manage tags, either set both `vendor_tag_key_id` and `vendor_tag_value_id` to use a pre-created tag, or set `enable_resource_manager_tags = false`. With tags enabled, booter self-delete permission is scoped to the exact booter VM instance name plus the Resource Manager tag. When tags are disabled, booter self-delete permission is scoped to the exact booter VM instance name only.
 
-When Private Service Connect is enabled, Terraform passes the PSC endpoint IP to the booter. The booter chart renders `hostAliases` for `cloud-agent` and `cloud-agent-backup`, so the configured `agent_server_host` resolves to the PSC endpoint IP inside those pods. The PSC endpoint IP is also reported in `zillizcloud_byoc_i_project`.
+When Private Service Connect is enabled, the default `agent_server_host` uses `cloud-tunnel.gcp-<region>.byoc.<env_domain>`. Terraform creates Cloud DNS private A records for `cloud-tunnel.gcp-<region>.byoc.<env_domain>` and `cloud-open-api.gcp-<region>.byoc.<env_domain>` that point to the PSC endpoint IP. The booter chart also renders `hostAliases` for `cloud-agent` and `cloud-agent-backup`, so the configured `agent_server_host` resolves to the PSC endpoint IP inside those pods. Set `enable_private_dns = false` if the customer VPC already manages these private records externally.
 
 If the provider version has not been released yet, use a local Terraform provider development override that points to a locally built `terraform-provider-zillizcloud`.
 

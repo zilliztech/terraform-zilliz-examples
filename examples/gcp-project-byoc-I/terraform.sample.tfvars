@@ -6,9 +6,15 @@ gcp_project_id                    = "customer-gcp-project"
 # env = "Production"
 # enable_private_link = true
 # gcp_zones = ["us-west1-a", "us-west1-b", "us-west1-c"]
-# Defaults to projects/vdc-dev-test/regions/<region>/serviceAttachments/zilliz-byoc-psc when env = "UAT",
-# otherwise projects/vdc-prod/regions/<region>/serviceAttachments/zilliz-byoc-psc-service.
+# Defaults to projects/vdc-dev-test/regions/<region>/serviceAttachments/zilliz-byoc-psc-dns when env = "UAT",
+# otherwise projects/vdc-prod/regions/<region>/serviceAttachments/zilliz-byoc-psc-dns.
 # gcp_psc_service_attachment_id = "projects/<producer-project>/regions/us-west1/serviceAttachments/<service-attachment>"
+# enable_private_dns = true
+# gcp_psc_private_dns_domain = "gcp-us-west1.byoc.cloud.zilliz.com."
+# gcp_psc_private_dns_record_names = [
+#   "cloud-tunnel.gcp-us-west1.byoc.cloud.zilliz.com.",
+#   "cloud-open-api.gcp-us-west1.byoc.cloud.zilliz.com.",
+# ]
 # booter_failure_self_delete_ttl_seconds = 7200
 # Print booter VM serial console logs during terraform apply. Requires gcloud on the Terraform runner.
 # booter_print_serial_logs_on_apply = true
@@ -22,5 +28,5 @@ gcp_project_id                    = "customer-gcp-project"
 # vendor_tag_key_id = "tagKeys/1234567890"
 # vendor_tag_value_id = "tagValues/1234567890"
 # Usually do not override these unless Zilliz instructs you to use custom tunnel hosts.
-# agent_server_host = "cloud-tunnel.gcp-us-west1.cloud.zilliz.com"
+# agent_server_host = "cloud-tunnel.gcp-us-west1.byoc.cloud.zilliz.com"
 # agent_tunnel_host = "k8sxxxxxxxx.gcp-us-west1.byoc.cloud.zilliz.com"

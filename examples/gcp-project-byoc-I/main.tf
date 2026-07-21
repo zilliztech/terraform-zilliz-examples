@@ -67,6 +67,7 @@ module "gke" {
   gke_node_sa_email        = module.iam.gke_node_sa_email
   k8s_node_groups          = local.k8s_node_groups
   kubernetes_version       = var.kubernetes_version
+  master_ipv4_cidr_block   = var.master_ipv4_cidr_block
   labels                   = local.common_labels
   master_authorized_networks = [
     {

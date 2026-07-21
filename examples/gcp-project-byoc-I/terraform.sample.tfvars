@@ -3,6 +3,9 @@ dataplane_id                      = "zilliz-byoc-gcp-us-west1-xxxxxxxx"
 gcp_project_id                    = "customer-gcp-project"
 
 # Optional overrides.
+# vpc_cidr = "10.0.0.0/16"
+# Use a unique /28 when peering multiple BYOC-I VPCs.
+# master_ipv4_cidr_block = "172.16.0.0/28"
 # env = "Production"
 # enable_private_link = true
 # gcp_zones = ["us-west1-a", "us-west1-b", "us-west1-c"]

@@ -184,6 +184,12 @@ variable "kubernetes_version" {
   default     = null
 }
 
+variable "master_ipv4_cidr_block" {
+  description = "CIDR block for the private GKE control plane. Use a unique /28 when peering multiple BYOC-I VPCs."
+  type        = string
+  default     = "172.16.0.0/28"
+}
+
 variable "enable_direct_mig_resize" {
   description = "Enable direct GKE-managed MIG resize permissions for maintenance_sa. Required for node group scale operations."
   type        = bool

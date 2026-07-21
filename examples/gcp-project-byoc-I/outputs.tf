@@ -34,6 +34,30 @@ output "booter_vm_name" {
   value = try(module.booter_vm[0].instance_name, null)
 }
 
+output "vpc_cidr" {
+  value = var.vpc_cidr
+}
+
+output "primary_subnet_cidr" {
+  value = module.vpc.primary_subnet_cidr
+}
+
+output "pod_subnet_cidr" {
+  value = module.vpc.pod_subnet_cidr
+}
+
+output "service_subnet_cidr" {
+  value = module.vpc.service_subnet_cidr
+}
+
+output "lb_subnet_cidr" {
+  value = module.vpc.lb_subnet_cidr
+}
+
+output "master_ipv4_cidr_block" {
+  value = var.master_ipv4_cidr_block
+}
+
 output "psc_endpoint_ip" {
   value = local.psc_endpoint_ip
 }

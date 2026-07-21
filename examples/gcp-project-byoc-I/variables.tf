@@ -188,6 +188,11 @@ variable "master_ipv4_cidr_block" {
   description = "CIDR block for the private GKE control plane. Use a unique /28 when peering multiple BYOC-I VPCs."
   type        = string
   default     = "172.16.0.0/28"
+
+  validation {
+    condition     = can(cidrhost(var.master_ipv4_cidr_block, 0)) && tonumber(split("/", var.master_ipv4_cidr_block)[1]) == 28
+    error_message = "master_ipv4_cidr_block must be a valid /28 CIDR block."
+  }
 }
 
 variable "enable_direct_mig_resize" {

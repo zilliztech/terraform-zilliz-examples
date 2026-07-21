@@ -26,6 +26,18 @@ output "primary_subnet_cidr" {
   value = local.primary_subnet_cidr
 }
 
+output "pod_subnet_cidr" {
+  value = local.pod_subnet_cidr
+}
+
+output "service_subnet_cidr" {
+  value = local.service_subnet_cidr
+}
+
+output "lb_subnet_cidr" {
+  value = local.lb_subnet_cidr
+}
+
 output "pod_subnet_name" {
   value = local.pod_subnet_name
 }

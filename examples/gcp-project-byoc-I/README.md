@@ -52,11 +52,18 @@ The booter VM always uses a dedicated booter service account. The Zilliz BYOC or
 The GCS bucket uses Google-managed encryption by default. To use a customer-managed Cloud KMS key for new bucket objects, enable CMEK:
 
 ```hcl
-enable_gcs_kms  = true
+enable_gcs_kms = true
+```
+
+When `gcs_kms_key_name` is empty, Terraform creates a Cloud KMS key ring and crypto key in the BYOC-I region and uses that key for the bucket. The generated KMS resource names are derived from the bucket name.
+
+To use an existing Cloud KMS key instead, pass the full key resource name:
+
+```hcl
 gcs_kms_key_name = "projects/<gcp-project-id>/locations/<region>/keyRings/<key-ring>/cryptoKeys/<key>"
 ```
 
-When `grant_gcs_kms_key_iam = true` default, Terraform grants the bucket project's Cloud Storage service agent `roles/cloudkms.cryptoKeyEncrypterDecrypter` on the configured key. The Terraform runner must be allowed to manage IAM on that KMS key. If the permission is already granted outside Terraform, set:
+Terraform-created KMS keys are automatically granted to the bucket project's Cloud Storage service agent. When using an existing key, `grant_gcs_kms_key_iam = true` default grants the same `roles/cloudkms.cryptoKeyEncrypterDecrypter` permission on that key. The Terraform runner must be allowed to manage IAM on the KMS key. If the permission is already granted outside Terraform for an existing key, set:
 
 ```hcl
 grant_gcs_kms_key_iam = false

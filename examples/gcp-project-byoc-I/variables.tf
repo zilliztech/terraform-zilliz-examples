@@ -242,13 +242,13 @@ variable "enable_gcs_kms" {
 }
 
 variable "gcs_kms_key_name" {
-  description = "Cloud KMS key resource name used as the default GCS bucket encryption key, for example projects/<project>/locations/<location>/keyRings/<key-ring>/cryptoKeys/<key>."
+  description = "Existing Cloud KMS key resource name used as the default GCS bucket encryption key. Leave empty to let Terraform create one when enable_gcs_kms is true."
   type        = string
   default     = ""
 }
 
 variable "grant_gcs_kms_key_iam" {
-  description = "Whether Terraform should grant the Cloud Storage service agent roles/cloudkms.cryptoKeyEncrypterDecrypter on gcs_kms_key_name."
+  description = "Whether Terraform should grant the Cloud Storage service agent roles/cloudkms.cryptoKeyEncrypterDecrypter on an existing gcs_kms_key_name. Terraform-created keys are always granted."
   type        = bool
   default     = true
 }

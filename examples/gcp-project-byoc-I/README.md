@@ -47,6 +47,23 @@ The example grants the storage service account to the fixed BYOC-I Kubernetes se
 
 The booter VM always uses a dedicated booter service account. The Zilliz BYOC organization service account is not granted permission to impersonate the maintenance service account. The in-cluster `infra/infra-agent-sa` Kubernetes service account uses GKE Workload Identity to access the maintenance service account instead.
 
+### GCS Bucket CMEK
+
+The GCS bucket uses Google-managed encryption by default. To use a customer-managed Cloud KMS key for new bucket objects, enable CMEK:
+
+```hcl
+enable_gcs_kms  = true
+gcs_kms_key_name = "projects/<gcp-project-id>/locations/<region>/keyRings/<key-ring>/cryptoKeys/<key>"
+```
+
+When `grant_gcs_kms_key_iam = true` default, Terraform grants the bucket project's Cloud Storage service agent `roles/cloudkms.cryptoKeyEncrypterDecrypter` on the configured key. The Terraform runner must be allowed to manage IAM on that KMS key. If the permission is already granted outside Terraform, set:
+
+```hcl
+grant_gcs_kms_key_iam = false
+```
+
+The KMS key location must be compatible with the bucket location. Changing the bucket default KMS key affects new objects written after the change; existing objects are not automatically re-encrypted.
+
 The booter image is not required in `terraform.tfvars`. Production defaults to `gcr.io/zilliz-byoc-prod/gcp-byoc-i-booter:latest`; UAT defaults to `gcr.io/zilliz-byoc-uat/gcp-byoc-i-booter:latest`. For development testing only, override `booter_image` locally.
 
 For booter troubleshooting, set `booter_print_serial_logs_on_apply = true` to print the booter VM serial console logs during `terraform apply`. This requires `gcloud` to be installed and authenticated on the Terraform runner.

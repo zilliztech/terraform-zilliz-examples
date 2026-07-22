@@ -1,5 +1,5 @@
 locals {
-  required_project_services = toset([
+  required_project_services = toset(concat([
     "cloudresourcemanager.googleapis.com",
     "artifactregistry.googleapis.com",
     "compute.googleapis.com",
@@ -7,7 +7,7 @@ locals {
     "dns.googleapis.com",
     "iam.googleapis.com",
     "storage.googleapis.com",
-  ])
+  ], var.enable_gcs_kms ? ["cloudkms.googleapis.com"] : []))
 }
 
 resource "google_project_service" "required" {

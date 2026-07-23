@@ -14,6 +14,10 @@ output "gcs_bucket_id" {
   value = module.gcs.bucket_id
 }
 
+output "gcs_kms_key_name" {
+  value = module.gcs.kms_key_name
+}
+
 output "management_sa" {
   value = module.iam.management_sa_email
 }

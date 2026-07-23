@@ -235,6 +235,24 @@ variable "bucket_force_destroy" {
   default     = false
 }
 
+variable "enable_gcs_kms" {
+  description = "Enable Cloud KMS customer-managed encryption key for the GCS bucket."
+  type        = bool
+  default     = false
+}
+
+variable "gcs_kms_key_name" {
+  description = "Existing Cloud KMS key resource name used as the default GCS bucket encryption key. Leave empty to let Terraform create one when enable_gcs_kms is true."
+  type        = string
+  default     = ""
+}
+
+variable "grant_gcs_kms_key_iam" {
+  description = "Whether Terraform should grant the Cloud Storage service agent roles/cloudkms.cryptoKeyEncrypterDecrypter on an existing gcs_kms_key_name. Terraform-created keys are always granted."
+  type        = bool
+  default     = true
+}
+
 variable "labels" {
   description = "Labels applied to supported GCP resources."
   type        = map(string)

@@ -1,6 +1,6 @@
-project_id                        = "proj-xxxxxxxx"
-dataplane_id                      = "zilliz-byoc-gcp-us-west1-xxxxxxxx"
-gcp_project_id                    = "customer-gcp-project"
+project_id     = "proj-xxxxxxxx"
+dataplane_id   = "zilliz-byoc-gcp-us-west1-xxxxxxxx"
+gcp_project_id = "customer-gcp-project"
 
 # Optional overrides.
 # vpc_cidr = "10.0.0.0/16"
@@ -26,6 +26,12 @@ gcp_project_id                    = "customer-gcp-project"
 # customer_gke_cluster_name = "zilliz-byoc-gke"
 # customer_bucket_name = "zilliz-byoc-gcp-bucket"
 # bucket_force_destroy = true
+# Enable GCS bucket default encryption with a customer-managed Cloud KMS key. When gcs_kms_key_name is empty, Terraform creates a key ring and crypto key.
+# enable_gcs_kms = true
+# Optional existing key. Leave empty to let Terraform create one.
+# gcs_kms_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/example-key-ring/cryptoKeys/example-key"
+# For existing keys only, set to false if the Cloud Storage service agent has already been granted KMS encrypter/decrypter permission.
+# grant_gcs_kms_key_iam = true
 # enable_resource_manager_tags = true
 # Leave tag IDs empty to let Terraform create a per-dataplane tag.
 # vendor_tag_key_id = "tagKeys/1234567890"

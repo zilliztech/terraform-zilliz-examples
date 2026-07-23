@@ -22,10 +22,14 @@ module "vpc" {
 module "gcs" {
   source = "../../modules/gcp_byoc_i/gcs"
 
-  bucket_name   = local.bucket_name
-  gcp_region    = local.gcp_region
-  force_destroy = var.bucket_force_destroy
-  labels        = local.common_labels
+  bucket_name           = local.bucket_name
+  gcp_project_id        = var.gcp_project_id
+  gcp_region            = local.gcp_region
+  force_destroy         = var.bucket_force_destroy
+  labels                = local.common_labels
+  enable_gcs_kms        = var.enable_gcs_kms
+  gcs_kms_key_name      = var.gcs_kms_key_name
+  grant_gcs_kms_key_iam = var.grant_gcs_kms_key_iam
 
   depends_on = [google_project_service.required]
 }

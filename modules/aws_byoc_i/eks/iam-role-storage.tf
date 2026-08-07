@@ -26,7 +26,9 @@ resource "aws_iam_role" "storage_role" {
             "${local.eks_oidc_url}:sub" : [
               "system:serviceaccount:milvus-*:milvus*",
               "system:serviceaccount:loki:loki*",
-              "system:serviceaccount:index-pool:milvus*"
+              "system:serviceaccount:index-pool:milvus*",
+              "system:serviceaccount:vectorlake-kite:kite-coordinator",
+              "system:serviceaccount:vectorlake-kite-pool:kite-index-pool-sa"
             ]
           }
         }
@@ -100,4 +102,4 @@ resource "aws_iam_role_policy_attachment" "s3_kms_policy_attachment" {
   count      = var.enable_s3_kms ? 1 : 0
   policy_arn = aws_iam_policy.s3_kms_policy[0].arn
   role       = aws_iam_role.storage_role.name
-} 
+}

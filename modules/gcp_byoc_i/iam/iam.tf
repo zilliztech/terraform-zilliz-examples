@@ -216,10 +216,7 @@ resource "google_project_iam_member" "storage_bucket_viewer" {
 }
 
 resource "google_service_account_iam_member" "storage_workload_identity" {
-  for_each = {
-    for ksa in var.storage_workload_identity_ksas :
-    "${ksa.namespace}/${ksa.name}" => ksa
-  }
+  for_each = local.storage_workload_identity_ksas
 
   service_account_id = google_service_account.storage.name
   role               = "roles/iam.workloadIdentityUser"

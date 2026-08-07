@@ -48,7 +48,7 @@ variable "booter_service_account_name" {
 }
 
 variable "storage_workload_identity_ksas" {
-  description = "Kubernetes service accounts allowed to impersonate storage_sa via GKE Workload Identity."
+  description = "Additional Kubernetes service accounts allowed to impersonate storage_sa via GKE Workload Identity. Required Kite service accounts are always included by the module."
   type = list(object({
     namespace = string
     name      = string

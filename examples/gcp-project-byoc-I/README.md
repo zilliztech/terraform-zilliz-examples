@@ -43,7 +43,7 @@ The example outputs `primary_subnet_cidr`, `pod_subnet_cidr`, `service_subnet_ci
 
 The PSC service attachment ID can be overridden with `gcp_psc_service_attachment_id`. When it is not set, Terraform builds the ID from the current BYOC-I project region and environment.
 
-The example grants the storage service account to the fixed BYOC-I Kubernetes service accounts used by Loki and Milvus bootstrap through GKE Workload Identity. It also grants storage Workload Identity access to the target GKE cluster because instance namespaces and service accounts are created at runtime.
+The IAM module always grants the storage service account to `vectorlake-kite/kite-coordinator` and `vectorlake-kite-pool/kite-index-pool-sa`. The example also grants the fixed BYOC-I Kubernetes service accounts used by Loki and Milvus bootstrap through GKE Workload Identity. The target GKE cluster keeps its cluster-scoped storage Workload Identity grant because instance namespaces and service accounts are created at runtime.
 
 The booter VM always uses a dedicated booter service account. The Zilliz BYOC organization service account is not granted permission to impersonate the maintenance service account. The in-cluster `infra/infra-agent-sa` Kubernetes service account uses GKE Workload Identity to access the maintenance service account instead.
 

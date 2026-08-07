@@ -319,6 +319,15 @@ resource "aws_iam_policy" "maintenance_policy_2" {
         ]
       },
       {
+        "Sid" : "IAMReconcileStorageRoleTrust",
+        "Effect" : "Allow",
+        "Action" : [
+          "iam:GetRole",
+          "iam:UpdateAssumeRolePolicy"
+        ],
+        "Resource" : aws_iam_role.storage_role.arn
+      },
+      {
         "Sid" : "S3CheckBucketLocation",
         "Effect" : "Allow",
         "Action" : [
@@ -329,4 +338,3 @@ resource "aws_iam_policy" "maintenance_policy_2" {
     ]
   })
 }
-

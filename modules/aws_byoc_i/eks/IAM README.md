@@ -12,8 +12,8 @@ The AWS BYOC-I EKS module creates four distinct IAM roles, each designed for spe
 |-----------|---------|-------------------|----------------|
 | **EKS Cluster Role** | Combined EKS cluster and node management (based on [AWS EKS cluster role](https://docs.aws.amazon.com/eks/latest/userguide/cluster-iam-role.html) and [AWS EKS node role](https://docs.aws.amazon.com/eks/latest/userguide/create-node-role.html)) | `eks.amazonaws.com`, `eks-nodegroup.amazonaws.com`, `ec2.amazonaws.com` | EKS cluster operations, node group management, ECR access, assume maintenance role for initialization |
 | **EKS Add-on Role** | AWS Load Balancer Controller, EBS CSI Driver, Cluster Autoscaler | OIDC Federation (kube-system service accounts) | Load balancer management, volume operations, auto-scaling |
-| **Maintenance Role** | EKS cluster and node group version upgrades, cluster administration (tag-restricted scope) | OIDC Federation (infra agent), EKS Cluster Role | Node group management, EC2 operations, version upgrades, allow EKS role to assume |
-| **Storage Role** | S3 bucket access for Milvus, index-pool, and Loki | OIDC Federation (Milvus, Loki, index-pool) | S3 object read/write for Milvus, index-pool, and Loki  |
+| **Maintenance Role** | EKS cluster and node group version upgrades, cluster administration (tag-restricted scope) | OIDC Federation (infra agent), EKS Cluster Role | Node group management, EC2 operations, version upgrades, and narrowly scoped storage-role trust reconciliation |
+| **Storage Role** | S3 bucket access for Milvus, index-pool, Loki, and Kite | OIDC Federation (Milvus, Loki, index-pool, Kite) | S3 object read/write for Milvus, index-pool, Loki, and Kite |
 
 ## Role Dependencies
 
@@ -119,6 +119,10 @@ graph TD
   - Allow EKS cluster role to assume with external ID validation
   - Enable delegated operations from EKS cluster
 
+- **Storage Role Trust Reconciliation**:
+  - Read and update only this dataplane's storage-role trust policy
+  - Allow the infra agent to add the fixed Kite workload identities idempotently
+
 **Use Cases**:
 - EKS cluster and node group version upgrades
 - Automated cluster maintenance and updates
@@ -128,13 +132,15 @@ graph TD
 
 ### 4. Storage Role (`storage_role`)
 
-**Purpose**: S3 bucket access for Milvus, index-pool, and Loki data services
+**Purpose**: S3 bucket access for Milvus, index-pool, Loki, and Kite data services
 
 **Principal Services**:
 - OIDC Federation for Milvus and related services:
   - `system:serviceaccount:milvus-*:milvus*`
   - `system:serviceaccount:loki:loki*`
   - `system:serviceaccount:index-pool:milvus*`
+  - `system:serviceaccount:vectorlake-kite:kite-coordinator`
+  - `system:serviceaccount:vectorlake-kite-pool:kite-index-pool-sa`
 
 **Key Permissions**:
 - **S3 Operations**:
@@ -146,6 +152,7 @@ graph TD
 - Milvus vector database data read/write
 - Index pool data read/write operations
 - Loki log aggregation data read/write
+- Kite coordinator and index-pool data read/write
 - Backup and restore operations for all data services
 
 ## Security Features

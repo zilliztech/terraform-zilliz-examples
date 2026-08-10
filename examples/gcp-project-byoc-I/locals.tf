@@ -55,12 +55,22 @@ locals {
     "cloud-open-api.${local.gcp_private_service_domain}.",
   ]
   agent_image_url   = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
+  agent_image_tag = (
+    can(regex("/", local.agent_image_url)) && can(regex(":", local.agent_image_url))
+    ? element(split(":", local.agent_image_url), length(split(":", local.agent_image_url)) - 1)
+    : local.agent_image_url
+  )
   gcp_agent_config  = try(local.module_config.GCP.agent_config, {})
   gcp_booter_config = try(local.module_config.GCP.booter_config, {})
+  image_repo_url    = trimsuffix(trimspace(var.image_repo_url), "/")
   booter_image_repository = (
-    var.env == "UAT"
-    ? try(local.gcp_booter_config.uat_repository, local.gcp_booter_config.repository)
-    : local.gcp_booter_config.repository
+    local.image_repo_url != ""
+    ? "${local.image_repo_url}/gcp-byoc-i-booter"
+    : (
+      var.env == "UAT"
+      ? try(local.gcp_booter_config.uat_repository, local.gcp_booter_config.repository)
+      : local.gcp_booter_config.repository
+    )
   )
   booter_image = (
     var.booter_image != ""
@@ -68,14 +78,22 @@ locals {
     : "${local.booter_image_repository}:latest"
   )
   agent_image_repository = (
-    var.env == "UAT"
-    ? try(local.gcp_agent_config.uat_repository, try(local.gcp_agent_config.repository, local.module_config.agent_config.repository))
-    : try(local.gcp_agent_config.repository, local.module_config.agent_config.repository)
+    local.image_repo_url != ""
+    ? "${local.image_repo_url}/cloud-agent"
+    : (
+      var.env == "UAT"
+      ? try(local.gcp_agent_config.uat_repository, try(local.gcp_agent_config.repository, local.module_config.agent_config.repository))
+      : try(local.gcp_agent_config.repository, local.module_config.agent_config.repository)
+    )
   )
   agent_image = (
-    can(regex("/", local.agent_image_url))
-    ? local.agent_image_url
-    : "${local.agent_image_repository}:${local.agent_image_url}"
+    local.image_repo_url != ""
+    ? "${local.agent_image_repository}:${local.agent_image_tag}"
+    : (
+      can(regex("/", local.agent_image_url))
+      ? local.agent_image_url
+      : "${local.agent_image_repository}:${local.agent_image_url}"
+    )
   )
   agent_server_host = (
     var.agent_server_host != ""

@@ -18,6 +18,9 @@ gcp_project_id = "customer-gcp-project"
 #   "cloud-tunnel.gcp-us-west1.byoc.cloud.zilliz.com.",
 #   "cloud-open-api.gcp-us-west1.byoc.cloud.zilliz.com.",
 # ]
+# Optional image repository base URL for BYOC-I booter and cloud-agent images, without image name or tag.
+# Terraform uses <image_repo_url>/gcp-byoc-i-booter:latest and <image_repo_url>/cloud-agent:<agent_tag>.
+# image_repo_url = "us-docker.pkg.dev/customer-gcp-project/byoc-images"
 # booter_failure_self_delete_ttl_seconds = 7200
 # Print booter VM serial console logs during terraform apply. Requires gcloud on the Terraform runner.
 # booter_print_serial_logs_on_apply = true

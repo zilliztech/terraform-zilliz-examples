@@ -71,7 +71,13 @@ grant_gcs_kms_key_iam = false
 
 The KMS key location must be compatible with the bucket location. Changing the bucket default KMS key affects new objects written after the change; existing objects are not automatically re-encrypted.
 
-The booter image is not required in `terraform.tfvars`. Production defaults to `gcr.io/zilliz-byoc-prod/gcp-byoc-i-booter:latest`; UAT defaults to `gcr.io/zilliz-byoc-uat/gcp-byoc-i-booter:latest`. For development testing only, override `booter_image` locally.
+The booter image is not required in `terraform.tfvars`. Production defaults to `gcr.io/zilliz-byoc-prod/gcp-byoc-i-booter:latest`; UAT defaults to `gcr.io/zilliz-byoc-uat/gcp-byoc-i-booter:latest`. To use a customer-owned image repository for both the booter and cloud-agent images, set `image_repo_url` to the repository base URL without image name or tag:
+
+```hcl
+image_repo_url = "us-docker.pkg.dev/<gcp-project-id>/<repository>"
+```
+
+Terraform will use `<image_repo_url>/gcp-byoc-i-booter:latest` for the booter VM and `<image_repo_url>/cloud-agent:<agent_tag>` for cloud-agent when the Zilliz project settings provide an agent tag. If `booter_image` is set, it remains a full-image override for the booter and takes precedence over `image_repo_url`.
 
 For booter troubleshooting, set `booter_print_serial_logs_on_apply = true` to print the booter VM serial console logs during `terraform apply`. This requires `gcloud` to be installed and authenticated on the Terraform runner.
 

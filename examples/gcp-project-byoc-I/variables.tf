@@ -16,6 +16,12 @@ variable "gcp_project_id" {
   nullable    = false
 }
 
+variable "image_repo_url" {
+  description = "Optional image repository base URL for BYOC-I booter and cloud-agent images, without image name or tag. For example: us-docker.pkg.dev/<project>/<repository>."
+  type        = string
+  default     = ""
+}
+
 variable "booter_image" {
   description = "Optional container image for the GCP-capable BYOC-I booter. Defaults by env when unset."
   type        = string

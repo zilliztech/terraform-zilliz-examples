@@ -29,6 +29,20 @@ variable "gke_node_service_account_name" {
   default     = ""
 }
 
+variable "existing_gke_node_sa_email" {
+  description = "Optional existing GKE node service account email. When set, Terraform reuses the account and only manages the required IAM grants."
+  type        = string
+  default     = ""
+
+  validation {
+    condition = var.existing_gke_node_sa_email == "" || can(regex(
+      "^[^@\\s]+@[^@\\s]+\\.iam\\.gserviceaccount\\.com$",
+      var.existing_gke_node_sa_email,
+    ))
+    error_message = "existing_gke_node_sa_email must be empty or a valid GCP service account email."
+  }
+}
+
 variable "management_service_account_name" {
   description = "Maintenance service account account_id. Defaults to <prefix_name>-maintenance."
   type        = string

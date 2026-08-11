@@ -4,6 +4,7 @@ data "zillizcloud_byoc_i_project_settings" "this" {
 }
 
 module "vpc" {
+  count  = local.is_existing_network ? 0 : 1
   source = "../../modules/gcp_byoc_i/vpc"
 
   prefix_name    = local.prefix_name
@@ -37,37 +38,39 @@ module "gcs" {
 module "iam" {
   source = "../../modules/gcp_byoc_i/iam"
 
-  gcp_project_id                    = var.gcp_project_id
-  prefix_name                       = local.prefix_name
-  gke_location                      = local.gcp_region
-  gke_cluster_name                  = local.gke_cluster_name
-  storage_bucket_name               = module.gcs.bucket_id
-  gke_node_service_account_name     = var.customer_gke_node_service_account_name
-  management_service_account_name   = var.customer_management_service_account_name
-  storage_service_account_name      = var.customer_storage_service_account_name
-  booter_service_account_name       = var.customer_booter_service_account_name
-  storage_workload_identity_ksas    = local.storage_workload_identity_ksas
-  enable_direct_mig_resize          = var.enable_direct_mig_resize
-  booter_instance_name              = local.booter_vm_name
-  booter_zone                       = local.gcp_zones[0]
-  enable_resource_manager_tags      = var.enable_resource_manager_tags
-  vendor_tag_key_id                 = local.vendor_tag_key_id
-  vendor_tag_value_id               = local.vendor_tag_value_id
+  gcp_project_id                  = var.gcp_project_id
+  prefix_name                     = local.prefix_name
+  gke_location                    = local.gcp_region
+  gke_cluster_name                = local.gke_cluster_name
+  storage_bucket_name             = module.gcs.bucket_id
+  gke_node_service_account_name   = var.customer_gke_node_service_account_name
+  existing_gke_node_sa_email      = local.is_existing_gke ? var.existing_gke.node_service_account_email : ""
+  management_service_account_name = var.customer_management_service_account_name
+  storage_service_account_name    = var.customer_storage_service_account_name
+  booter_service_account_name     = var.customer_booter_service_account_name
+  storage_workload_identity_ksas  = local.storage_workload_identity_ksas
+  enable_direct_mig_resize        = var.enable_direct_mig_resize
+  booter_instance_name            = local.booter_vm_name
+  booter_zone                     = local.booter_zone
+  enable_resource_manager_tags    = var.enable_resource_manager_tags
+  vendor_tag_key_id               = local.vendor_tag_key_id
+  vendor_tag_value_id             = local.vendor_tag_value_id
 
   depends_on = [google_project_service.required, terraform_data.vendor_tag_input_validation]
 }
 
 module "gke" {
+  count  = local.is_existing_gke ? 0 : 1
   source = "../../modules/gcp_byoc_i/gke"
 
   gcp_project_id           = var.gcp_project_id
   gcp_region               = local.gcp_region
-  gcp_zones                = local.gcp_zones
+  gcp_zones                = local.default_gcp_zones
   cluster_name             = local.gke_cluster_name
-  network_self_link        = module.vpc.vpc_self_link
-  primary_subnet_self_link = module.vpc.primary_subnet_self_link
-  pod_subnet_name          = module.vpc.pod_subnet_name
-  service_subnet_name      = module.vpc.service_subnet_name
+  network_self_link        = local.network_self_link
+  primary_subnet_self_link = local.primary_subnet_self_link
+  pod_subnet_name          = local.pod_subnet_name
+  service_subnet_name      = local.service_subnet_name
   gke_node_sa_email        = module.iam.gke_node_sa_email
   k8s_node_groups          = local.k8s_node_groups
   kubernetes_version       = var.kubernetes_version
@@ -75,7 +78,7 @@ module "gke" {
   labels                   = local.common_labels
   master_authorized_networks = [
     {
-      cidr_block   = module.vpc.primary_subnet_cidr
+      cidr_block   = local.primary_subnet_cidr
       display_name = "byoc-primary-subnet"
     }
   ]
@@ -87,13 +90,15 @@ module "private_link" {
   count  = local.enable_private_link ? 1 : 0
   source = "../../modules/gcp_byoc_i/private-link"
 
-  prefix_name           = local.prefix_name
-  gcp_region            = local.gcp_region
-  vpc_name              = module.vpc.vpc_name
-  subnet_name           = module.vpc.primary_subnet_name
-  service_attachment_id = local.gcp_psc_service_attachment_id
-  enable_private_dns    = var.enable_private_dns
-  private_dns_domain    = local.psc_private_dns_domain
+  prefix_name              = local.prefix_name
+  gcp_project_id           = var.gcp_project_id
+  network_project_id       = local.network_project_id
+  gcp_region               = local.gcp_region
+  vpc_name                 = local.resolved_vpc_name
+  subnet_name              = local.primary_subnet_name
+  service_attachment_id    = local.gcp_psc_service_attachment_id
+  enable_private_dns       = var.enable_private_dns
+  private_dns_domain       = local.psc_private_dns_domain
   private_dns_record_names = local.psc_private_dns_record_names
 
   depends_on = [google_project_service.required, module.vpc]
@@ -103,22 +108,22 @@ module "booter_vm" {
   count  = data.zillizcloud_byoc_i_project_settings.this.agent_bootstrap_required ? 1 : 0
   source = "../../modules/gcp_byoc_i/booter-vm"
 
-  prefix_name                  = local.prefix_name
-  instance_name                = local.booter_vm_name
-  gcp_project_id               = var.gcp_project_id
-  gcp_region                   = local.gcp_region
-  gcp_zone                     = local.gcp_zones[0]
-  subnet_self_link             = module.vpc.primary_subnet_self_link
-  booter_service_account_email = module.iam.booter_sa_email
-  booter_image                 = local.booter_image
-  machine_type                 = var.booter_machine_type
+  prefix_name                     = local.prefix_name
+  instance_name                   = local.booter_vm_name
+  gcp_project_id                  = var.gcp_project_id
+  gcp_region                      = local.gcp_region
+  gcp_zone                        = local.booter_zone
+  subnet_self_link                = local.primary_subnet_self_link
+  booter_service_account_email    = module.iam.booter_sa_email
+  booter_image                    = local.booter_image
+  machine_type                    = var.booter_machine_type
   failure_self_delete_ttl_seconds = var.booter_failure_self_delete_ttl_seconds
   print_serial_logs_on_apply      = var.booter_print_serial_logs_on_apply
-  gke_cluster_name             = module.gke.cluster_name
-  dataplane_id                 = local.data_plane_id
-  agent_config                 = local.agent_config
-  labels                       = local.common_labels
-  resource_manager_tags        = local.vendor_resource_manager_tags
+  gke_cluster_name                = local.gke_cluster_name
+  dataplane_id                    = local.data_plane_id
+  agent_config                    = local.agent_config
+  labels                          = local.common_labels
+  resource_manager_tags           = local.vendor_resource_manager_tags
 
   depends_on = [google_project_service.required, terraform_data.vendor_tag_input_validation, module.iam, module.gke, module.private_link]
 }
@@ -139,11 +144,11 @@ resource "zillizcloud_byoc_i_project" "this" {
     project_id = var.gcp_project_id
 
     network = {
-      vpc_name            = module.vpc.vpc_name
-      primary_subnet_name = module.vpc.primary_subnet_name
-      pod_subnet_name     = module.vpc.pod_subnet_name
-      service_subnet_name = module.vpc.service_subnet_name
-      lb_subnet_name      = module.vpc.lb_subnet_name
+      vpc_name            = local.resolved_vpc_name
+      primary_subnet_name = local.primary_subnet_name
+      pod_subnet_name     = local.pod_subnet_name
+      service_subnet_name = local.service_subnet_name
+      lb_subnet_name      = local.lb_subnet_name
       psc_endpoint_ip     = local.psc_endpoint_ip
     }
 
@@ -154,7 +159,7 @@ resource "zillizcloud_byoc_i_project" "this" {
     }
 
     gke = {
-      cluster_name = module.gke.cluster_name
+      cluster_name = local.gke_cluster_name
       zones        = local.gcp_zones
     }
 
@@ -172,10 +177,21 @@ resource "zillizcloud_byoc_i_project" "this" {
     module.iam,
     module.private_link,
     module.booter_vm,
+    terraform_data.existing_infrastructure_validation,
   ]
 
   lifecycle {
     ignore_changes  = [data_plane_id, project_id, gcp, ext_config]
     prevent_destroy = true
   }
+}
+
+moved {
+  from = module.vpc
+  to   = module.vpc[0]
+}
+
+moved {
+  from = module.gke
+  to   = module.gke[0]
 }

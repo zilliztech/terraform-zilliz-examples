@@ -1,6 +1,6 @@
 resource "terraform_data" "service_account_name_validation" {
   input = {
-    gke_node_sa_name   = local.gke_node_sa_name
+    gke_node_sa_name   = local.gke_node_sa_account_id
     management_sa_name = local.management_sa_name
     storage_sa_name    = local.storage_sa_name
     booter_sa_name     = local.booter_sa_name
@@ -9,7 +9,7 @@ resource "terraform_data" "service_account_name_validation" {
   lifecycle {
     precondition {
       condition = length(distinct([
-        local.gke_node_sa_name,
+        local.gke_node_sa_account_id,
         local.management_sa_name,
         local.storage_sa_name,
         local.booter_sa_name,
@@ -20,11 +20,18 @@ resource "terraform_data" "service_account_name_validation" {
 }
 
 resource "google_service_account" "gke_node" {
+  count = local.use_existing_gke_node_sa ? 0 : 1
+
   project      = var.gcp_project_id
-  account_id   = local.gke_node_sa_name
+  account_id   = local.gke_node_sa_account_id
   display_name = "Zilliz BYOC-I GKE node service account"
 
   depends_on = [terraform_data.service_account_name_validation]
+}
+
+moved {
+  from = google_service_account.gke_node
+  to   = google_service_account.gke_node[0]
 }
 
 resource "google_service_account" "management" {

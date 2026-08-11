@@ -7,7 +7,7 @@ output "data_plane_id" {
 }
 
 output "gke_cluster_name" {
-  value = module.gke.cluster_name
+  value = local.gke_cluster_name
 }
 
 output "gcs_bucket_id" {
@@ -39,27 +39,27 @@ output "booter_vm_name" {
 }
 
 output "vpc_cidr" {
-  value = var.vpc_cidr
+  value = local.is_existing_network ? null : var.vpc_cidr
 }
 
 output "primary_subnet_cidr" {
-  value = module.vpc.primary_subnet_cidr
+  value = local.primary_subnet_cidr
 }
 
 output "pod_subnet_cidr" {
-  value = module.vpc.pod_subnet_cidr
+  value = local.pod_subnet_cidr
 }
 
 output "service_subnet_cidr" {
-  value = module.vpc.service_subnet_cidr
+  value = local.service_subnet_cidr
 }
 
 output "lb_subnet_cidr" {
-  value = module.vpc.lb_subnet_cidr
+  value = local.lb_subnet_cidr
 }
 
 output "master_ipv4_cidr_block" {
-  value = var.master_ipv4_cidr_block
+  value = local.master_ipv4_cidr_block
 }
 
 output "psc_endpoint_ip" {

@@ -3,6 +3,16 @@ variable "prefix_name" {
   type        = string
 }
 
+variable "gcp_project_id" {
+  description = "GCP service project where the PSC endpoint resources are created."
+  type        = string
+}
+
+variable "network_project_id" {
+  description = "GCP project that owns the VPC network and subnetwork. For Shared VPC this is the host project."
+  type        = string
+}
+
 variable "gcp_region" {
   description = "GCP region."
   type        = string

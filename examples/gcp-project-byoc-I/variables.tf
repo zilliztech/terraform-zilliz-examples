@@ -16,6 +16,45 @@ variable "gcp_project_id" {
   nullable    = false
 }
 
+variable "existing_network" {
+  description = "Optional existing Shared VPC network configuration. The network and subnets are read-only and are not managed by this Terraform configuration."
+  type = object({
+    network_project_id           = string
+    vpc_name                     = string
+    primary_subnet_name          = string
+    pod_secondary_range_name     = string
+    service_secondary_range_name = string
+    lb_subnet_name               = string
+  })
+  default  = null
+  nullable = true
+
+  validation {
+    condition = var.existing_network == null ? true : alltrue([
+      for value in values(var.existing_network) : trimspace(value) != ""
+    ])
+    error_message = "All existing_network fields must be non-empty when existing_network is set."
+  }
+}
+
+variable "existing_gke" {
+  description = "Optional existing regional GKE cluster configuration. The cluster and its node pools are read-only and are not managed by this Terraform configuration."
+  type = object({
+    cluster_name               = string
+    node_service_account_email = string
+  })
+  default  = null
+  nullable = true
+
+  validation {
+    condition = var.existing_gke == null ? true : (
+      trimspace(var.existing_gke.cluster_name) != "" &&
+      can(regex("^[^@\\s]+@[^@\\s]+\\.iam\\.gserviceaccount\\.com$", var.existing_gke.node_service_account_email))
+    )
+    error_message = "existing_gke requires a non-empty cluster_name and a valid GCP service account email."
+  }
+}
+
 variable "image_repo_url" {
   description = "Optional image repository base URL for BYOC-I booter and cloud-agent images, without image name or tag. For example: us-docker.pkg.dev/<project>/<repository>."
   type        = string

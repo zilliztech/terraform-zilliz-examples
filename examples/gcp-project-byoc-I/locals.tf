@@ -6,14 +6,19 @@ locals {
     max(length(local.data_plane_id) - 12, 0),
     min(length(local.data_plane_id), 12),
   )
-  prefix_name = "zilliz-dp-${local.data_plane_id_last12}"
-  gcp_region  = trimprefix(data.zillizcloud_byoc_i_project_settings.this.region, "gcp-")
-  gcp_zones   = var.gcp_zones != null ? var.gcp_zones : ["${local.gcp_region}-a", "${local.gcp_region}-b", "${local.gcp_region}-c"]
+  prefix_name       = "zilliz-dp-${local.data_plane_id_last12}"
+  gcp_region        = trimprefix(data.zillizcloud_byoc_i_project_settings.this.region, "gcp-")
+  default_gcp_zones = var.gcp_zones != null ? var.gcp_zones : ["${local.gcp_region}-a", "${local.gcp_region}-b", "${local.gcp_region}-c"]
 
   enable_private_link = var.enable_private_link && data.zillizcloud_byoc_i_project_settings.this.private_link_enabled
 
+  is_existing_network = var.existing_network != null
+  is_existing_gke     = var.existing_gke != null
+
+  network_project_id = local.is_existing_network ? var.existing_network.network_project_id : var.gcp_project_id
+
   vpc_name         = var.customer_vpc_name != "" ? var.customer_vpc_name : "${local.prefix_name}-vpc"
-  gke_cluster_name = var.customer_gke_cluster_name != "" ? var.customer_gke_cluster_name : "${local.prefix_name}-gke"
+  gke_cluster_name = local.is_existing_gke ? var.existing_gke.cluster_name : (var.customer_gke_cluster_name != "" ? var.customer_gke_cluster_name : "${local.prefix_name}-gke")
   booter_vm_name   = "${local.prefix_name}-booter"
   bucket_name_raw  = var.customer_bucket_name != "" ? var.customer_bucket_name : "${local.prefix_name}-bucket"
   bucket_name      = substr(lower(replace(local.bucket_name_raw, "_", "-")), 0, min(length(local.bucket_name_raw), 63))
@@ -33,6 +38,78 @@ locals {
         disk_size = max(ng.disk_size, 100)
     })
   }
+
+  required_node_pool_names = toset([
+    for name, group in local.k8s_node_groups : name
+    if group.max_size > 0 && contains(keys(local.required_node_pool_labels), name)
+  ])
+
+  required_node_pool_labels = {
+    core = {
+      "zilliz-group-name"     = "core"
+      "node-role/etcd"        = "true"
+      "node-role/pulsar"      = "true"
+      "node-role/infra"       = "true"
+      "node-role/vdc"         = "true"
+      "node-role/milvus-tool" = "true"
+      "capacity-type"         = "ON_DEMAND"
+    }
+    search = {
+      "zilliz-group-name"    = "search"
+      "node-role/diskANN"    = "true"
+      "node-role/milvus"     = "true"
+      "node-role/nvme-quota" = "200"
+    }
+    index = {
+      "zilliz-group-name"    = "index"
+      "node-role/index-pool" = "true"
+    }
+    fundamental = {
+      "zilliz-group-name" = "fundamental"
+      "node-role/default" = "true"
+      "node-role/milvus"  = "true"
+    }
+    tiered = {
+      "zilliz-group-name" = "tiered"
+      "node-role/tiered"  = "true"
+      "node-role/milvus"  = "true"
+    }
+  }
+
+  existing_primary_secondary_ranges = local.is_existing_network ? {
+    for secondary_range in data.google_compute_subnetwork.existing_primary[0].secondary_ip_range :
+    secondary_range.range_name => secondary_range.ip_cidr_range
+  } : {}
+
+  existing_node_pools = local.is_existing_gke ? {
+    for node_pool in data.google_container_cluster.existing[0].node_pool :
+    node_pool.name => node_pool
+  } : {}
+
+  resolved_vpc_name = local.is_existing_network ? data.google_compute_network.existing[0].name : module.vpc[0].vpc_name
+  network_self_link = local.is_existing_network ? data.google_compute_network.existing[0].self_link : module.vpc[0].vpc_self_link
+
+  primary_subnet_name      = local.is_existing_network ? data.google_compute_subnetwork.existing_primary[0].name : module.vpc[0].primary_subnet_name
+  primary_subnet_self_link = local.is_existing_network ? data.google_compute_subnetwork.existing_primary[0].self_link : module.vpc[0].primary_subnet_self_link
+  primary_subnet_cidr      = local.is_existing_network ? data.google_compute_subnetwork.existing_primary[0].ip_cidr_range : module.vpc[0].primary_subnet_cidr
+
+  pod_subnet_name     = local.is_existing_network ? var.existing_network.pod_secondary_range_name : module.vpc[0].pod_subnet_name
+  pod_subnet_cidr     = local.is_existing_network ? lookup(local.existing_primary_secondary_ranges, var.existing_network.pod_secondary_range_name, null) : module.vpc[0].pod_subnet_cidr
+  service_subnet_name = local.is_existing_network ? var.existing_network.service_secondary_range_name : module.vpc[0].service_subnet_name
+  service_subnet_cidr = local.is_existing_network ? lookup(local.existing_primary_secondary_ranges, var.existing_network.service_secondary_range_name, null) : module.vpc[0].service_subnet_cidr
+
+  lb_subnet_name = local.is_existing_network ? data.google_compute_subnetwork.existing_lb[0].name : module.vpc[0].lb_subnet_name
+  lb_subnet_cidr = local.is_existing_network ? data.google_compute_subnetwork.existing_lb[0].ip_cidr_range : module.vpc[0].lb_subnet_cidr
+
+  gcp_zones = local.is_existing_gke ? sort(tolist(data.google_container_cluster.existing[0].node_locations)) : local.default_gcp_zones
+  booter_zone = try(
+    local.gcp_zones[0],
+    local.default_gcp_zones[0],
+  )
+  master_ipv4_cidr_block = local.is_existing_gke ? try(
+    data.google_container_cluster.existing[0].private_cluster_config[0].master_ipv4_cidr_block,
+    null,
+  ) : var.master_ipv4_cidr_block
 
   dataplane_suffix               = regex("[^-]+$", local.data_plane_id)
   env_domain                     = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
@@ -54,7 +131,7 @@ locals {
     "cloud-tunnel.${local.gcp_private_service_domain}.",
     "cloud-open-api.${local.gcp_private_service_domain}.",
   ]
-  agent_image_url   = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
+  agent_image_url = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
   agent_image_tag = (
     can(regex("/", local.agent_image_url)) && can(regex(":", local.agent_image_url))
     ? element(split(":", local.agent_image_url), length(split(":", local.agent_image_url)) - 1)
@@ -147,6 +224,6 @@ locals {
 
   ext_config = {
     gcp_project_id   = var.gcp_project_id
-    gke_cluster_name = module.gke.cluster_name
+    gke_cluster_name = local.gke_cluster_name
   }
 }

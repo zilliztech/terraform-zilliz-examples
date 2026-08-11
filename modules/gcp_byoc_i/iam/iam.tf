@@ -1,7 +1,7 @@
 resource "google_project_iam_member" "gke_node_default" {
   project = var.gcp_project_id
   role    = "roles/container.defaultNodeServiceAccount"
-  member  = "serviceAccount:${google_service_account.gke_node.email}"
+  member  = "serviceAccount:${local.gke_node_sa_email}"
 
   condition {
     title       = "zilliz_byoc_i_target_cluster_node_sa"
@@ -13,13 +13,13 @@ resource "google_project_iam_member" "gke_node_default" {
 resource "google_project_iam_member" "gke_node_logging" {
   project = var.gcp_project_id
   role    = "roles/logging.logWriter"
-  member  = "serviceAccount:${google_service_account.gke_node.email}"
+  member  = "serviceAccount:${local.gke_node_sa_email}"
 }
 
 resource "google_project_iam_member" "gke_node_monitoring" {
   project = var.gcp_project_id
   role    = "roles/monitoring.metricWriter"
-  member  = "serviceAccount:${google_service_account.gke_node.email}"
+  member  = "serviceAccount:${local.gke_node_sa_email}"
 }
 
 resource "google_project_iam_custom_role" "maintenance_cluster" {
@@ -157,7 +157,7 @@ resource "google_project_iam_member" "maintenance_project_reader" {
 }
 
 resource "google_service_account_iam_member" "management_can_use_node_sa" {
-  service_account_id = google_service_account.gke_node.name
+  service_account_id = local.gke_node_sa_resource_name
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.management.email}"
 }

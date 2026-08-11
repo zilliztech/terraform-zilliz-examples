@@ -1,11 +1,15 @@
 locals {
-  sa_prefix          = trimsuffix(substr(var.prefix_name, 0, 18), "-")
-  gke_node_sa_name   = var.gke_node_service_account_name != "" ? var.gke_node_service_account_name : "${local.sa_prefix}-node"
-  management_sa_name = var.management_service_account_name != "" ? var.management_service_account_name : "${local.sa_prefix}-maintenance"
-  storage_sa_name    = var.storage_service_account_name != "" ? var.storage_service_account_name : "${local.sa_prefix}-storage"
-  booter_sa_name     = var.booter_service_account_name != "" ? var.booter_service_account_name : "${local.sa_prefix}-booter"
-  role_suffix_raw    = replace(title(replace(var.prefix_name, "-", " ")), " ", "")
-  role_suffix        = substr(local.role_suffix_raw, 0, 20)
+  sa_prefix                 = trimsuffix(substr(var.prefix_name, 0, 18), "-")
+  use_existing_gke_node_sa  = var.existing_gke_node_sa_email != ""
+  gke_node_sa_account_id    = local.use_existing_gke_node_sa ? split("@", var.existing_gke_node_sa_email)[0] : (var.gke_node_service_account_name != "" ? var.gke_node_service_account_name : "${local.sa_prefix}-node")
+  gke_node_sa_project_id    = local.use_existing_gke_node_sa ? trimsuffix(split("@", var.existing_gke_node_sa_email)[1], ".iam.gserviceaccount.com") : var.gcp_project_id
+  gke_node_sa_email         = local.use_existing_gke_node_sa ? var.existing_gke_node_sa_email : google_service_account.gke_node[0].email
+  gke_node_sa_resource_name = local.use_existing_gke_node_sa ? "projects/${local.gke_node_sa_project_id}/serviceAccounts/${local.gke_node_sa_email}" : google_service_account.gke_node[0].name
+  management_sa_name        = var.management_service_account_name != "" ? var.management_service_account_name : "${local.sa_prefix}-maintenance"
+  storage_sa_name           = var.storage_service_account_name != "" ? var.storage_service_account_name : "${local.sa_prefix}-storage"
+  booter_sa_name            = var.booter_service_account_name != "" ? var.booter_service_account_name : "${local.sa_prefix}-booter"
+  role_suffix_raw           = replace(title(replace(var.prefix_name, "-", " ")), " ", "")
+  role_suffix               = substr(local.role_suffix_raw, 0, 20)
 
   storage_cluster_workload_identity_member = "principalSet://iam.googleapis.com/projects/${data.google_project.this.number}/locations/global/workloadIdentityPools/${var.gcp_project_id}.svc.id.goog/kubernetes.cluster/https://container.googleapis.com/v1/projects/${var.gcp_project_id}/locations/${var.gke_location}/clusters/${var.gke_cluster_name}"
 

@@ -1,13 +1,16 @@
 data "google_compute_network" "this" {
-  name = var.vpc_name
+  project = var.network_project_id
+  name    = var.vpc_name
 }
 
 data "google_compute_subnetwork" "this" {
-  name   = var.subnet_name
-  region = var.gcp_region
+  project = var.network_project_id
+  name    = var.subnet_name
+  region  = var.gcp_region
 }
 
 resource "google_compute_address" "psc" {
+  project      = var.gcp_project_id
   name         = "${var.prefix_name}-psc-ip"
   region       = var.gcp_region
   subnetwork   = data.google_compute_subnetwork.this.id
@@ -15,6 +18,7 @@ resource "google_compute_address" "psc" {
 }
 
 resource "google_compute_forwarding_rule" "byoc_endpoint" {
+  project                 = var.gcp_project_id
   name                    = "${var.prefix_name}-byoc-endpoint"
   region                  = var.gcp_region
   load_balancing_scheme   = ""
@@ -34,6 +38,7 @@ resource "google_compute_forwarding_rule" "byoc_endpoint" {
 resource "google_dns_managed_zone" "psc" {
   count = var.enable_private_dns && local.private_dns_domain != "" ? 1 : 0
 
+  project     = var.network_project_id
   name        = local.private_dns_zone_name
   dns_name    = local.private_dns_domain
   description = "Private DNS zone for Zilliz BYOC Private Service Connect hosts."
@@ -49,6 +54,7 @@ resource "google_dns_managed_zone" "psc" {
 resource "google_dns_record_set" "psc" {
   for_each = var.enable_private_dns && local.private_dns_domain != "" ? toset(var.private_dns_record_names) : toset([])
 
+  project      = var.network_project_id
   name         = endswith(each.value, ".") ? each.value : "${each.value}."
   managed_zone = google_dns_managed_zone.psc[0].name
   type         = "A"

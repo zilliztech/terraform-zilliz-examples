@@ -2,6 +2,22 @@ project_id     = "proj-xxxxxxxx"
 dataplane_id   = "zilliz-byoc-gcp-us-west1-xxxxxxxx"
 gcp_project_id = "customer-gcp-project"
 
+# Reuse an existing Shared VPC and an existing regional GKE cluster.
+# The VPC/subnets live in the host project; the GKE cluster lives in gcp_project_id.
+# Existing resources are read-only and are never added to this Terraform state.
+# existing_network = {
+#   network_project_id           = "customer-network-host-project"
+#   vpc_name                     = "shared-vpc"
+#   primary_subnet_name          = "shared-vpc-us-west1-primary"
+#   pod_secondary_range_name     = "shared-vpc-us-west1-pods"
+#   service_secondary_range_name = "shared-vpc-us-west1-services"
+#   lb_subnet_name               = "shared-vpc-us-west1-proxy-only"
+# }
+# existing_gke = {
+#   cluster_name               = "customer-gke"
+#   node_service_account_email = "gke-node@customer-gcp-project.iam.gserviceaccount.com"
+# }
+
 # Optional overrides.
 # vpc_cidr = "10.0.0.0/16"
 # Use a unique /28 when peering multiple BYOC-I VPCs.

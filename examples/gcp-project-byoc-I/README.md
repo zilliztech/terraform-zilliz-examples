@@ -4,9 +4,9 @@ This example provisions a GCP BYOC-I dataplane with customer-managed infrastruct
 
 ## What It Creates
 
-- VPC-native GKE networking, Cloud NAT, and firewall rules
+- VPC-native GKE networking, Cloud NAT, and firewall rules, unless an existing Shared VPC is configured
 - GCS bucket for dataplane storage
-- GKE private regional cluster and node pools from BYOC-I quota settings
+- GKE private regional cluster and node pools from BYOC-I quota settings, unless an existing GKE cluster is configured
 - GCP service accounts for GKE nodes, maintenance, storage, and the booter VM
 - Optional Private Service Connect endpoint
 - Short-lived GCE booter VM that uses a dedicated booter service account to install `cloud-agent` into GKE, then self-deletes after a TTL
@@ -34,6 +34,46 @@ terraform apply
 The booter VM receives the BYOC-I agent token through Terraform-managed VM metadata. This is intentional for v1 and means the token is visible in Terraform state and VM metadata.
 
 The GCP region is read from `zillizcloud_byoc_i_project_settings`. Set `gcp_project_id` in `terraform.tfvars`.
+
+### Existing Shared VPC and GKE
+
+Use `existing_network` and `existing_gke` to attach BYOC-I to a customer-owned Shared VPC and regional GKE cluster without importing or managing those resources:
+
+```hcl
+gcp_project_id = "customer-service-project"
+
+existing_network = {
+  network_project_id           = "customer-network-host-project"
+  vpc_name                     = "shared-vpc"
+  primary_subnet_name          = "shared-vpc-us-west1-primary"
+  pod_secondary_range_name     = "shared-vpc-us-west1-pods"
+  service_secondary_range_name = "shared-vpc-us-west1-services"
+  lb_subnet_name               = "shared-vpc-us-west1-proxy-only"
+}
+
+existing_gke = {
+  cluster_name               = "customer-gke"
+  node_service_account_email = "gke-node@customer-service-project.iam.gserviceaccount.com"
+}
+```
+
+The Shared VPC network and subnets live in `existing_network.network_project_id`. The existing GKE cluster, GCS bucket, booter VM, and BYOC-I service accounts live in `gcp_project_id`. Terraform reads the existing VPC, subnets, cluster, and node pools but does not add the VPC or GKE resources to state. It reuses the configured node service account and manages the IAM grants required by BYOC-I.
+
+The existing infrastructure must satisfy these requirements:
+
+- The GKE cluster is regional, is in the BYOC-I settings region, and uses the configured Shared VPC primary subnet.
+- The cluster is VPC-native, uses private nodes and a private endpoint, and has Workload Identity enabled as `<gcp_project_id>.svc.id.goog`.
+- The primary subnet contains the configured pod and service secondary ranges.
+- `lb_subnet_name` is an active `REGIONAL_MANAGED_PROXY` proxy-only subnet in the same region and VPC.
+- Required node pools already exist with the logical names returned by the BYOC-I quota, normally `core`, `fundamental`, `search`, `index`, and optionally `tiered`.
+- Required node pools use `existing_gke.node_service_account_email` and the labels defined by the [GKE module](../../modules/gcp_byoc_i/gke/locals.tf).
+- Private nodes have working egress for required Google APIs and container registries.
+
+Before apply, grant the Terraform runner sufficient read access to the host project. When Private Service Connect is enabled, the service project must be allowed to use the Shared VPC subnet. When `enable_private_dns = true`, Terraform creates the PSC private DNS zone in the Shared VPC host project, so the runner also needs permission to manage Cloud DNS there.
+
+`existing_gke` requires `existing_network`. Existing zonal GKE clusters are not supported. The existing VPC, subnets, GKE cluster, and node pools are not destroyed by `terraform destroy`; only resources created by this example are managed by Terraform.
+
+Do not enable `existing_network` or `existing_gke` for VPC/GKE resources already managed by the same Terraform state. Changing an existing deployment from managed resources to data sources requires a separate state-migration procedure; otherwise Terraform plans to destroy the formerly managed resources.
 
 Default resource names use the prefix `zilliz-dp-<last-12-chars-of-data_plane_id>`. For example, the default VPC, GKE cluster, booter VM, and bucket names are derived from that prefix. If you already deployed this example with older random-suffix names, set the `customer_*` name variables to the existing resource names before applying this version.
 

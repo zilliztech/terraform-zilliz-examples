@@ -1,4 +1,6 @@
 resource "google_container_cluster" "this" {
+  count = local.create_cluster ? 1 : 0
+
   project                  = var.gcp_project_id
   name                     = var.cluster_name
   location                 = var.gcp_region
@@ -106,7 +108,7 @@ resource "google_container_node_pool" "this" {
   project            = var.gcp_project_id
   name               = each.key
   location           = var.gcp_region
-  cluster            = google_container_cluster.this.name
+  cluster            = local.cluster.name
   node_locations     = var.gcp_zones
   initial_node_count = max(each.value.desired_size, each.value.min_size)
   max_pods_per_node  = each.key == "core" ? 110 : 32
@@ -181,4 +183,6 @@ resource "google_container_node_pool" "this" {
   lifecycle {
     ignore_changes = [initial_node_count]
   }
+
+  depends_on = [terraform_data.existing_cluster_validation]
 }

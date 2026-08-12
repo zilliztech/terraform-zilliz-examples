@@ -6,7 +6,7 @@ This example provisions a GCP BYOC-I dataplane with customer-managed infrastruct
 
 - VPC-native GKE networking, Cloud NAT, and firewall rules
 - GCS bucket for dataplane storage
-- GKE private regional cluster and node pools from BYOC-I quota settings
+- GKE private regional cluster and node pools from BYOC-I quota settings, or dedicated BYOC-I node pools in an existing compatible cluster
 - GCP service accounts for GKE nodes, maintenance, storage, and the booter VM
 - Optional Private Service Connect endpoint
 - Short-lived GCE booter VM that uses a dedicated booter service account to install `cloud-agent` into GKE, then self-deletes after a TTL
@@ -52,6 +52,21 @@ Network ownership and resource lifecycle are controlled independently:
 | `manage_shared_vpc_iam` | `true`, `false` | Manage the GKE service-agent grants in the Shared VPC host project |
 
 Terraform never manages the lifecycle of a VPC or subnet selected with an `existing` mode. Destroy only removes resources that this configuration created.
+
+## GKE Cluster Modes
+
+`gke_mode = "create"` is the default and creates both the private regional cluster and its BYOC-I node pools.
+
+To reuse a customer-managed cluster while creating dedicated BYOC-I node pools:
+
+```hcl
+gke_mode                 = "existing"
+customer_gke_cluster_name = "customer-gke"
+```
+
+The existing cluster must be regional in the BYOC-I region, VPC-native, use the selected VPC, primary subnet, Pod range, and Service range, have private nodes enabled, and use the workload identity pool `<gcp_project_id>.svc.id.goog`. If GKE Secrets encryption validation is enabled, `gke_secrets_kms_key_name` must identify the key already configured on the cluster.
+
+In `existing` mode Terraform does not modify or own the cluster. `terraform destroy` preserves it and removes only the BYOC-I node pools and other resources created by this configuration. Reusing existing node pools is not supported.
 
 ### Create a Dedicated VPC and Subnets
 

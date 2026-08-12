@@ -68,6 +68,7 @@ module "iam" {
 module "gke" {
   source = "../../modules/gcp_byoc_i/gke"
 
+  gke_mode                 = var.gke_mode
   gcp_project_id           = var.gcp_project_id
   gcp_region               = local.gcp_region
   gcp_zones                = local.gcp_zones
@@ -91,7 +92,7 @@ module "gke" {
     }
   ]
 
-  depends_on = [google_project_service.required, module.iam, module.shared_vpc_iam]
+  depends_on = [google_project_service.required, terraform_data.gke_input_validation, module.iam, module.shared_vpc_iam]
 }
 
 module "shared_vpc_iam" {

@@ -47,6 +47,9 @@ gcp_project_id = "customer-gcp-project"
 # booter_print_serial_logs_on_apply = true
 # Default resource names use zilliz-dp-<last-12-chars-of-dataplane_id>. Set these to keep existing names.
 # customer_vpc_name = "zilliz-byoc-vpc"
+# Set to existing to reuse a customer-managed GKE cluster while Terraform creates dedicated BYOC-I node pools.
+# gke_mode = "create"
+# Required when gke_mode = "existing".
 # customer_gke_cluster_name = "zilliz-byoc-gke"
 # customer_bucket_name = "zilliz-byoc-gcp-bucket"
 # bucket_force_destroy = true

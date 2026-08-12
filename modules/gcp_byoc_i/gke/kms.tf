@@ -1,10 +1,10 @@
 locals {
-  create_secrets_kms_key         = var.enable_secrets_encryption && var.secrets_kms_key_name == ""
-  grant_secrets_kms_key_iam      = var.enable_secrets_encryption && (local.create_secrets_kms_key || var.grant_secrets_kms_key_iam)
+  create_secrets_kms_key         = local.create_cluster && var.enable_secrets_encryption && var.secrets_kms_key_name == ""
+  grant_secrets_kms_key_iam      = local.create_cluster && var.enable_secrets_encryption && (local.create_secrets_kms_key || var.grant_secrets_kms_key_iam)
   secrets_kms_name_prefix        = trimsuffix(substr(replace(lower(var.cluster_name), "_", "-"), 0, 50), "-")
   secrets_kms_key_ring_name      = "${local.secrets_kms_name_prefix}-secrets-kr"
   secrets_kms_crypto_key_name    = "${local.secrets_kms_name_prefix}-secrets-key"
-  effective_secrets_kms_key_name = var.enable_secrets_encryption ? (var.secrets_kms_key_name != "" ? var.secrets_kms_key_name : google_kms_crypto_key.secrets[0].id) : ""
+  effective_secrets_kms_key_name = var.enable_secrets_encryption ? (var.secrets_kms_key_name != "" ? var.secrets_kms_key_name : try(google_kms_crypto_key.secrets[0].id, "")) : ""
   provided_secrets_kms_location  = try(split("/", var.secrets_kms_key_name)[3], "")
 }
 

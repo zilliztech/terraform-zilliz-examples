@@ -1,17 +1,17 @@
 output "cluster_name" {
-  value = google_container_cluster.this.name
+  value = local.cluster.name
 }
 
 output "cluster_id" {
-  value = google_container_cluster.this.id
+  value = local.cluster.id
 }
 
 output "cluster_location" {
-  value = google_container_cluster.this.location
+  value = local.cluster.location
 }
 
 output "private_endpoint" {
-  value = google_container_cluster.this.private_cluster_config[0].private_endpoint
+  value = try(local.cluster.private_cluster_config[0].private_endpoint, null)
 }
 
 output "node_pool_names" {

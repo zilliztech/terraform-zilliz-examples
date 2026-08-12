@@ -18,6 +18,17 @@ variable "cluster_name" {
   type        = string
 }
 
+variable "gke_mode" {
+  description = "GKE cluster lifecycle mode. create provisions the cluster and node pools; existing reads an existing cluster and only provisions BYOC-I node pools."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.gke_mode)
+    error_message = "gke_mode must be create or existing."
+  }
+}
+
 variable "network_self_link" {
   description = "VPC network self link."
   type        = string

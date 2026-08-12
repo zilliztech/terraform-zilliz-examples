@@ -104,9 +104,20 @@ variable "manage_shared_vpc_iam" {
 }
 
 variable "customer_gke_cluster_name" {
-  description = "Optional customer GKE cluster name."
+  description = "Optional GKE cluster name override. Required when gke_mode is existing."
   type        = string
   default     = ""
+}
+
+variable "gke_mode" {
+  description = "GKE cluster lifecycle mode. create provisions the cluster and node pools; existing reads an existing cluster and only provisions BYOC-I node pools."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.gke_mode)
+    error_message = "gke_mode must be create or existing."
+  }
 }
 
 variable "customer_bucket_name" {

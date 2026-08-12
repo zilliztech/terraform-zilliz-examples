@@ -80,6 +80,9 @@ module "gke" {
   k8s_node_groups          = local.k8s_node_groups
   kubernetes_version       = var.kubernetes_version
   master_ipv4_cidr_block   = var.master_ipv4_cidr_block
+  enable_secrets_encryption = var.enable_gke_secrets_encryption
+  secrets_kms_key_name      = var.gke_secrets_kms_key_name
+  grant_secrets_kms_key_iam = var.grant_gke_secrets_kms_key_iam
   labels                   = local.common_labels
   master_authorized_networks = [
     {

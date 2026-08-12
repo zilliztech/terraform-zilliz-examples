@@ -316,6 +316,29 @@ variable "grant_gcs_kms_key_iam" {
   default     = true
 }
 
+variable "enable_gke_secrets_encryption" {
+  description = "Enable GKE application-layer encryption for Kubernetes Secrets stored in etcd."
+  type        = bool
+  default     = false
+}
+
+variable "gke_secrets_kms_key_name" {
+  description = "Existing Cloud KMS key for GKE application-layer Secrets encryption. Leave empty to let Terraform create a key in the GKE region."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.gke_secrets_kms_key_name == "" || can(regex("^projects/[^/]+/locations/[^/]+/keyRings/[^/]+/cryptoKeys/[^/]+$", var.gke_secrets_kms_key_name))
+    error_message = "gke_secrets_kms_key_name must be empty or a full Cloud KMS crypto key resource name."
+  }
+}
+
+variable "grant_gke_secrets_kms_key_iam" {
+  description = "Whether Terraform grants the GKE service agent roles/cloudkms.cryptoKeyEncrypterDecrypter on an existing gke_secrets_kms_key_name. Terraform-created keys are always granted."
+  type        = bool
+  default     = true
+}
+
 variable "labels" {
   description = "Labels applied to supported GCP resources."
   type        = map(string)

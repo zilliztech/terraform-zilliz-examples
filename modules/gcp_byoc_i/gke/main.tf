@@ -84,6 +84,20 @@ resource "google_container_cluster" "this" {
   workload_identity_config {
     workload_pool = "${var.gcp_project_id}.svc.id.goog"
   }
+
+  dynamic "database_encryption" {
+    for_each = var.enable_secrets_encryption ? [1] : []
+
+    content {
+      state    = "ENCRYPTED"
+      key_name = local.effective_secrets_kms_key_name
+    }
+  }
+
+  depends_on = [
+    google_kms_crypto_key_iam_member.gke_secrets,
+    terraform_data.secrets_encryption_validation,
+  ]
 }
 
 resource "google_container_node_pool" "this" {

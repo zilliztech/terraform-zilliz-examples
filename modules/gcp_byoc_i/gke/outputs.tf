@@ -17,3 +17,7 @@ output "private_endpoint" {
 output "node_pool_names" {
   value = keys(google_container_node_pool.this)
 }
+
+output "secrets_kms_key_name" {
+  value = local.effective_secrets_kms_key_name
+}

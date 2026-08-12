@@ -189,6 +189,42 @@ grant_gcs_kms_key_iam = false
 
 The KMS key location must be compatible with the bucket location. Changing the bucket default KMS key affects new objects written after the change; existing objects are not automatically re-encrypted.
 
+### GKE Application-layer Secrets Encryption
+
+Kubernetes Secrets stored in GKE etcd use Google-managed encryption by default. To add application-layer envelope encryption with a customer-managed Cloud KMS key, enable:
+
+```hcl
+enable_gke_secrets_encryption = true
+```
+
+When `gke_secrets_kms_key_name` is empty, Terraform creates a key ring and crypto key in the GKE region. The generated key names are derived from the GKE cluster name.
+
+To use an existing key instead, provide its full resource name:
+
+```hcl
+gke_secrets_kms_key_name = "projects/<gcp-project-id>/locations/<region>/keyRings/<key-ring>/cryptoKeys/<key>"
+```
+
+The key location must match the GKE region. Terraform grants the Service Project GKE Service Agent:
+
+```text
+service-<SERVICE_PROJECT_NUMBER>@container-engine-robot.iam.gserviceaccount.com
+```
+
+the following role on the exact crypto key:
+
+```text
+roles/cloudkms.cryptoKeyEncrypterDecrypter
+```
+
+If an existing key is managed outside this Terraform configuration and the permission is already present, set:
+
+```hcl
+grant_gke_secrets_kms_key_iam = false
+```
+
+This setting encrypts Kubernetes Secrets stored in GKE etcd. It does not configure node disk CMEK or GCS bucket encryption. Enabling or changing the key on an existing cluster updates the GKE cluster; review the Terraform plan before applying.
+
 The booter image is not required in `terraform.tfvars`. Production defaults to `gcr.io/zilliz-byoc-prod/gcp-byoc-i-booter:latest`; UAT defaults to `gcr.io/zilliz-byoc-uat/gcp-byoc-i-booter:latest`. To use a customer-owned image repository for both the booter and cloud-agent images, set `image_repo_url` to the repository base URL without image name or tag:
 
 ```hcl

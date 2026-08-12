@@ -18,6 +18,10 @@ output "gcs_kms_key_name" {
   value = module.gcs.kms_key_name
 }
 
+output "gke_secrets_kms_key_name" {
+  value = module.gke.secrets_kms_key_name
+}
+
 output "management_sa" {
   value = module.iam.management_sa_email
 }

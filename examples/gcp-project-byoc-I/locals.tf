@@ -12,6 +12,9 @@ locals {
 
   enable_private_link = var.enable_private_link && data.zillizcloud_byoc_i_project_settings.this.private_link_enabled
 
+  network_project_id = var.network_project_id != "" ? var.network_project_id : var.gcp_project_id
+  is_shared_vpc      = local.network_project_id != var.gcp_project_id
+
   vpc_name         = var.customer_vpc_name != "" ? var.customer_vpc_name : "${local.prefix_name}-vpc"
   gke_cluster_name = var.customer_gke_cluster_name != "" ? var.customer_gke_cluster_name : "${local.prefix_name}-gke"
   booter_vm_name   = "${local.prefix_name}-booter"
@@ -146,7 +149,12 @@ locals {
   }
 
   ext_config = {
-    gcp_project_id   = var.gcp_project_id
-    gke_cluster_name = module.gke.cluster_name
+    gcp_project_id     = var.gcp_project_id
+    network_project_id = local.network_project_id
+    is_shared_vpc      = local.is_shared_vpc
+    vpc_mode           = var.vpc_mode
+    subnet_mode        = var.subnet_mode
+    lb_subnet_mode     = var.lb_subnet_mode
+    gke_cluster_name   = module.gke.cluster_name
   }
 }

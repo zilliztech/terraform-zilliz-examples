@@ -37,6 +37,124 @@ The GCP region is read from `zillizcloud_byoc_i_project_settings`. Set `gcp_proj
 
 Default resource names use the prefix `zilliz-dp-<last-12-chars-of-data_plane_id>`. For example, the default VPC, GKE cluster, booter VM, and bucket names are derived from that prefix. If you already deployed this example with older random-suffix names, set the `customer_*` name variables to the existing resource names before applying this version.
 
+## Network Modes
+
+Network ownership and resource lifecycle are controlled independently:
+
+| Variable | Values | Purpose |
+|---|---|---|
+| `network_project_id` | empty or a project ID | Empty uses `gcp_project_id`; a different project selects a Shared VPC host project |
+| `vpc_mode` | `create`, `existing` | Create a dedicated VPC or read an existing VPC |
+| `subnet_mode` | `create`, `existing` | Create the primary GKE subnet and secondary ranges, or read an existing subnet |
+| `lb_subnet_mode` | `create`, `existing` | Create or read the regional managed proxy subnet |
+| `create_cloud_nat` | `true`, `false` | Create dedicated Router/NAT resources, or use existing egress |
+| `create_firewall_rules` | `true`, `false` | Create BYOC-I firewall rules, or let the customer manage them |
+| `manage_shared_vpc_iam` | `true`, `false` | Manage the GKE service-agent grants in the Shared VPC host project |
+
+Terraform never manages the lifecycle of a VPC or subnet selected with an `existing` mode. Destroy only removes resources that this configuration created.
+
+### Create a Dedicated VPC and Subnets
+
+This is the default and is backward compatible:
+
+```hcl
+vpc_mode       = "create"
+subnet_mode    = "create"
+lb_subnet_mode = "create"
+vpc_cidr       = "10.0.0.0/16"
+```
+
+### Existing VPC with New Dedicated Subnets
+
+```hcl
+vpc_mode          = "existing"
+customer_vpc_name = "customer-vpc"
+subnet_mode       = "create"
+lb_subnet_mode    = "create"
+
+primary_subnet = {
+  name = "zilliz-primary"
+  cidr = "10.20.0.0/20"
+}
+pod_subnet = {
+  name = "zilliz-pods"
+  cidr = "10.24.0.0/14"
+}
+service_subnet = {
+  name = "zilliz-services"
+  cidr = "10.28.0.0/20"
+}
+lb_subnet = {
+  name = "zilliz-lb-proxy"
+  cidr = "10.29.0.0/23"
+}
+```
+
+### Existing VPC and Existing Subnets
+
+The existing primary subnet must be in the BYOC-I region and contain the named Pod and Service secondary ranges. The existing LB subnet must have purpose `REGIONAL_MANAGED_PROXY`.
+
+```hcl
+vpc_mode          = "existing"
+customer_vpc_name = "customer-vpc"
+subnet_mode       = "existing"
+lb_subnet_mode    = "existing"
+
+primary_subnet = {
+  name = "customer-gke-subnet"
+}
+pod_subnet = {
+  name = "customer-pods"
+}
+service_subnet = {
+  name = "customer-services"
+}
+lb_subnet = {
+  name = "customer-lb-proxy"
+}
+
+# Disable these when the customer network already supplies egress and firewall policy.
+create_cloud_nat      = false
+create_firewall_rules = false
+```
+
+### Shared VPC
+
+Set `network_project_id` to the Shared VPC host project. The VPC must already exist and the service project must already be attached to the host project. Both new-subnet and existing-subnet modes are supported.
+
+Shared VPC with a new dedicated subnet:
+
+```hcl
+gcp_project_id     = "customer-service-project"
+network_project_id = "customer-host-project"
+
+vpc_mode          = "existing"
+customer_vpc_name = "shared-vpc"
+subnet_mode        = "create"
+lb_subnet_mode     = "create"
+
+primary_subnet = {
+  name = "zilliz-primary"
+  cidr = "10.20.0.0/20"
+}
+pod_subnet = {
+  name = "zilliz-pods"
+  cidr = "10.24.0.0/14"
+}
+service_subnet = {
+  name = "zilliz-services"
+  cidr = "10.28.0.0/20"
+}
+lb_subnet = {
+  name = "zilliz-lb-proxy"
+  cidr = "10.29.0.0/23"
+}
+```
+
+For existing Shared VPC subnets, change both subnet modes to `existing` and provide the existing subnet and secondary-range names as shown in the previous example.
+
+With `manage_shared_vpc_iam = true`, Terraform grants the service project's GKE service agent `roles/container.hostServiceAgentUser` in the host project and grants the GKE and Cloud Services service agents `roles/compute.networkUser` on the primary subnet. Set it to `false` when those grants are centrally managed. The Terraform runner needs permission to read the host VPC and to manage any host-project subnet, NAT, firewall, DNS, or IAM resources enabled by the selected modes.
+
 If multiple GCP BYOC-I VPCs need VPC Peering, configure non-overlapping `vpc_cidr` values and unique GKE private control plane ranges with `master_ipv4_cidr_block`. The default control plane range is `172.16.0.0/28`; a second peered environment can use a different `/28`, such as `172.16.0.16/28`.
 
 The example outputs `primary_subnet_cidr`, `pod_subnet_cidr`, `service_subnet_cidr`, `lb_subnet_cidr`, and `master_ipv4_cidr_block` to make VPC Peering overlap checks and firewall source range setup explicit.

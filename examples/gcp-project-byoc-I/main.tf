@@ -16,6 +16,14 @@ module "vpc" {
   lb_subnet      = var.lb_subnet
   labels         = local.common_labels
 
+  gcp_project_id       = var.gcp_project_id
+  network_project_id   = local.network_project_id
+  vpc_mode             = var.vpc_mode
+  subnet_mode          = var.subnet_mode
+  lb_subnet_mode       = var.lb_subnet_mode
+  create_cloud_nat      = var.create_cloud_nat
+  create_firewall_rules = var.create_firewall_rules
+
   depends_on = [google_project_service.required]
 }
 
@@ -80,7 +88,19 @@ module "gke" {
     }
   ]
 
-  depends_on = [google_project_service.required, module.iam]
+  depends_on = [google_project_service.required, module.iam, module.shared_vpc_iam]
+}
+
+module "shared_vpc_iam" {
+  count  = local.is_shared_vpc && var.manage_shared_vpc_iam ? 1 : 0
+  source = "../../modules/gcp_byoc_i/shared-vpc-iam"
+
+  service_project_id  = var.gcp_project_id
+  host_project_id     = local.network_project_id
+  gcp_region          = local.gcp_region
+  primary_subnet_name = module.vpc.primary_subnet_name
+
+  depends_on = [google_project_service.required, module.vpc]
 }
 
 module "private_link" {
@@ -89,12 +109,15 @@ module "private_link" {
 
   prefix_name           = local.prefix_name
   gcp_region            = local.gcp_region
-  vpc_name              = module.vpc.vpc_name
-  subnet_name           = module.vpc.primary_subnet_name
   service_attachment_id = local.gcp_psc_service_attachment_id
   enable_private_dns    = var.enable_private_dns
   private_dns_domain    = local.psc_private_dns_domain
   private_dns_record_names = local.psc_private_dns_record_names
+
+  gcp_project_id     = var.gcp_project_id
+  network_project_id = local.network_project_id
+  vpc_self_link      = module.vpc.vpc_self_link
+  subnet_self_link   = module.vpc.primary_subnet_self_link
 
   depends_on = [google_project_service.required, module.vpc]
 }

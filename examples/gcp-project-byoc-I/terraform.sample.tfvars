@@ -3,6 +3,27 @@ dataplane_id   = "zilliz-byoc-gcp-us-west1-xxxxxxxx"
 gcp_project_id = "customer-gcp-project"
 
 # Optional overrides.
+# Network mode defaults create a dedicated VPC and subnets in gcp_project_id.
+# vpc_mode = "create"
+# subnet_mode = "create"
+# lb_subnet_mode = "create"
+# For an existing VPC, set vpc_mode = "existing" and provide customer_vpc_name.
+# customer_vpc_name = "customer-vpc"
+# For Shared VPC, also set the host project. The service project must already be attached to it.
+# network_project_id = "customer-shared-vpc-host-project"
+# For an existing primary subnet, provide its name and the existing Pod/Service secondary range names:
+# subnet_mode = "existing"
+# primary_subnet = { name = "customer-gke-subnet" }
+# pod_subnet = { name = "customer-pods" }
+# service_subnet = { name = "customer-services" }
+# For an existing regional managed proxy subnet:
+# lb_subnet_mode = "existing"
+# lb_subnet = { name = "customer-lb-proxy" }
+# Disable creation when existing networking already provides these capabilities.
+# create_cloud_nat = false
+# create_firewall_rules = false
+# Set false when Shared VPC IAM grants are centrally managed.
+# manage_shared_vpc_iam = true
 # vpc_cidr = "10.0.0.0/16"
 # Use a unique /28 when peering multiple BYOC-I VPCs.
 # master_ipv4_cidr_block = "172.16.0.0/28"

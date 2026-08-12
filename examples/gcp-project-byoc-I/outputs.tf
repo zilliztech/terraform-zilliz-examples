@@ -42,6 +42,30 @@ output "vpc_cidr" {
   value = var.vpc_cidr
 }
 
+output "network_project_id" {
+  value = local.network_project_id
+}
+
+output "is_shared_vpc" {
+  value = local.is_shared_vpc
+}
+
+output "vpc_name" {
+  value = module.vpc.vpc_name
+}
+
+output "primary_subnet_name" {
+  value = module.vpc.primary_subnet_name
+}
+
+output "lb_subnet_name" {
+  value = module.vpc.lb_subnet_name
+}
+
+output "nat_ip" {
+  value = module.vpc.nat_ip
+}
+
 output "primary_subnet_cidr" {
   value = module.vpc.primary_subnet_cidr
 }

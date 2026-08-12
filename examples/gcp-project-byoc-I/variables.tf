@@ -40,10 +40,67 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-variable "customer_vpc_name" {
-  description = "Optional customer VPC name."
+variable "network_project_id" {
+  description = "Project that owns the VPC. Defaults to gcp_project_id. Set to a Shared VPC host project ID for Shared VPC mode."
   type        = string
   default     = ""
+}
+
+variable "vpc_mode" {
+  description = "VPC lifecycle mode: create or existing. Shared VPC requires existing."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.vpc_mode)
+    error_message = "vpc_mode must be create or existing."
+  }
+}
+
+variable "subnet_mode" {
+  description = "Primary GKE subnet lifecycle mode: create or existing."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.subnet_mode)
+    error_message = "subnet_mode must be create or existing."
+  }
+}
+
+variable "lb_subnet_mode" {
+  description = "Regional managed proxy subnet lifecycle mode: create or existing."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.lb_subnet_mode)
+    error_message = "lb_subnet_mode must be create or existing."
+  }
+}
+
+variable "customer_vpc_name" {
+  description = "VPC name override. Required when vpc_mode is existing."
+  type        = string
+  default     = ""
+}
+
+variable "create_cloud_nat" {
+  description = "Create a dedicated Cloud Router, external IP, and Cloud NAT for the BYOC-I primary subnet. Disable if existing networking already provides egress."
+  type        = bool
+  default     = true
+}
+
+variable "create_firewall_rules" {
+  description = "Create the BYOC-I health-check and internal firewall rules in the network project."
+  type        = bool
+  default     = true
+}
+
+variable "manage_shared_vpc_iam" {
+  description = "Manage the Shared VPC hostServiceAgentUser and subnet networkUser grants required by GKE. Only used when network_project_id differs from gcp_project_id."
+  type        = bool
+  default     = true
 }
 
 variable "customer_gke_cluster_name" {

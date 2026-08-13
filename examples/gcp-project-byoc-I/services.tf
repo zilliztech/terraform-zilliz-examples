@@ -7,7 +7,7 @@ locals {
     "dns.googleapis.com",
     "iam.googleapis.com",
     "storage.googleapis.com",
-  ], var.enable_gcs_kms ? ["cloudkms.googleapis.com"] : []))
+  ], var.enable_gcs_kms || var.enable_gke_secrets_encryption ? ["cloudkms.googleapis.com"] : []))
 }
 
 resource "google_project_service" "required" {

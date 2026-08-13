@@ -3,6 +3,27 @@ dataplane_id   = "zilliz-byoc-gcp-us-west1-xxxxxxxx"
 gcp_project_id = "customer-gcp-project"
 
 # Optional overrides.
+# Network mode defaults create a dedicated VPC and subnets in gcp_project_id.
+# vpc_mode = "create"
+# subnet_mode = "create"
+# lb_subnet_mode = "create"
+# For an existing VPC, set vpc_mode = "existing" and provide customer_vpc_name.
+# customer_vpc_name = "customer-vpc"
+# For Shared VPC, also set the host project. The service project must already be attached to it.
+# network_project_id = "customer-shared-vpc-host-project"
+# For an existing primary subnet, provide its name and the existing Pod/Service secondary range names:
+# subnet_mode = "existing"
+# primary_subnet = { name = "customer-gke-subnet" }
+# pod_subnet = { name = "customer-pods" }
+# service_subnet = { name = "customer-services" }
+# For an existing regional managed proxy subnet:
+# lb_subnet_mode = "existing"
+# lb_subnet = { name = "customer-lb-proxy" }
+# Disable creation when existing networking already provides these capabilities.
+# create_cloud_nat = false
+# create_firewall_rules = false
+# Set false when Shared VPC IAM grants are centrally managed.
+# manage_shared_vpc_iam = true
 # vpc_cidr = "10.0.0.0/16"
 # Use a unique /28 when peering multiple BYOC-I VPCs.
 # master_ipv4_cidr_block = "172.16.0.0/28"
@@ -26,6 +47,9 @@ gcp_project_id = "customer-gcp-project"
 # booter_print_serial_logs_on_apply = true
 # Default resource names use zilliz-dp-<last-12-chars-of-dataplane_id>. Set these to keep existing names.
 # customer_vpc_name = "zilliz-byoc-vpc"
+# Set to existing to reuse a customer-managed GKE cluster while Terraform creates dedicated BYOC-I node pools.
+# gke_mode = "create"
+# Required when gke_mode = "existing".
 # customer_gke_cluster_name = "zilliz-byoc-gke"
 # customer_bucket_name = "zilliz-byoc-gcp-bucket"
 # bucket_force_destroy = true
@@ -35,6 +59,12 @@ gcp_project_id = "customer-gcp-project"
 # gcs_kms_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/example-key-ring/cryptoKeys/example-key"
 # For existing keys only, set to false if the Cloud Storage service agent has already been granted KMS encrypter/decrypter permission.
 # grant_gcs_kms_key_iam = true
+# Enable GKE application-layer encryption for Kubernetes Secrets stored in etcd.
+# enable_gke_secrets_encryption = true
+# Optional existing regional KMS key. Leave empty to let Terraform create one in the GKE region.
+# gke_secrets_kms_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/gke-secrets/cryptoKeys/gke-secrets"
+# Set false if the GKE service agent already has KMS encrypter/decrypter permission on the existing key.
+# grant_gke_secrets_kms_key_iam = true
 # enable_resource_manager_tags = true
 # Leave tag IDs empty to let Terraform create a per-dataplane tag.
 # vendor_tag_key_id = "tagKeys/1234567890"

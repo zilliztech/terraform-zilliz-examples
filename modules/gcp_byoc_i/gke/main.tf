@@ -1,4 +1,6 @@
 resource "google_container_cluster" "this" {
+  count = local.create_cluster ? 1 : 0
+
   project                  = var.gcp_project_id
   name                     = var.cluster_name
   location                 = var.gcp_region
@@ -84,6 +86,20 @@ resource "google_container_cluster" "this" {
   workload_identity_config {
     workload_pool = "${var.gcp_project_id}.svc.id.goog"
   }
+
+  dynamic "database_encryption" {
+    for_each = var.enable_secrets_encryption ? [1] : []
+
+    content {
+      state    = "ENCRYPTED"
+      key_name = local.effective_secrets_kms_key_name
+    }
+  }
+
+  depends_on = [
+    google_kms_crypto_key_iam_member.gke_secrets,
+    terraform_data.secrets_encryption_validation,
+  ]
 }
 
 resource "google_container_node_pool" "this" {
@@ -92,7 +108,7 @@ resource "google_container_node_pool" "this" {
   project            = var.gcp_project_id
   name               = each.key
   location           = var.gcp_region
-  cluster            = google_container_cluster.this.name
+  cluster            = local.cluster.name
   node_locations     = var.gcp_zones
   initial_node_count = max(each.value.desired_size, each.value.min_size)
   max_pods_per_node  = each.key == "core" ? 110 : 32
@@ -167,4 +183,6 @@ resource "google_container_node_pool" "this" {
   lifecycle {
     ignore_changes = [initial_node_count]
   }
+
+  depends_on = [terraform_data.existing_cluster_validation]
 }

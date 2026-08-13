@@ -18,6 +18,17 @@ variable "cluster_name" {
   type        = string
 }
 
+variable "gke_mode" {
+  description = "GKE cluster lifecycle mode. create provisions the cluster and node pools; existing reads an existing cluster and only provisions BYOC-I node pools."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.gke_mode)
+    error_message = "gke_mode must be create or existing."
+  }
+}
+
 variable "network_self_link" {
   description = "VPC network self link."
   type        = string
@@ -85,6 +96,29 @@ variable "deletion_protection" {
   description = "Whether to enable GKE deletion protection."
   type        = bool
   default     = false
+}
+
+variable "enable_secrets_encryption" {
+  description = "Enable GKE application-layer encryption for Kubernetes Secrets stored in etcd."
+  type        = bool
+  default     = false
+}
+
+variable "secrets_kms_key_name" {
+  description = "Existing Cloud KMS key used for GKE application-layer Secrets encryption. Leave empty to let Terraform create a regional key when enable_secrets_encryption is true."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.secrets_kms_key_name == "" || can(regex("^projects/[^/]+/locations/[^/]+/keyRings/[^/]+/cryptoKeys/[^/]+$", var.secrets_kms_key_name))
+    error_message = "secrets_kms_key_name must be empty or a full Cloud KMS crypto key resource name."
+  }
+}
+
+variable "grant_secrets_kms_key_iam" {
+  description = "Whether Terraform grants the GKE service agent roles/cloudkms.cryptoKeyEncrypterDecrypter on an existing secrets_kms_key_name. Terraform-created keys are always granted."
+  type        = bool
+  default     = true
 }
 
 variable "labels" {

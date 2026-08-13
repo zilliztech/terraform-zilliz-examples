@@ -8,13 +8,23 @@ variable "gcp_region" {
   type        = string
 }
 
-variable "vpc_name" {
-  description = "VPC network name."
+variable "gcp_project_id" {
+  description = "Service project where the PSC endpoint resources are created."
   type        = string
 }
 
-variable "subnet_name" {
-  description = "Subnet name where the PSC endpoint IP is allocated."
+variable "network_project_id" {
+  description = "Project that owns the VPC. Private DNS is created in this project so it can bind to the VPC in both regular and Shared VPC modes."
+  type        = string
+}
+
+variable "vpc_self_link" {
+  description = "Full VPC self link."
+  type        = string
+}
+
+variable "subnet_self_link" {
+  description = "Full primary subnet self link."
   type        = string
 }
 

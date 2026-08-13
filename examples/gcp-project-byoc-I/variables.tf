@@ -40,16 +40,84 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-variable "customer_vpc_name" {
-  description = "Optional customer VPC name."
+variable "network_project_id" {
+  description = "Project that owns the VPC. Defaults to gcp_project_id. Set to a Shared VPC host project ID for Shared VPC mode."
   type        = string
   default     = ""
 }
 
-variable "customer_gke_cluster_name" {
-  description = "Optional customer GKE cluster name."
+variable "vpc_mode" {
+  description = "VPC lifecycle mode: create or existing. Shared VPC requires existing."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.vpc_mode)
+    error_message = "vpc_mode must be create or existing."
+  }
+}
+
+variable "subnet_mode" {
+  description = "Primary GKE subnet lifecycle mode: create or existing."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.subnet_mode)
+    error_message = "subnet_mode must be create or existing."
+  }
+}
+
+variable "lb_subnet_mode" {
+  description = "Regional managed proxy subnet lifecycle mode: create or existing."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.lb_subnet_mode)
+    error_message = "lb_subnet_mode must be create or existing."
+  }
+}
+
+variable "customer_vpc_name" {
+  description = "VPC name override. Required when vpc_mode is existing."
   type        = string
   default     = ""
+}
+
+variable "create_cloud_nat" {
+  description = "Create a dedicated Cloud Router, external IP, and Cloud NAT for the BYOC-I primary subnet. Disable if existing networking already provides egress."
+  type        = bool
+  default     = true
+}
+
+variable "create_firewall_rules" {
+  description = "Create the BYOC-I health-check and internal firewall rules in the network project."
+  type        = bool
+  default     = true
+}
+
+variable "manage_shared_vpc_iam" {
+  description = "Manage the Shared VPC hostServiceAgentUser and subnet networkUser grants required by GKE. Only used when network_project_id differs from gcp_project_id."
+  type        = bool
+  default     = true
+}
+
+variable "customer_gke_cluster_name" {
+  description = "Optional GKE cluster name override. Required when gke_mode is existing."
+  type        = string
+  default     = ""
+}
+
+variable "gke_mode" {
+  description = "GKE cluster lifecycle mode. create provisions the cluster and node pools; existing reads an existing cluster and only provisions BYOC-I node pools."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.gke_mode)
+    error_message = "gke_mode must be create or existing."
+  }
 }
 
 variable "customer_bucket_name" {
@@ -255,6 +323,29 @@ variable "gcs_kms_key_name" {
 
 variable "grant_gcs_kms_key_iam" {
   description = "Whether Terraform should grant the Cloud Storage service agent roles/cloudkms.cryptoKeyEncrypterDecrypter on an existing gcs_kms_key_name. Terraform-created keys are always granted."
+  type        = bool
+  default     = true
+}
+
+variable "enable_gke_secrets_encryption" {
+  description = "Enable GKE application-layer encryption for Kubernetes Secrets stored in etcd."
+  type        = bool
+  default     = false
+}
+
+variable "gke_secrets_kms_key_name" {
+  description = "Existing Cloud KMS key for GKE application-layer Secrets encryption. Leave empty to let Terraform create a key in the GKE region."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.gke_secrets_kms_key_name == "" || can(regex("^projects/[^/]+/locations/[^/]+/keyRings/[^/]+/cryptoKeys/[^/]+$", var.gke_secrets_kms_key_name))
+    error_message = "gke_secrets_kms_key_name must be empty or a full Cloud KMS crypto key resource name."
+  }
+}
+
+variable "grant_gke_secrets_kms_key_iam" {
+  description = "Whether Terraform grants the GKE service agent roles/cloudkms.cryptoKeyEncrypterDecrypter on an existing gke_secrets_kms_key_name. Terraform-created keys are always granted."
   type        = bool
   default     = true
 }

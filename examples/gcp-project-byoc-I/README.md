@@ -6,7 +6,7 @@ This example provisions a GCP BYOC-I dataplane with customer-managed infrastruct
 
 - VPC-native GKE networking, Cloud NAT, and firewall rules
 - GCS bucket for dataplane storage
-- GKE private regional cluster and node pools from BYOC-I quota settings
+- GKE private regional cluster and node pools from BYOC-I quota settings, or dedicated BYOC-I node pools in an existing compatible cluster
 - GCP service accounts for GKE nodes, maintenance, storage, and the booter VM
 - Optional Private Service Connect endpoint
 - Short-lived GCE booter VM that uses a dedicated booter service account to install `cloud-agent` into GKE, then self-deletes after a TTL
@@ -36,6 +36,139 @@ The booter VM receives the BYOC-I agent token through Terraform-managed VM metad
 The GCP region is read from `zillizcloud_byoc_i_project_settings`. Set `gcp_project_id` in `terraform.tfvars`.
 
 Default resource names use the prefix `zilliz-dp-<last-12-chars-of-data_plane_id>`. For example, the default VPC, GKE cluster, booter VM, and bucket names are derived from that prefix. If you already deployed this example with older random-suffix names, set the `customer_*` name variables to the existing resource names before applying this version.
+
+## Network Modes
+
+Network ownership and resource lifecycle are controlled independently:
+
+| Variable | Values | Purpose |
+|---|---|---|
+| `network_project_id` | empty or a project ID | Empty uses `gcp_project_id`; a different project selects a Shared VPC host project |
+| `vpc_mode` | `create`, `existing` | Create a dedicated VPC or read an existing VPC |
+| `subnet_mode` | `create`, `existing` | Create the primary GKE subnet and secondary ranges, or read an existing subnet |
+| `lb_subnet_mode` | `create`, `existing` | Create or read the regional managed proxy subnet |
+| `create_cloud_nat` | `true`, `false` | Create dedicated Router/NAT resources, or use existing egress |
+| `create_firewall_rules` | `true`, `false` | Create BYOC-I firewall rules, or let the customer manage them |
+| `manage_shared_vpc_iam` | `true`, `false` | Manage the GKE service-agent grants in the Shared VPC host project |
+
+Terraform never manages the lifecycle of a VPC or subnet selected with an `existing` mode. Destroy only removes resources that this configuration created.
+
+## GKE Cluster Modes
+
+`gke_mode = "create"` is the default and creates both the private regional cluster and its BYOC-I node pools.
+
+To reuse a customer-managed cluster while creating dedicated BYOC-I node pools:
+
+```hcl
+gke_mode                 = "existing"
+customer_gke_cluster_name = "customer-gke"
+```
+
+The existing cluster must be regional in the BYOC-I region, VPC-native, use the selected VPC, primary subnet, Pod range, and Service range, have private nodes enabled, and use the workload identity pool `<gcp_project_id>.svc.id.goog`. If GKE Secrets encryption validation is enabled, `gke_secrets_kms_key_name` must identify the key already configured on the cluster.
+
+In `existing` mode Terraform does not modify or own the cluster. `terraform destroy` preserves it and removes only the BYOC-I node pools and other resources created by this configuration. Reusing existing node pools is not supported.
+
+### Create a Dedicated VPC and Subnets
+
+This is the default and is backward compatible:
+
+```hcl
+vpc_mode       = "create"
+subnet_mode    = "create"
+lb_subnet_mode = "create"
+vpc_cidr       = "10.0.0.0/16"
+```
+
+### Existing VPC with New Dedicated Subnets
+
+```hcl
+vpc_mode          = "existing"
+customer_vpc_name = "customer-vpc"
+subnet_mode       = "create"
+lb_subnet_mode    = "create"
+
+primary_subnet = {
+  name = "zilliz-primary"
+  cidr = "10.20.0.0/20"
+}
+pod_subnet = {
+  name = "zilliz-pods"
+  cidr = "10.24.0.0/14"
+}
+service_subnet = {
+  name = "zilliz-services"
+  cidr = "10.28.0.0/20"
+}
+lb_subnet = {
+  name = "zilliz-lb-proxy"
+  cidr = "10.29.0.0/23"
+}
+```
+
+### Existing VPC and Existing Subnets
+
+The existing primary subnet must be in the BYOC-I region and contain the named Pod and Service secondary ranges. The existing LB subnet must have purpose `REGIONAL_MANAGED_PROXY`.
+
+```hcl
+vpc_mode          = "existing"
+customer_vpc_name = "customer-vpc"
+subnet_mode       = "existing"
+lb_subnet_mode    = "existing"
+
+primary_subnet = {
+  name = "customer-gke-subnet"
+}
+pod_subnet = {
+  name = "customer-pods"
+}
+service_subnet = {
+  name = "customer-services"
+}
+lb_subnet = {
+  name = "customer-lb-proxy"
+}
+
+# Disable these when the customer network already supplies egress and firewall policy.
+create_cloud_nat      = false
+create_firewall_rules = false
+```
+
+### Shared VPC
+
+Set `network_project_id` to the Shared VPC host project. The VPC must already exist and the service project must already be attached to the host project. Both new-subnet and existing-subnet modes are supported.
+
+Shared VPC with a new dedicated subnet:
+
+```hcl
+gcp_project_id     = "customer-service-project"
+network_project_id = "customer-host-project"
+
+vpc_mode          = "existing"
+customer_vpc_name = "shared-vpc"
+subnet_mode        = "create"
+lb_subnet_mode     = "create"
+
+primary_subnet = {
+  name = "zilliz-primary"
+  cidr = "10.20.0.0/20"
+}
+pod_subnet = {
+  name = "zilliz-pods"
+  cidr = "10.24.0.0/14"
+}
+service_subnet = {
+  name = "zilliz-services"
+  cidr = "10.28.0.0/20"
+}
+lb_subnet = {
+  name = "zilliz-lb-proxy"
+  cidr = "10.29.0.0/23"
+}
+```
+
+For existing Shared VPC subnets, change both subnet modes to `existing` and provide the existing subnet and secondary-range names as shown in the previous example.
+
+With `manage_shared_vpc_iam = true`, Terraform grants the service project's GKE service agent `roles/container.hostServiceAgentUser` in the host project and grants the GKE and Cloud Services service agents `roles/compute.networkUser` on the primary subnet. Set it to `false` when those grants are centrally managed. The Terraform runner needs permission to read the host VPC and to manage any host-project subnet, NAT, firewall, DNS, or IAM resources enabled by the selected modes.
 
 If multiple GCP BYOC-I VPCs need VPC Peering, configure non-overlapping `vpc_cidr` values and unique GKE private control plane ranges with `master_ipv4_cidr_block`. The default control plane range is `172.16.0.0/28`; a second peered environment can use a different `/28`, such as `172.16.0.16/28`.
 
@@ -70,6 +203,42 @@ grant_gcs_kms_key_iam = false
 ```
 
 The KMS key location must be compatible with the bucket location. Changing the bucket default KMS key affects new objects written after the change; existing objects are not automatically re-encrypted.
+
+### GKE Application-layer Secrets Encryption
+
+Kubernetes Secrets stored in GKE etcd use Google-managed encryption by default. To add application-layer envelope encryption with a customer-managed Cloud KMS key, enable:
+
+```hcl
+enable_gke_secrets_encryption = true
+```
+
+When `gke_secrets_kms_key_name` is empty, Terraform creates a key ring and crypto key in the GKE region. The generated key names are derived from the GKE cluster name.
+
+To use an existing key instead, provide its full resource name:
+
+```hcl
+gke_secrets_kms_key_name = "projects/<gcp-project-id>/locations/<region>/keyRings/<key-ring>/cryptoKeys/<key>"
+```
+
+The key location must match the GKE region. Terraform grants the Service Project GKE Service Agent:
+
+```text
+service-<SERVICE_PROJECT_NUMBER>@container-engine-robot.iam.gserviceaccount.com
+```
+
+the following role on the exact crypto key:
+
+```text
+roles/cloudkms.cryptoKeyEncrypterDecrypter
+```
+
+If an existing key is managed outside this Terraform configuration and the permission is already present, set:
+
+```hcl
+grant_gke_secrets_kms_key_iam = false
+```
+
+This setting encrypts Kubernetes Secrets stored in GKE etcd. It does not configure node disk CMEK or GCS bucket encryption. Enabling or changing the key on an existing cluster updates the GKE cluster; review the Terraform plan before applying.
 
 The booter image is not required in `terraform.tfvars`. Production defaults to `gcr.io/zilliz-byoc-prod/gcp-byoc-i-booter:latest`; UAT defaults to `gcr.io/zilliz-byoc-uat/gcp-byoc-i-booter:latest`. To use a customer-owned image repository for both the booter and cloud-agent images, set `image_repo_url` to the repository base URL without image name or tag:
 

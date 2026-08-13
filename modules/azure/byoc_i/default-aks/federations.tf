@@ -39,6 +39,19 @@ resource "azurerm_federated_identity_credential" "aks_storage_loki_federation" {
   ]
 }
 
+resource "azurerm_federated_identity_credential" "aks_storage_kite_index_pool_federation" {
+  name                = "kite-index-pool-aks-federation"
+  resource_group_name = var.resource_group_name
+  parent_id           = var.storage_identity_id
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = azurerm_kubernetes_cluster.main.oidc_issuer_url
+  subject             = "system:serviceaccount:vectorlake-kite-pool:kite-index-pool-sa"
+
+  depends_on = [
+    azurerm_kubernetes_cluster.main
+  ]
+}
+
 # AKS Federation credentials for workload identity
 # This allows Kubernetes service accounts to authenticate using the maintenance identity
 resource "azurerm_federated_identity_credential" "aks_maintenance_federation" {
@@ -55,4 +68,3 @@ resource "azurerm_federated_identity_credential" "aks_maintenance_federation" {
     azurerm_user_assigned_identity.maintenance
   ]
 }
-

@@ -57,7 +57,7 @@ locals {
     "cloud-tunnel.${local.gcp_private_service_domain}.",
     "cloud-open-api.${local.gcp_private_service_domain}.",
   ]
-  agent_image_url   = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
+  agent_image_url = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
   agent_image_tag = (
     can(regex("/", local.agent_image_url)) && can(regex(":", local.agent_image_url))
     ? element(split(":", local.agent_image_url), length(split(":", local.agent_image_url)) - 1)
@@ -118,6 +118,10 @@ locals {
     {
       namespace = "index-pool"
       name      = "milvus-bucket"
+    },
+    {
+      namespace = "vectorlake-kite-pool"
+      name      = "kite-index-pool-sa"
     },
     {
       namespace = "milvus-tool"

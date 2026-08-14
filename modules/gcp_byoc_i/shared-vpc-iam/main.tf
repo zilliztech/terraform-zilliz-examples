@@ -5,10 +5,10 @@ data "google_project" "service" {
 locals {
   gke_service_agent    = "service-${data.google_project.service.number}@container-engine-robot.iam.gserviceaccount.com"
   cloud_services_agent = "${data.google_project.service.number}@cloudservices.gserviceaccount.com"
-  network_users = toset([
-    local.gke_service_agent,
-    local.cloud_services_agent,
-  ])
+  network_users = {
+    gke_service_agent    = local.gke_service_agent
+    cloud_services_agent = local.cloud_services_agent
+  }
 }
 
 resource "google_project_iam_member" "gke_host_service_agent" {

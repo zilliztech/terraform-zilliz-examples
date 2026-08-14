@@ -6,6 +6,11 @@ locals {
   eks_control_plane_subnet_ids = coalescelist(var.eks_control_plane_subnet_ids, var.subnet_ids)
   config                       = yamldecode(file("${path.module}/../../conf.yaml"))
   k8s_node_groups              = var.k8s_node_groups
+  node_group_root_device_names = {
+    for name, node_group in var.k8s_node_groups : name => (
+      node_group.ami_id != null ? data.aws_ami.node_group[name].root_device_name : "/dev/xvda"
+    )
+  }
   # Dataplane ID for resource naming
   dataplane_id            = var.dataplane_id
   node_security_group_ids = var.node_security_group_ids

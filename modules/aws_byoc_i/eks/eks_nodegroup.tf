@@ -53,7 +53,7 @@ resource "aws_launch_template" "core" {
   }
 
   block_device_mappings {
-    device_name = "/dev/xvda"
+    device_name = local.node_group_root_device_names.core
     ebs {
       delete_on_termination = "true"
       encrypted             = var.enable_ebs_kms ? "true" : "false"
@@ -115,16 +115,14 @@ resource "aws_launch_template" "init" {
     http_tokens                 = "required"
   }
 
-  dynamic "block_device_mappings" {
-    for_each = var.enable_ebs_kms ? [1] : []
-    content {
-      device_name = "/dev/xvda"
-      ebs {
-        encrypted   = "true"
-        kms_key_id  = var.ebs_kms_key_arn
-        volume_size = var.ebs_volume_size
-        volume_type = var.ebs_volume_type
-      }
+  block_device_mappings {
+    device_name = local.node_group_root_device_names.core
+    ebs {
+      delete_on_termination = "true"
+      encrypted             = var.enable_ebs_kms ? "true" : "false"
+      kms_key_id            = var.enable_ebs_kms ? var.ebs_kms_key_arn : null
+      volume_size           = var.ebs_volume_size
+      volume_type           = var.ebs_volume_type
     }
   }
 
@@ -194,7 +192,7 @@ USERDATA
   }
 
   block_device_mappings {
-    device_name = "/dev/xvda"
+    device_name = local.node_group_root_device_names.fundamental
     ebs {
       delete_on_termination = "true"
       encrypted             = var.enable_ebs_kms ? "true" : "false"
@@ -283,7 +281,7 @@ USERDATA
   }
 
   block_device_mappings {
-    device_name = "/dev/xvda"
+    device_name = local.node_group_root_device_names.search
 
     ebs {
       delete_on_termination = "true"

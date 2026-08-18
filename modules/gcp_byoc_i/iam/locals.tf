@@ -7,6 +7,30 @@ locals {
   role_suffix_raw    = replace(title(replace(var.prefix_name, "-", " ")), " ", "")
   role_suffix        = substr(local.role_suffix_raw, 0, 20)
 
+  # Keep fixed Kite identities explicit for auditable plans and old dataplane
+  # backfills. The cluster-scoped grant below remains necessary for runtime
+  # instance namespaces whose Kubernetes service accounts are not known here.
+  required_storage_workload_identity_ksas = [
+    {
+      namespace = "vectorlake-kite"
+      name      = "kite-coordinator"
+    },
+    {
+      namespace = "vectorlake-kite-pool"
+      name      = "kite-index-pool-sa"
+    },
+  ]
+  storage_workload_identity_ksas = merge(
+    {
+      for ksa in var.storage_workload_identity_ksas :
+      "${ksa.namespace}/${ksa.name}" => ksa
+    },
+    {
+      for ksa in local.required_storage_workload_identity_ksas :
+      "${ksa.namespace}/${ksa.name}" => ksa
+    },
+  )
+
   storage_cluster_workload_identity_member = "principalSet://iam.googleapis.com/projects/${data.google_project.this.number}/locations/global/workloadIdentityPools/${var.gcp_project_id}.svc.id.goog/kubernetes.cluster/https://container.googleapis.com/v1/projects/${var.gcp_project_id}/locations/${var.gke_location}/clusters/${var.gke_cluster_name}"
 
   # GKE truncates the cluster-name portion of managed instance group names based on node pool name length.

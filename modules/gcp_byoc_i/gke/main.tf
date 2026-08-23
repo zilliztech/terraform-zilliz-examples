@@ -153,7 +153,7 @@ resource "google_container_node_pool" "this" {
     disk_type       = "pd-balanced"
     image_type      = var.node_image_type
     labels          = local.node_group_labels[each.key]
-    machine_type    = var.node_machine_type != "" ? var.node_machine_type : each.value.instance_types
+    machine_type    = each.value.instance_types
     preemptible     = false
     service_account = var.gke_node_sa_email
     spot            = upper(each.value.capacity_type) == "SPOT"

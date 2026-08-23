@@ -310,12 +310,6 @@ variable "gke_workload_pool" {
   default     = ""
 }
 
-variable "gke_node_machine_type" {
-  description = "Optional machine type override applied to every BYOC-I node pool."
-  type        = string
-  default     = ""
-}
-
 variable "gke_node_initial_count" {
   description = "Optional initial node count override applied to every BYOC-I node pool."
   type        = number

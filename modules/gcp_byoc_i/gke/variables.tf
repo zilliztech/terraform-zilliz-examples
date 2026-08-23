@@ -107,12 +107,6 @@ variable "workload_pool" {
   default     = ""
 }
 
-variable "node_machine_type" {
-  description = "Optional machine type override applied to every BYOC-I node pool. Leave empty to use the Zilliz Cloud node-group quota."
-  type        = string
-  default     = ""
-}
-
 variable "node_initial_count" {
   description = "Optional initial node count override applied to every BYOC-I node pool. Leave null to use the node-group desired/minimum size."
   type        = number

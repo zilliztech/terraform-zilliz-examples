@@ -86,7 +86,6 @@ module "gke" {
   enable_private_nodes                 = var.gke_enable_private_nodes
   enable_ip_alias                      = var.gke_enable_ip_alias
   workload_pool                        = var.gke_workload_pool
-  node_machine_type                    = var.gke_node_machine_type
   node_initial_count                   = var.gke_node_initial_count
   node_disk_size_gb                    = var.gke_node_disk_size_gb
   node_image_type                      = var.gke_node_image_type

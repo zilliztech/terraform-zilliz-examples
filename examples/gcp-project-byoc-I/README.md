@@ -96,18 +96,17 @@ gke_node_auto_repair                     = true
 gke_node_auto_upgrade                    = true
 ```
 
-These settings apply when Terraform creates the cluster or its dedicated BYOC-I node pools. By default, node machine types, counts, and disk sizes come from the BYOC-I node-group quotas returned by Zilliz Cloud, and quota-derived node disks have a minimum size of 100 GiB.
+These settings apply when Terraform creates the cluster or its dedicated BYOC-I node pools. Node machine types come from the BYOC-I node-group quotas returned by Zilliz Cloud. By default, counts and disk sizes also come from those quotas, and quota-derived node disks have a minimum size of 100 GiB.
 
 To override the node settings for every BYOC-I node pool, set:
 
 ```hcl
-gke_node_machine_type = "e2-standard-2"
 gke_node_initial_count = 1
 gke_node_disk_size_gb  = 30
 gke_node_image_type    = "COS_CONTAINERD"
 ```
 
-When these overrides are unset, machine type and initial size come from the Zilliz Cloud node-group quotas, the quota disk size is subject to a 100 GiB minimum, and the image type defaults to `COS_CONTAINERD`.
+Machine type always comes from each Zilliz Cloud node-group quota. When the remaining overrides are unset, initial size also comes from the node-group quota, the quota disk size is subject to a 100 GiB minimum, and the image type defaults to `COS_CONTAINERD`.
 
 `gke_workload_pool` can be passed explicitly, but GKE requires it to be `<gcp_project_id>.svc.id.goog`. When empty, Terraform derives that value automatically. `gcp_region` can also be passed explicitly but must match the region configured for the Zilliz Cloud dataplane.
 

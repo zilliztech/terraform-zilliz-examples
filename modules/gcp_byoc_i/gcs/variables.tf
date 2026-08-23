@@ -3,6 +3,17 @@ variable "bucket_name" {
   type        = string
 }
 
+variable "bucket_mode" {
+  description = "GCS bucket lifecycle mode. create provisions and manages the bucket; existing only reads an existing bucket."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.bucket_mode)
+    error_message = "bucket_mode must be create or existing."
+  }
+}
+
 variable "gcp_region" {
   description = "GCP region."
   type        = string

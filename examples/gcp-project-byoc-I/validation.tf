@@ -11,3 +11,17 @@ resource "terraform_data" "gke_input_validation" {
     }
   }
 }
+
+resource "terraform_data" "bucket_input_validation" {
+  lifecycle {
+    precondition {
+      condition     = var.bucket_mode != "existing" || var.customer_bucket_name != ""
+      error_message = "customer_bucket_name is required when bucket_mode = existing."
+    }
+
+    precondition {
+      condition     = var.bucket_mode != "existing" || !var.enable_gcs_kms
+      error_message = "enable_gcs_kms must be false when bucket_mode = existing because Terraform does not modify an existing bucket."
+    }
+  }
+}

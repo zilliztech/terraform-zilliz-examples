@@ -68,6 +68,21 @@ The existing cluster must be regional in the BYOC-I region, VPC-native, use the 
 
 In `existing` mode Terraform does not modify or own the cluster. `terraform destroy` preserves it and removes only the BYOC-I node pools and other resources created by this configuration. Reusing existing node pools is not supported.
 
+## GCS Bucket Modes
+
+`bucket_mode = "create"` is the default and creates a dedicated GCS bucket managed by this Terraform configuration.
+
+To reuse a customer-managed bucket without modifying or owning its lifecycle:
+
+```hcl
+bucket_mode          = "existing"
+customer_bucket_name = "customer-existing-bucket"
+```
+
+The bucket must already exist and be accessible to the Terraform runner. In `existing` mode, Terraform reads the bucket and still configures the BYOC-I storage IAM permissions against it, but does not change bucket settings, labels, encryption, or lifecycle. `enable_gcs_kms` must remain `false`; configure encryption on the existing bucket outside this example.
+
+Do not switch a bucket already managed in this state directly from `create` to `existing`, because Terraform would plan to destroy the managed resource. Remove it from state first with `terraform state rm module.gcs.google_storage_bucket.this[0]`, then change the mode.
+
 ### Create a Dedicated VPC and Subnets
 
 This is the default and is backward compatible:
@@ -265,7 +280,7 @@ Before destroying this example, edit `main.tf` and temporarily change the `zilli
 If you want to keep the GCS bucket and only destroy the other dataplane resources, first remove the bucket resource from this Terraform state:
 
 ```bash
-terraform state rm module.gcs.google_storage_bucket.this
+terraform state rm 'module.gcs.google_storage_bucket.this[0]'
 ```
 
 Then run destroy:
@@ -287,7 +302,7 @@ If you want `terraform destroy` to delete the GCS bucket and all objects in it, 
 ```bash
 ZILLIZCLOUD_API_KEY=<YourZillizApiKey> \
 terraform apply \
-  -target=module.gcs.google_storage_bucket.this \
+  -target='module.gcs.google_storage_bucket.this[0]' \
   -var="dataplane_id=<YourZillizDataPlaneId>" \
   -var="project_id=<YourZillizProjectId>" \
   -var="gcp_project_id=<YourGcpProjectId>" \

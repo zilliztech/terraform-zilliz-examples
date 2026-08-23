@@ -121,9 +121,20 @@ variable "gke_mode" {
 }
 
 variable "customer_bucket_name" {
-  description = "Optional customer GCS bucket name."
+  description = "Optional customer GCS bucket name. Required when bucket_mode is existing."
   type        = string
   default     = ""
+}
+
+variable "bucket_mode" {
+  description = "GCS bucket lifecycle mode. create provisions and manages the bucket; existing only reads an existing bucket."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.bucket_mode)
+    error_message = "bucket_mode must be create or existing."
+  }
 }
 
 variable "customer_gke_node_service_account_name" {

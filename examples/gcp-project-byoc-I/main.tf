@@ -16,11 +16,11 @@ module "vpc" {
   lb_subnet      = var.lb_subnet
   labels         = local.common_labels
 
-  gcp_project_id       = var.gcp_project_id
-  network_project_id   = local.network_project_id
-  vpc_mode             = var.vpc_mode
-  subnet_mode          = var.subnet_mode
-  lb_subnet_mode       = var.lb_subnet_mode
+  gcp_project_id        = var.gcp_project_id
+  network_project_id    = local.network_project_id
+  vpc_mode              = var.vpc_mode
+  subnet_mode           = var.subnet_mode
+  lb_subnet_mode        = var.lb_subnet_mode
   create_cloud_nat      = var.create_cloud_nat
   create_firewall_rules = var.create_firewall_rules
 
@@ -30,6 +30,7 @@ module "vpc" {
 module "gcs" {
   source = "../../modules/gcp_byoc_i/gcs"
 
+  bucket_mode           = var.bucket_mode
   bucket_name           = local.bucket_name
   gcp_project_id        = var.gcp_project_id
   gcp_region            = local.gcp_region
@@ -39,28 +40,28 @@ module "gcs" {
   gcs_kms_key_name      = var.gcs_kms_key_name
   grant_gcs_kms_key_iam = var.grant_gcs_kms_key_iam
 
-  depends_on = [google_project_service.required]
+  depends_on = [google_project_service.required, terraform_data.bucket_input_validation]
 }
 
 module "iam" {
   source = "../../modules/gcp_byoc_i/iam"
 
-  gcp_project_id                    = var.gcp_project_id
-  prefix_name                       = local.prefix_name
-  gke_location                      = local.gcp_region
-  gke_cluster_name                  = local.gke_cluster_name
-  storage_bucket_name               = module.gcs.bucket_id
-  gke_node_service_account_name     = var.customer_gke_node_service_account_name
-  management_service_account_name   = var.customer_management_service_account_name
-  storage_service_account_name      = var.customer_storage_service_account_name
-  booter_service_account_name       = var.customer_booter_service_account_name
-  storage_workload_identity_ksas    = local.storage_workload_identity_ksas
-  enable_direct_mig_resize          = var.enable_direct_mig_resize
-  booter_instance_name              = local.booter_vm_name
-  booter_zone                       = local.gcp_zones[0]
-  enable_resource_manager_tags      = var.enable_resource_manager_tags
-  vendor_tag_key_id                 = local.vendor_tag_key_id
-  vendor_tag_value_id               = local.vendor_tag_value_id
+  gcp_project_id                  = var.gcp_project_id
+  prefix_name                     = local.prefix_name
+  gke_location                    = local.gcp_region
+  gke_cluster_name                = local.gke_cluster_name
+  storage_bucket_name             = module.gcs.bucket_id
+  gke_node_service_account_name   = var.customer_gke_node_service_account_name
+  management_service_account_name = var.customer_management_service_account_name
+  storage_service_account_name    = var.customer_storage_service_account_name
+  booter_service_account_name     = var.customer_booter_service_account_name
+  storage_workload_identity_ksas  = local.storage_workload_identity_ksas
+  enable_direct_mig_resize        = var.enable_direct_mig_resize
+  booter_instance_name            = local.booter_vm_name
+  booter_zone                     = local.gcp_zones[0]
+  enable_resource_manager_tags    = var.enable_resource_manager_tags
+  vendor_tag_key_id               = local.vendor_tag_key_id
+  vendor_tag_value_id             = local.vendor_tag_value_id
 
   depends_on = [google_project_service.required, terraform_data.vendor_tag_input_validation]
 }
@@ -68,23 +69,23 @@ module "iam" {
 module "gke" {
   source = "../../modules/gcp_byoc_i/gke"
 
-  gke_mode                 = var.gke_mode
-  gcp_project_id           = var.gcp_project_id
-  gcp_region               = local.gcp_region
-  gcp_zones                = local.gcp_zones
-  cluster_name             = local.gke_cluster_name
-  network_self_link        = module.vpc.vpc_self_link
-  primary_subnet_self_link = module.vpc.primary_subnet_self_link
-  pod_subnet_name          = module.vpc.pod_subnet_name
-  service_subnet_name      = module.vpc.service_subnet_name
-  gke_node_sa_email        = module.iam.gke_node_sa_email
-  k8s_node_groups          = local.k8s_node_groups
-  kubernetes_version       = var.kubernetes_version
-  master_ipv4_cidr_block   = var.master_ipv4_cidr_block
+  gke_mode                  = var.gke_mode
+  gcp_project_id            = var.gcp_project_id
+  gcp_region                = local.gcp_region
+  gcp_zones                 = local.gcp_zones
+  cluster_name              = local.gke_cluster_name
+  network_self_link         = module.vpc.vpc_self_link
+  primary_subnet_self_link  = module.vpc.primary_subnet_self_link
+  pod_subnet_name           = module.vpc.pod_subnet_name
+  service_subnet_name       = module.vpc.service_subnet_name
+  gke_node_sa_email         = module.iam.gke_node_sa_email
+  k8s_node_groups           = local.k8s_node_groups
+  kubernetes_version        = var.kubernetes_version
+  master_ipv4_cidr_block    = var.master_ipv4_cidr_block
   enable_secrets_encryption = var.enable_gke_secrets_encryption
   secrets_kms_key_name      = var.gke_secrets_kms_key_name
   grant_secrets_kms_key_iam = var.grant_gke_secrets_kms_key_iam
-  labels                   = local.common_labels
+  labels                    = local.common_labels
   master_authorized_networks = [
     {
       cidr_block   = module.vpc.primary_subnet_cidr
@@ -111,11 +112,11 @@ module "private_link" {
   count  = local.enable_private_link ? 1 : 0
   source = "../../modules/gcp_byoc_i/private-link"
 
-  prefix_name           = local.prefix_name
-  gcp_region            = local.gcp_region
-  service_attachment_id = local.gcp_psc_service_attachment_id
-  enable_private_dns    = var.enable_private_dns
-  private_dns_domain    = local.psc_private_dns_domain
+  prefix_name              = local.prefix_name
+  gcp_region               = local.gcp_region
+  service_attachment_id    = local.gcp_psc_service_attachment_id
+  enable_private_dns       = var.enable_private_dns
+  private_dns_domain       = local.psc_private_dns_domain
   private_dns_record_names = local.psc_private_dns_record_names
 
   gcp_project_id     = var.gcp_project_id
@@ -130,22 +131,22 @@ module "booter_vm" {
   count  = data.zillizcloud_byoc_i_project_settings.this.agent_bootstrap_required ? 1 : 0
   source = "../../modules/gcp_byoc_i/booter-vm"
 
-  prefix_name                  = local.prefix_name
-  instance_name                = local.booter_vm_name
-  gcp_project_id               = var.gcp_project_id
-  gcp_region                   = local.gcp_region
-  gcp_zone                     = local.gcp_zones[0]
-  subnet_self_link             = module.vpc.primary_subnet_self_link
-  booter_service_account_email = module.iam.booter_sa_email
-  booter_image                 = local.booter_image
-  machine_type                 = var.booter_machine_type
+  prefix_name                     = local.prefix_name
+  instance_name                   = local.booter_vm_name
+  gcp_project_id                  = var.gcp_project_id
+  gcp_region                      = local.gcp_region
+  gcp_zone                        = local.gcp_zones[0]
+  subnet_self_link                = module.vpc.primary_subnet_self_link
+  booter_service_account_email    = module.iam.booter_sa_email
+  booter_image                    = local.booter_image
+  machine_type                    = var.booter_machine_type
   failure_self_delete_ttl_seconds = var.booter_failure_self_delete_ttl_seconds
   print_serial_logs_on_apply      = var.booter_print_serial_logs_on_apply
-  gke_cluster_name             = module.gke.cluster_name
-  dataplane_id                 = local.data_plane_id
-  agent_config                 = local.agent_config
-  labels                       = local.common_labels
-  resource_manager_tags        = local.vendor_resource_manager_tags
+  gke_cluster_name                = module.gke.cluster_name
+  dataplane_id                    = local.data_plane_id
+  agent_config                    = local.agent_config
+  labels                          = local.common_labels
+  resource_manager_tags           = local.vendor_resource_manager_tags
 
   depends_on = [google_project_service.required, terraform_data.vendor_tag_input_validation, module.iam, module.gke, module.private_link]
 }

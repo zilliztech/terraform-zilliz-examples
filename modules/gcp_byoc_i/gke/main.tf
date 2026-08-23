@@ -14,8 +14,23 @@ resource "google_container_cluster" "this" {
   deletion_protection      = var.deletion_protection
   resource_labels          = local.common_labels
 
-  logging_service    = "none"
-  monitoring_service = "none"
+  logging_service             = "none"
+  monitoring_service          = "none"
+  enable_intranode_visibility = var.enable_intranode_visibility
+
+  dynamic "binary_authorization" {
+    for_each = var.binary_authorization_evaluation_mode != "" ? [1] : []
+    content {
+      evaluation_mode = upper(var.binary_authorization_evaluation_mode)
+    }
+  }
+
+  dynamic "identity_service_config" {
+    for_each = var.enable_identity_service ? [1] : []
+    content {
+      enabled = true
+    }
+  }
 
   addons_config {
     dns_cache_config {
@@ -80,7 +95,7 @@ resource "google_container_cluster" "this" {
   }
 
   release_channel {
-    channel = "UNSPECIFIED"
+    channel = upper(var.release_channel)
   }
 
   workload_identity_config {
@@ -120,8 +135,8 @@ resource "google_container_node_pool" "this" {
   }
 
   management {
-    auto_repair  = true
-    auto_upgrade = false
+    auto_repair  = var.node_auto_repair
+    auto_upgrade = var.node_auto_upgrade
   }
 
   network_config {
@@ -165,8 +180,8 @@ resource "google_container_node_pool" "this" {
     }
 
     shielded_instance_config {
-      enable_integrity_monitoring = true
-      enable_secure_boot          = false
+      enable_integrity_monitoring = var.node_enable_integrity_monitoring
+      enable_secure_boot          = var.node_enable_secure_boot
     }
 
     workload_metadata_config {

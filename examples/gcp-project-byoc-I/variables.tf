@@ -280,6 +280,62 @@ variable "master_ipv4_cidr_block" {
   }
 }
 
+variable "gke_release_channel" {
+  description = "GKE release channel."
+  type        = string
+  default     = "UNSPECIFIED"
+  validation {
+    condition     = contains(["UNSPECIFIED", "RAPID", "REGULAR", "STABLE", "EXTENDED"], upper(var.gke_release_channel))
+    error_message = "gke_release_channel must be UNSPECIFIED, RAPID, REGULAR, STABLE, or EXTENDED."
+  }
+}
+
+variable "gke_binary_authorization_evaluation_mode" {
+  description = "GKE Binary Authorization evaluation mode. Leave empty to omit the configuration."
+  type        = string
+  default     = ""
+  validation {
+    condition     = contains(["", "DISABLED", "PROJECT_SINGLETON_POLICY_ENFORCE"], upper(var.gke_binary_authorization_evaluation_mode))
+    error_message = "gke_binary_authorization_evaluation_mode must be empty, DISABLED, or PROJECT_SINGLETON_POLICY_ENFORCE."
+  }
+}
+
+variable "gke_enable_identity_service" {
+  description = "Whether to enable GKE Identity Service."
+  type        = bool
+  default     = false
+}
+
+variable "gke_enable_intranode_visibility" {
+  description = "Whether to enable intra-node visibility."
+  type        = bool
+  default     = false
+}
+
+variable "gke_node_enable_secure_boot" {
+  description = "Whether to enable Secure Boot on GKE nodes."
+  type        = bool
+  default     = false
+}
+
+variable "gke_node_enable_integrity_monitoring" {
+  description = "Whether to enable integrity monitoring on GKE nodes."
+  type        = bool
+  default     = true
+}
+
+variable "gke_node_auto_repair" {
+  description = "Whether to enable automatic repair for GKE node pools."
+  type        = bool
+  default     = true
+}
+
+variable "gke_node_auto_upgrade" {
+  description = "Whether to enable automatic upgrades for GKE node pools."
+  type        = bool
+  default     = false
+}
+
 variable "enable_direct_mig_resize" {
   description = "Enable direct GKE-managed MIG resize permissions for maintenance_sa. Required for node group scale operations."
   type        = bool

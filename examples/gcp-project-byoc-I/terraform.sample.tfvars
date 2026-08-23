@@ -54,6 +54,14 @@ gcp_project_id = "customer-gcp-project"
 # Set to existing to reuse a customer-managed GCS bucket without managing its lifecycle.
 # bucket_mode = "create"
 # Required when bucket_mode = "existing".
+# gke_release_channel = "REGULAR"
+# gke_binary_authorization_evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
+# gke_enable_identity_service = true
+# gke_enable_intranode_visibility = true
+# gke_node_enable_secure_boot = true
+# gke_node_enable_integrity_monitoring = true
+# gke_node_auto_repair = true
+# gke_node_auto_upgrade = true
 # customer_bucket_name = "zilliz-byoc-gcp-bucket"
 # bucket_force_destroy = true
 # Enable GCS bucket default encryption with a customer-managed Cloud KMS key. When gcs_kms_key_name is empty, Terraform creates a key ring and crypto key.

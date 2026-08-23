@@ -83,6 +83,21 @@ The bucket must already exist and be accessible to the Terraform runner. In `exi
 
 Do not switch a bucket already managed in this state directly from `create` to `existing`, because Terraform would plan to destroy the managed resource. Remove it from state first with `terraform state rm module.gcs.google_storage_bucket.this[0]`, then change the mode.
 
+For a customer security baseline that uses the Regular release channel, Binary Authorization, Identity Service, intra-node visibility, Shielded VM protections, and managed node upgrades, set:
+
+```hcl
+gke_release_channel                      = "REGULAR"
+gke_binary_authorization_evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
+gke_enable_identity_service              = true
+gke_enable_intranode_visibility          = true
+gke_node_enable_secure_boot              = true
+gke_node_enable_integrity_monitoring     = true
+gke_node_auto_repair                     = true
+gke_node_auto_upgrade                    = true
+```
+
+These settings apply when Terraform creates the cluster or its dedicated BYOC-I node pools. Node machine types, counts, and disk sizes remain controlled by the BYOC-I node-group quotas returned by Zilliz Cloud; node disks have a minimum size of 100 GiB.
+
 ### Create a Dedicated VPC and Subnets
 
 This is the default and is backward compatible:

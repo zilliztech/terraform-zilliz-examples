@@ -98,6 +98,62 @@ variable "deletion_protection" {
   default     = false
 }
 
+variable "release_channel" {
+  description = "GKE release channel."
+  type        = string
+  default     = "UNSPECIFIED"
+  validation {
+    condition     = contains(["UNSPECIFIED", "RAPID", "REGULAR", "STABLE", "EXTENDED"], upper(var.release_channel))
+    error_message = "release_channel must be UNSPECIFIED, RAPID, REGULAR, STABLE, or EXTENDED."
+  }
+}
+
+variable "binary_authorization_evaluation_mode" {
+  description = "Binary Authorization evaluation mode. Leave empty to omit the cluster configuration."
+  type        = string
+  default     = ""
+  validation {
+    condition     = contains(["", "DISABLED", "PROJECT_SINGLETON_POLICY_ENFORCE"], upper(var.binary_authorization_evaluation_mode))
+    error_message = "binary_authorization_evaluation_mode must be empty, DISABLED, or PROJECT_SINGLETON_POLICY_ENFORCE."
+  }
+}
+
+variable "enable_identity_service" {
+  description = "Whether to enable GKE Identity Service."
+  type        = bool
+  default     = false
+}
+
+variable "enable_intranode_visibility" {
+  description = "Whether to enable intra-node visibility."
+  type        = bool
+  default     = false
+}
+
+variable "node_enable_secure_boot" {
+  description = "Whether to enable Secure Boot on GKE nodes."
+  type        = bool
+  default     = false
+}
+
+variable "node_enable_integrity_monitoring" {
+  description = "Whether to enable integrity monitoring on GKE nodes."
+  type        = bool
+  default     = true
+}
+
+variable "node_auto_repair" {
+  description = "Whether to enable automatic repair for GKE node pools."
+  type        = bool
+  default     = true
+}
+
+variable "node_auto_upgrade" {
+  description = "Whether to enable automatic upgrades for GKE node pools."
+  type        = bool
+  default     = false
+}
+
 variable "enable_secrets_encryption" {
   description = "Enable GKE application-layer encryption for Kubernetes Secrets stored in etcd."
   type        = bool

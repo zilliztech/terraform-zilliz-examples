@@ -1,10 +1,21 @@
 locals {
-  create_gcs_kms_key         = var.enable_gcs_kms && var.gcs_kms_key_name == ""
-  grant_gcs_kms_key_iam      = var.enable_gcs_kms && (local.create_gcs_kms_key || var.grant_gcs_kms_key_iam)
+  create_gcs_kms_key         = var.bucket_mode == "create" && var.enable_gcs_kms && var.gcs_kms_key_name == ""
+  grant_gcs_kms_key_iam      = var.bucket_mode == "create" && var.enable_gcs_kms && (local.create_gcs_kms_key || var.grant_gcs_kms_key_iam)
   auto_gcs_kms_name_prefix   = trimsuffix(substr(replace(replace(lower(var.bucket_name), ".", "-"), "_", "-"), 0, 50), "-")
   gcs_kms_key_ring_name      = "${local.auto_gcs_kms_name_prefix}-kr"
   gcs_kms_crypto_key_name    = "${local.auto_gcs_kms_name_prefix}-key"
   effective_gcs_kms_key_name = var.enable_gcs_kms ? (var.gcs_kms_key_name != "" ? var.gcs_kms_key_name : google_kms_crypto_key.gcs[0].id) : ""
+}
+
+data "google_storage_bucket" "this" {
+  count = var.bucket_mode == "existing" ? 1 : 0
+
+  name = var.bucket_name
+}
+
+moved {
+  from = google_storage_bucket.this
+  to   = google_storage_bucket.this[0]
 }
 
 data "google_project" "this" {
@@ -39,6 +50,8 @@ resource "google_kms_crypto_key_iam_member" "gcs_cmek" {
 }
 
 resource "google_storage_bucket" "this" {
+  count = var.bucket_mode == "create" ? 1 : 0
+
   name                        = var.bucket_name
   location                    = var.gcp_region
   force_destroy               = var.force_destroy

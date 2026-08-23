@@ -1,6 +1,8 @@
 project_id     = "proj-xxxxxxxx"
 dataplane_id   = "zilliz-byoc-gcp-us-west1-xxxxxxxx"
 gcp_project_id = "customer-gcp-project"
+# Optional explicit region; must match the Zilliz Cloud dataplane region.
+# gcp_region = "us-west4"
 
 # Optional overrides.
 # Network mode defaults create a dedicated VPC and subnets in gcp_project_id.
@@ -51,9 +53,25 @@ gcp_project_id = "customer-gcp-project"
 # gke_mode = "create"
 # Required when gke_mode = "existing".
 # customer_gke_cluster_name = "zilliz-byoc-gke"
+# gke_enable_private_endpoint = true
+# gke_enable_private_nodes = true
+# gke_enable_ip_alias = true
+# gke_workload_pool = "customer-gcp-project.svc.id.goog"
+# Optional overrides applied to every BYOC-I node pool.
+# gke_node_initial_count = 1
+# gke_node_disk_size_gb = 30
+# gke_node_image_type = "COS_CONTAINERD"
 # Set to existing to reuse a customer-managed GCS bucket without managing its lifecycle.
 # bucket_mode = "create"
 # Required when bucket_mode = "existing".
+# gke_release_channel = "REGULAR"
+# gke_binary_authorization_evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
+# gke_enable_identity_service = true
+# gke_enable_intranode_visibility = true
+# gke_node_enable_secure_boot = true
+# gke_node_enable_integrity_monitoring = true
+# gke_node_auto_repair = true
+# gke_node_auto_upgrade = true
 # customer_bucket_name = "zilliz-byoc-gcp-bucket"
 # bucket_force_destroy = true
 # Enable GCS bucket default encryption with a customer-managed Cloud KMS key. When gcs_kms_key_name is empty, Terraform creates a key ring and crypto key.

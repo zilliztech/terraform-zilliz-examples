@@ -83,6 +83,35 @@ The bucket must already exist and be accessible to the Terraform runner. In `exi
 
 Do not switch a bucket already managed in this state directly from `create` to `existing`, because Terraform would plan to destroy the managed resource. Remove it from state first with `terraform state rm module.gcs.google_storage_bucket.this[0]`, then change the mode.
 
+For a customer security baseline that uses the Regular release channel, Binary Authorization, Identity Service, intra-node visibility, Shielded VM protections, and managed node upgrades, set:
+
+```hcl
+gke_release_channel                      = "REGULAR"
+gke_binary_authorization_evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
+gke_enable_identity_service              = true
+gke_enable_intranode_visibility          = true
+gke_node_enable_secure_boot              = true
+gke_node_enable_integrity_monitoring     = true
+gke_node_auto_repair                     = true
+gke_node_auto_upgrade                    = true
+```
+
+These settings apply when Terraform creates the cluster or its dedicated BYOC-I node pools. Node machine types come from the BYOC-I node-group quotas returned by Zilliz Cloud. By default, counts and disk sizes also come from those quotas, and quota-derived node disks have a minimum size of 100 GiB.
+
+To override the node settings for every BYOC-I node pool, set:
+
+```hcl
+gke_node_initial_count = 1
+gke_node_disk_size_gb  = 30
+gke_node_image_type    = "COS_CONTAINERD"
+```
+
+Machine type always comes from each Zilliz Cloud node-group quota. When the remaining overrides are unset, initial size also comes from the node-group quota, the quota disk size is subject to a 100 GiB minimum, and the image type defaults to `COS_CONTAINERD`.
+
+`gke_workload_pool` can be passed explicitly, but GKE requires it to be `<gcp_project_id>.svc.id.goog`. When empty, Terraform derives that value automatically. `gcp_region` can also be passed explicitly but must match the region configured for the Zilliz Cloud dataplane.
+
+Identity Service for GKE is deprecated and is not supported in GKE 1.37 or later or in Google Cloud organizations created on or after July 1, 2025. Enable `gke_enable_identity_service` only when the customer environment still supports it; prefer Workforce Identity Federation for new deployments.
+
 ### Create a Dedicated VPC and Subnets
 
 This is the default and is backward compatible:

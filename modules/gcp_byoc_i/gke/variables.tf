@@ -83,6 +83,60 @@ variable "master_ipv4_cidr_block" {
   }
 }
 
+variable "enable_private_endpoint" {
+  description = "Whether the GKE control plane is accessible only through its private endpoint."
+  type        = bool
+  default     = true
+}
+
+variable "enable_private_nodes" {
+  description = "Whether GKE nodes use internal IP addresses only."
+  type        = bool
+  default     = true
+}
+
+variable "enable_ip_alias" {
+  description = "Whether to use VPC-native alias IP networking."
+  type        = bool
+  default     = true
+}
+
+variable "workload_pool" {
+  description = "GKE Workload Identity pool. Leave empty to use <gcp_project_id>.svc.id.goog."
+  type        = string
+  default     = ""
+}
+
+variable "node_initial_count" {
+  description = "Optional initial node count override applied to every BYOC-I node pool. Leave null to use the node-group desired/minimum size."
+  type        = number
+  default     = null
+  validation {
+    condition     = var.node_initial_count == null || (var.node_initial_count >= 0 && floor(var.node_initial_count) == var.node_initial_count)
+    error_message = "node_initial_count must be null or a non-negative integer."
+  }
+}
+
+variable "node_disk_size_gb" {
+  description = "Optional boot disk size override in GiB applied to every BYOC-I node pool. Leave null to use the node-group quota with a 100 GiB minimum."
+  type        = number
+  default     = null
+  validation {
+    condition     = var.node_disk_size_gb == null || (var.node_disk_size_gb > 0 && floor(var.node_disk_size_gb) == var.node_disk_size_gb)
+    error_message = "node_disk_size_gb must be null or a positive integer."
+  }
+}
+
+variable "node_image_type" {
+  description = "GKE node image type applied to every BYOC-I node pool."
+  type        = string
+  default     = "COS_CONTAINERD"
+  validation {
+    condition     = trimspace(var.node_image_type) != ""
+    error_message = "node_image_type must not be empty."
+  }
+}
+
 variable "master_authorized_networks" {
   description = "CIDR blocks authorized to access the private GKE control plane."
   type = list(object({
@@ -94,6 +148,62 @@ variable "master_authorized_networks" {
 
 variable "deletion_protection" {
   description = "Whether to enable GKE deletion protection."
+  type        = bool
+  default     = false
+}
+
+variable "release_channel" {
+  description = "GKE release channel."
+  type        = string
+  default     = "UNSPECIFIED"
+  validation {
+    condition     = contains(["UNSPECIFIED", "RAPID", "REGULAR", "STABLE", "EXTENDED"], upper(var.release_channel))
+    error_message = "release_channel must be UNSPECIFIED, RAPID, REGULAR, STABLE, or EXTENDED."
+  }
+}
+
+variable "binary_authorization_evaluation_mode" {
+  description = "Binary Authorization evaluation mode. Leave empty to omit the cluster configuration."
+  type        = string
+  default     = ""
+  validation {
+    condition     = contains(["", "DISABLED", "PROJECT_SINGLETON_POLICY_ENFORCE"], upper(var.binary_authorization_evaluation_mode))
+    error_message = "binary_authorization_evaluation_mode must be empty, DISABLED, or PROJECT_SINGLETON_POLICY_ENFORCE."
+  }
+}
+
+variable "enable_identity_service" {
+  description = "Whether to enable GKE Identity Service."
+  type        = bool
+  default     = false
+}
+
+variable "enable_intranode_visibility" {
+  description = "Whether to enable intra-node visibility."
+  type        = bool
+  default     = false
+}
+
+variable "node_enable_secure_boot" {
+  description = "Whether to enable Secure Boot on GKE nodes."
+  type        = bool
+  default     = false
+}
+
+variable "node_enable_integrity_monitoring" {
+  description = "Whether to enable integrity monitoring on GKE nodes."
+  type        = bool
+  default     = true
+}
+
+variable "node_auto_repair" {
+  description = "Whether to enable automatic repair for GKE node pools."
+  type        = bool
+  default     = true
+}
+
+variable "node_auto_upgrade" {
+  description = "Whether to enable automatic upgrades for GKE node pools."
   type        = bool
   default     = false
 }

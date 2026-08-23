@@ -16,6 +16,12 @@ variable "gcp_project_id" {
   nullable    = false
 }
 
+variable "gcp_region" {
+  description = "Optional explicit GCP region. Must match the region configured for the Zilliz Cloud dataplane."
+  type        = string
+  default     = ""
+}
+
 variable "image_repo_url" {
   description = "Optional image repository base URL for BYOC-I booter and cloud-agent images, without image name or tag. For example: us-docker.pkg.dev/<project>/<repository>."
   type        = string
@@ -278,6 +284,116 @@ variable "master_ipv4_cidr_block" {
     condition     = can(cidrhost(var.master_ipv4_cidr_block, 0)) && tonumber(split("/", var.master_ipv4_cidr_block)[1]) == 28
     error_message = "master_ipv4_cidr_block must be a valid /28 CIDR block."
   }
+}
+
+variable "gke_enable_private_endpoint" {
+  description = "Whether the GKE control plane is accessible only through its private endpoint."
+  type        = bool
+  default     = true
+}
+
+variable "gke_enable_private_nodes" {
+  description = "Whether GKE nodes use internal IP addresses only."
+  type        = bool
+  default     = true
+}
+
+variable "gke_enable_ip_alias" {
+  description = "Whether to use VPC-native alias IP networking."
+  type        = bool
+  default     = true
+}
+
+variable "gke_workload_pool" {
+  description = "GKE Workload Identity pool. Leave empty to use <gcp_project_id>.svc.id.goog."
+  type        = string
+  default     = ""
+}
+
+variable "gke_node_initial_count" {
+  description = "Optional initial node count override applied to every BYOC-I node pool."
+  type        = number
+  default     = null
+  validation {
+    condition     = var.gke_node_initial_count == null || (var.gke_node_initial_count >= 0 && floor(var.gke_node_initial_count) == var.gke_node_initial_count)
+    error_message = "gke_node_initial_count must be null or a non-negative integer."
+  }
+}
+
+variable "gke_node_disk_size_gb" {
+  description = "Optional boot disk size override in GiB applied to every BYOC-I node pool."
+  type        = number
+  default     = null
+  validation {
+    condition     = var.gke_node_disk_size_gb == null || (var.gke_node_disk_size_gb > 0 && floor(var.gke_node_disk_size_gb) == var.gke_node_disk_size_gb)
+    error_message = "gke_node_disk_size_gb must be null or a positive integer."
+  }
+}
+
+variable "gke_node_image_type" {
+  description = "GKE node image type applied to every BYOC-I node pool."
+  type        = string
+  default     = "COS_CONTAINERD"
+  validation {
+    condition     = trimspace(var.gke_node_image_type) != ""
+    error_message = "gke_node_image_type must not be empty."
+  }
+}
+
+variable "gke_release_channel" {
+  description = "GKE release channel."
+  type        = string
+  default     = "UNSPECIFIED"
+  validation {
+    condition     = contains(["UNSPECIFIED", "RAPID", "REGULAR", "STABLE", "EXTENDED"], upper(var.gke_release_channel))
+    error_message = "gke_release_channel must be UNSPECIFIED, RAPID, REGULAR, STABLE, or EXTENDED."
+  }
+}
+
+variable "gke_binary_authorization_evaluation_mode" {
+  description = "GKE Binary Authorization evaluation mode. Leave empty to omit the configuration."
+  type        = string
+  default     = ""
+  validation {
+    condition     = contains(["", "DISABLED", "PROJECT_SINGLETON_POLICY_ENFORCE"], upper(var.gke_binary_authorization_evaluation_mode))
+    error_message = "gke_binary_authorization_evaluation_mode must be empty, DISABLED, or PROJECT_SINGLETON_POLICY_ENFORCE."
+  }
+}
+
+variable "gke_enable_identity_service" {
+  description = "Whether to enable GKE Identity Service."
+  type        = bool
+  default     = false
+}
+
+variable "gke_enable_intranode_visibility" {
+  description = "Whether to enable intra-node visibility."
+  type        = bool
+  default     = false
+}
+
+variable "gke_node_enable_secure_boot" {
+  description = "Whether to enable Secure Boot on GKE nodes."
+  type        = bool
+  default     = false
+}
+
+variable "gke_node_enable_integrity_monitoring" {
+  description = "Whether to enable integrity monitoring on GKE nodes."
+  type        = bool
+  default     = true
+}
+
+variable "gke_node_auto_repair" {
+  description = "Whether to enable automatic repair for GKE node pools."
+  type        = bool
+  default     = true
+}
+
+variable "gke_node_auto_upgrade" {
+  description = "Whether to enable automatic upgrades for GKE node pools."
+  type        = bool
+  default     = false
 }
 
 variable "enable_direct_mig_resize" {

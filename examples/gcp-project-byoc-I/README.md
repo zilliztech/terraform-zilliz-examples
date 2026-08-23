@@ -96,7 +96,22 @@ gke_node_auto_repair                     = true
 gke_node_auto_upgrade                    = true
 ```
 
-These settings apply when Terraform creates the cluster or its dedicated BYOC-I node pools. Node machine types, counts, and disk sizes remain controlled by the BYOC-I node-group quotas returned by Zilliz Cloud; node disks have a minimum size of 100 GiB.
+These settings apply when Terraform creates the cluster or its dedicated BYOC-I node pools. By default, node machine types, counts, and disk sizes come from the BYOC-I node-group quotas returned by Zilliz Cloud, and quota-derived node disks have a minimum size of 100 GiB.
+
+To override the node settings for every BYOC-I node pool, set:
+
+```hcl
+gke_node_machine_type = "e2-standard-2"
+gke_node_initial_count = 1
+gke_node_disk_size_gb  = 30
+gke_node_image_type    = "COS_CONTAINERD"
+```
+
+When these overrides are unset, machine type and initial size come from the Zilliz Cloud node-group quotas, the quota disk size is subject to a 100 GiB minimum, and the image type defaults to `COS_CONTAINERD`.
+
+`gke_workload_pool` can be passed explicitly, but GKE requires it to be `<gcp_project_id>.svc.id.goog`. When empty, Terraform derives that value automatically. `gcp_region` can also be passed explicitly but must match the region configured for the Zilliz Cloud dataplane.
+
+Identity Service for GKE is deprecated and is not supported in GKE 1.37 or later or in Google Cloud organizations created on or after July 1, 2025. Enable `gke_enable_identity_service` only when the customer environment still supports it; prefer Workforce Identity Federation for new deployments.
 
 ### Create a Dedicated VPC and Subnets
 

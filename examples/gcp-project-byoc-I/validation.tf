@@ -9,6 +9,16 @@ resource "terraform_data" "gke_input_validation" {
       condition     = var.gke_mode != "existing" || var.customer_gke_cluster_name != ""
       error_message = "customer_gke_cluster_name is required when gke_mode = existing."
     }
+
+    precondition {
+      condition     = var.gcp_region == "" || var.gcp_region == local.dataplane_gcp_region
+      error_message = "gcp_region must match the region configured for the Zilliz Cloud dataplane."
+    }
+
+    precondition {
+      condition     = var.gke_workload_pool == "" || var.gke_workload_pool == "${var.gcp_project_id}.svc.id.goog"
+      error_message = "gke_workload_pool must be empty or <gcp_project_id>.svc.id.goog."
+    }
   }
 }
 

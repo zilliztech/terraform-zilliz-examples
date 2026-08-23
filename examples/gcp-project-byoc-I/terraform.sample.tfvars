@@ -1,6 +1,8 @@
 project_id     = "proj-xxxxxxxx"
 dataplane_id   = "zilliz-byoc-gcp-us-west1-xxxxxxxx"
 gcp_project_id = "customer-gcp-project"
+# Optional explicit region; must match the Zilliz Cloud dataplane region.
+# gcp_region = "us-west4"
 
 # Optional overrides.
 # Network mode defaults create a dedicated VPC and subnets in gcp_project_id.
@@ -51,6 +53,15 @@ gcp_project_id = "customer-gcp-project"
 # gke_mode = "create"
 # Required when gke_mode = "existing".
 # customer_gke_cluster_name = "zilliz-byoc-gke"
+# gke_enable_private_endpoint = true
+# gke_enable_private_nodes = true
+# gke_enable_ip_alias = true
+# gke_workload_pool = "customer-gcp-project.svc.id.goog"
+# Optional overrides applied to every BYOC-I node pool.
+# gke_node_machine_type = "e2-standard-2"
+# gke_node_initial_count = 1
+# gke_node_disk_size_gb = 30
+# gke_node_image_type = "COS_CONTAINERD"
 # Set to existing to reuse a customer-managed GCS bucket without managing its lifecycle.
 # bucket_mode = "create"
 # Required when bucket_mode = "existing".

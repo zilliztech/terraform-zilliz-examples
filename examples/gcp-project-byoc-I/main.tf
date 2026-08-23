@@ -82,6 +82,14 @@ module "gke" {
   k8s_node_groups                      = local.k8s_node_groups
   kubernetes_version                   = var.kubernetes_version
   master_ipv4_cidr_block               = var.master_ipv4_cidr_block
+  enable_private_endpoint              = var.gke_enable_private_endpoint
+  enable_private_nodes                 = var.gke_enable_private_nodes
+  enable_ip_alias                      = var.gke_enable_ip_alias
+  workload_pool                        = var.gke_workload_pool
+  node_machine_type                    = var.gke_node_machine_type
+  node_initial_count                   = var.gke_node_initial_count
+  node_disk_size_gb                    = var.gke_node_disk_size_gb
+  node_image_type                      = var.gke_node_image_type
   release_channel                      = upper(var.gke_release_channel)
   binary_authorization_evaluation_mode = upper(var.gke_binary_authorization_evaluation_mode)
   enable_identity_service              = var.gke_enable_identity_service

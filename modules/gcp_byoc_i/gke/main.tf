@@ -9,7 +9,7 @@ resource "google_container_cluster" "this" {
   initial_node_count       = 1
   network                  = var.network_self_link
   subnetwork               = var.primary_subnet_self_link
-  networking_mode          = "VPC_NATIVE"
+  networking_mode          = var.enable_ip_alias ? "VPC_NATIVE" : "ROUTES"
   node_locations           = var.gcp_zones
   deletion_protection      = var.deletion_protection
   resource_labels          = local.common_labels
@@ -63,9 +63,12 @@ resource "google_container_cluster" "this" {
     disabled = true
   }
 
-  ip_allocation_policy {
-    cluster_secondary_range_name  = var.pod_subnet_name
-    services_secondary_range_name = var.service_subnet_name
+  dynamic "ip_allocation_policy" {
+    for_each = var.enable_ip_alias ? [1] : []
+    content {
+      cluster_secondary_range_name  = var.pod_subnet_name
+      services_secondary_range_name = var.service_subnet_name
+    }
   }
 
   master_auth {
@@ -85,8 +88,8 @@ resource "google_container_cluster" "this" {
   }
 
   private_cluster_config {
-    enable_private_endpoint = true
-    enable_private_nodes    = true
+    enable_private_endpoint = var.enable_private_endpoint
+    enable_private_nodes    = var.enable_private_nodes
     master_ipv4_cidr_block  = var.master_ipv4_cidr_block
 
     master_global_access_config {
@@ -99,7 +102,7 @@ resource "google_container_cluster" "this" {
   }
 
   workload_identity_config {
-    workload_pool = "${var.gcp_project_id}.svc.id.goog"
+    workload_pool = var.workload_pool != "" ? var.workload_pool : "${var.gcp_project_id}.svc.id.goog"
   }
 
   dynamic "database_encryption" {
@@ -125,7 +128,7 @@ resource "google_container_node_pool" "this" {
   location           = var.gcp_region
   cluster            = local.cluster.name
   node_locations     = var.gcp_zones
-  initial_node_count = max(each.value.desired_size, each.value.min_size)
+  initial_node_count = var.node_initial_count != null ? var.node_initial_count : max(each.value.desired_size, each.value.min_size)
   max_pods_per_node  = each.key == "core" ? 110 : 32
 
   autoscaling {
@@ -141,16 +144,16 @@ resource "google_container_node_pool" "this" {
 
   network_config {
     create_pod_range     = false
-    enable_private_nodes = true
-    pod_range            = var.pod_subnet_name
+    enable_private_nodes = var.enable_private_nodes
+    pod_range            = var.enable_ip_alias ? var.pod_subnet_name : null
   }
 
   node_config {
-    disk_size_gb    = max(each.value.disk_size, 100)
+    disk_size_gb    = var.node_disk_size_gb != null ? var.node_disk_size_gb : max(each.value.disk_size, 100)
     disk_type       = "pd-balanced"
-    image_type      = "COS_CONTAINERD"
+    image_type      = var.node_image_type
     labels          = local.node_group_labels[each.key]
-    machine_type    = each.value.instance_types
+    machine_type    = var.node_machine_type != "" ? var.node_machine_type : each.value.instance_types
     preemptible     = false
     service_account = var.gke_node_sa_email
     spot            = upper(each.value.capacity_type) == "SPOT"

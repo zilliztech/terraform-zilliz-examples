@@ -46,6 +46,8 @@ module "gcs" {
 module "iam" {
   source = "../../modules/gcp_byoc_i/iam"
 
+  service_account_mode            = var.service_account_mode
+  manage_iam                      = var.manage_iam
   gcp_project_id                  = var.gcp_project_id
   prefix_name                     = local.prefix_name
   gke_location                    = local.gcp_region

@@ -68,6 +68,59 @@ The existing cluster must be regional in the BYOC-I region, VPC-native, use the 
 
 In `existing` mode Terraform does not modify or own the cluster. `terraform destroy` preserves it and removes only the BYOC-I node pools and other resources created by this configuration. Reusing existing node pools is not supported.
 
+## Service Account and IAM Modes
+
+By default, Terraform creates four dedicated service accounts and manages their custom roles and IAM bindings:
+
+```hcl
+service_account_mode = "create"
+manage_iam           = true
+```
+
+To use customer-created service accounts while allowing Terraform to manage their permissions:
+
+```hcl
+service_account_mode = "existing"
+manage_iam           = true
+
+customer_gke_node_service_account_name   = "customer-zilliz-node"
+customer_management_service_account_name = "customer-zilliz-maintenance"
+customer_storage_service_account_name    = "customer-zilliz-storage"
+customer_booter_service_account_name     = "customer-zilliz-booter"
+```
+
+When the Terraform runner cannot manage IAM, the customer must create the accounts, custom roles, project IAM bindings, and Workload Identity bindings before apply:
+
+```hcl
+service_account_mode = "existing"
+manage_iam           = false
+
+customer_gke_node_service_account_name   = "customer-zilliz-node"
+customer_management_service_account_name = "customer-zilliz-maintenance"
+customer_storage_service_account_name    = "customer-zilliz-storage"
+customer_booter_service_account_name     = "customer-zilliz-booter"
+
+manage_shared_vpc_iam         = false
+grant_gcs_kms_key_iam         = false
+grant_gke_secrets_kms_key_iam = false
+```
+
+All four accounts must exist in `gcp_project_id` and have distinct account IDs. Terraform reads the accounts to obtain their canonical email and resource name but does not modify them when `manage_iam` is false.
+
+The customer-managed IAM configuration must provide the permissions defined in [`modules/gcp_byoc_i/iam/iam.tf`](../../modules/gcp_byoc_i/iam/iam.tf), including:
+
+- GKE node logging, monitoring, and default node service account permissions.
+- Maintenance cluster update, operation read, project metadata read, and optional managed-instance-group resize permissions.
+- Storage object/bucket access and storage/maintenance Workload Identity bindings.
+- Booter Kubernetes bootstrap, VM self-delete, and zone-operation read permissions.
+- `roles/iam.serviceAccountUser` from the maintenance service account to the node service account.
+
+The Terraform runner still needs `iam.serviceAccounts.actAs` on the existing GKE node and booter service accounts so it can attach them to node pools and the booter VM. Read access to the four service accounts is also required.
+
+When `manage_iam` is false and Resource Manager tags remain enabled, provide customer-created `vendor_tag_key_id` and `vendor_tag_value_id` values so the customer can preconfigure the booter self-delete IAM condition. Alternatively set `enable_resource_manager_tags = false` and scope the preconfigured permission to the exact booter VM resource name. Leaving tag IDs empty asks Terraform to create them and is unsuitable when the runner cannot manage tags or the IAM condition must be configured before apply.
+
+Do not switch an already-applied configuration directly from `create` to `existing`: removing managed service-account resources from configuration would plan their destruction. Remove the four service accounts and managed IAM resources from the Terraform state first, after verifying that the customer has recreated or adopted all required permissions. New configurations using customer-created accounts can select `existing` immediately.
+
 ## GCS Bucket Modes
 
 `bucket_mode = "create"` is the default and creates a dedicated GCS bucket managed by this Terraform configuration.

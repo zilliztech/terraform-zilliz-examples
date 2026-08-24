@@ -5,6 +5,7 @@ vpce_service_ids:
   eu-west-1: vpce-svc-0a1c8f7a8830b16b9
   eu-central-1: vpce-svc-0d5ce1ec4decbc7df
   ap-east-1: vpce-svc-097cd6a5dcf5edcce
+  ap-southeast-7: vpce-svc-0db79132eee2bd865
 private_zone_name: byoc.zillizcloud.com
 agent_config: 
   server_host: zilliz-byoc-us.byoc.zillizcloud.com
@@ -15,6 +16,7 @@ eks_cluster_oidc_issuer_thumbprint:
   eu-central-1: 06b25927c42a721631c1efd9431e648fa62e1e39
   us-west-2: 9e99a48a9960b14926bb7f3b02e22da2b0ab7280
   ap-east-1: 06b25927c42a721631c1efd9431e648fa62e1e39
+  ap-southeast-7: 06b25927c42a721631c1efd9431e648fa62e1e39
 
 Azure:
   private_zone_domain_suffix: byoc.zillizcloud.com

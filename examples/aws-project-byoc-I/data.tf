@@ -1,6 +1,12 @@
 resource "random_id" "short_uuid" {
   byte_length = 3 # 3 bytes = 6 characters when base64 encoded
 }
+
+data "aws_subnet" "customer_private" {
+  for_each = local.is_existing_vpc ? toset(var.customer_private_subnet_ids) : toset([])
+  id       = each.value
+}
+
 locals {
   # Boolean flag to determine if customer is providing their own existing VPC infrastructure
   # Returns true if customer_vpc_id variable is not empty, false otherwise
@@ -35,6 +41,13 @@ locals {
   # Private subnet IDs for EKS worker nodes and database components
   # Selects between customer-provided subnets or newly created private subnets
   subnet_ids = local.is_existing_vpc ? var.customer_private_subnet_ids : module.vpc[0].private_subnets
+
+  # A subnet belongs to exactly one AZ, but multiple subnets may share an AZ.
+  # Use the VPC module's selected zones for a managed VPC and query/deduplicate
+  # customer subnet zones for an existing VPC.
+  availability_zones = local.is_existing_vpc ? sort(distinct([
+    for subnet in data.aws_subnet.customer_private : subnet.availability_zone
+  ])) : module.vpc[0].availability_zones
 
   # Private link subnet IDs selection with fallback logic
   # Priority: 1) customer_private_link_subnet_ids, 2) customer_private_subnet_ids, 3) default subnets
@@ -83,9 +96,9 @@ locals {
       data.zillizcloud_byoc_i_project_settings.this.node_quotas,
       # API tiered quota overwrites placeholder when present
       local.tiered_node_quota,
-    ) : name => merge(ng, {
-      ami_id    = lookup(var.k8s_node_group_image_id, name, null)
-      disk_size = max(ng.disk_size, 100)
+      ) : name => merge(ng, {
+        ami_id    = lookup(var.k8s_node_group_image_id, name, null)
+        disk_size = max(ng.disk_size, 100)
     })
   }
 
@@ -131,8 +144,9 @@ locals {
   # External configuration object passed to Zilliz cloud services
   # Contains EKS cluster details and customer ECR registry information for container management
   ext_config = {
-    eks_cluster_name = module.eks.eks_cluster_name
-    ecr              = var.customer_ecr
-    ebs_kms_key_arn  = var.enable_ebs_kms ? var.ebs_kms_key_arn : null
+    eks_cluster_name   = module.eks.eks_cluster_name
+    availability_zones = local.availability_zones
+    ecr                = var.customer_ecr
+    ebs_kms_key_arn    = var.enable_ebs_kms ? var.ebs_kms_key_arn : null
   }
 }

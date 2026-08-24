@@ -132,6 +132,23 @@ variable "customer_bucket_name" {
   default     = ""
 }
 
+variable "service_account_mode" {
+  description = "Service account lifecycle mode. create provisions the four BYOC-I service accounts; existing reads customer-managed accounts."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.service_account_mode)
+    error_message = "service_account_mode must be create or existing."
+  }
+}
+
+variable "manage_iam" {
+  description = "Whether Terraform creates BYOC-I custom roles and manages project/service-account IAM bindings."
+  type        = bool
+  default     = true
+}
+
 variable "bucket_mode" {
   description = "GCS bucket lifecycle mode. create provisions and manages the bucket; existing only reads an existing bucket."
   type        = string
@@ -144,25 +161,25 @@ variable "bucket_mode" {
 }
 
 variable "customer_gke_node_service_account_name" {
-  description = "Optional GKE node service account account_id."
+  description = "Optional GKE node service account account_id. Required when service_account_mode is existing."
   type        = string
   default     = ""
 }
 
 variable "customer_management_service_account_name" {
-  description = "Optional maintenance service account account_id."
+  description = "Optional maintenance service account account_id. Required when service_account_mode is existing."
   type        = string
   default     = ""
 }
 
 variable "customer_storage_service_account_name" {
-  description = "Optional storage service account account_id."
+  description = "Optional storage service account account_id. Required when service_account_mode is existing."
   type        = string
   default     = ""
 }
 
 variable "customer_booter_service_account_name" {
-  description = "Optional booter VM service account account_id."
+  description = "Optional booter VM service account account_id. Required when service_account_mode is existing."
   type        = string
   default     = ""
 }

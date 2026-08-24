@@ -53,6 +53,21 @@ gcp_project_id = "customer-gcp-project"
 # gke_mode = "create"
 # Required when gke_mode = "existing".
 # customer_gke_cluster_name = "zilliz-byoc-gke"
+# Set existing to reuse four customer-managed service accounts.
+# service_account_mode = "create"
+# Set false when all custom roles and IAM bindings are preconfigured by the customer.
+# manage_iam = true
+# All four account IDs are required in existing mode.
+# customer_gke_node_service_account_name = "customer-zilliz-node"
+# customer_management_service_account_name = "customer-zilliz-maintenance"
+# customer_storage_service_account_name = "customer-zilliz-storage"
+# customer_booter_service_account_name = "customer-zilliz-booter"
+# With manage_iam = false, also use customer-managed IAM/KMS grants and pre-created tags:
+# manage_shared_vpc_iam = false
+# grant_gcs_kms_key_iam = false
+# grant_gke_secrets_kms_key_iam = false
+# vendor_tag_key_id = "tagKeys/1234567890"
+# vendor_tag_value_id = "tagValues/1234567890"
 # gke_enable_private_endpoint = true
 # gke_enable_private_nodes = true
 # gke_enable_ip_alias = true

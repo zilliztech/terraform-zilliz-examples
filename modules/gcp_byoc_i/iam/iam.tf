@@ -1,7 +1,9 @@
 resource "google_project_iam_member" "gke_node_default" {
+  count = var.manage_iam ? 1 : 0
+
   project = var.gcp_project_id
   role    = "roles/container.defaultNodeServiceAccount"
-  member  = "serviceAccount:${google_service_account.gke_node.email}"
+  member  = "serviceAccount:${local.gke_node_sa.email}"
 
   condition {
     title       = "zilliz_byoc_i_target_cluster_node_sa"
@@ -11,18 +13,24 @@ resource "google_project_iam_member" "gke_node_default" {
 }
 
 resource "google_project_iam_member" "gke_node_logging" {
+  count = var.manage_iam ? 1 : 0
+
   project = var.gcp_project_id
   role    = "roles/logging.logWriter"
-  member  = "serviceAccount:${google_service_account.gke_node.email}"
+  member  = "serviceAccount:${local.gke_node_sa.email}"
 }
 
 resource "google_project_iam_member" "gke_node_monitoring" {
+  count = var.manage_iam ? 1 : 0
+
   project = var.gcp_project_id
   role    = "roles/monitoring.metricWriter"
-  member  = "serviceAccount:${google_service_account.gke_node.email}"
+  member  = "serviceAccount:${local.gke_node_sa.email}"
 }
 
 resource "google_project_iam_custom_role" "maintenance_cluster" {
+  count = var.manage_iam ? 1 : 0
+
   project     = var.gcp_project_id
   role_id     = "zillizByocIClusterMaintenance${local.role_suffix}"
   title       = "Zilliz BYOC-I Cluster Maintenance ${var.prefix_name}"
@@ -35,9 +43,11 @@ resource "google_project_iam_custom_role" "maintenance_cluster" {
 }
 
 resource "google_project_iam_member" "maintenance_cluster" {
+  count = var.manage_iam ? 1 : 0
+
   project = var.gcp_project_id
-  role    = google_project_iam_custom_role.maintenance_cluster.id
-  member  = "serviceAccount:${google_service_account.management.email}"
+  role    = google_project_iam_custom_role.maintenance_cluster[0].id
+  member  = "serviceAccount:${local.management_sa.email}"
 
   condition {
     title       = "zilliz_byoc_i_target_cluster"
@@ -47,6 +57,8 @@ resource "google_project_iam_member" "maintenance_cluster" {
 }
 
 resource "google_project_iam_custom_role" "maintenance_operations" {
+  count = var.manage_iam ? 1 : 0
+
   project     = var.gcp_project_id
   role_id     = "zillizByocIOperationViewer${local.role_suffix}"
   title       = "Zilliz BYOC-I Operation Viewer ${var.prefix_name}"
@@ -59,9 +71,11 @@ resource "google_project_iam_custom_role" "maintenance_operations" {
 }
 
 resource "google_project_iam_member" "maintenance_operations" {
+  count = var.manage_iam ? 1 : 0
+
   project = var.gcp_project_id
-  role    = google_project_iam_custom_role.maintenance_operations.id
-  member  = "serviceAccount:${google_service_account.management.email}"
+  role    = google_project_iam_custom_role.maintenance_operations[0].id
+  member  = "serviceAccount:${local.management_sa.email}"
 
   condition {
     title       = "zilliz_byoc_i_gke_operations"
@@ -71,6 +85,8 @@ resource "google_project_iam_member" "maintenance_operations" {
 }
 
 resource "google_project_iam_custom_role" "booter_kubernetes_bootstrap" {
+  count = var.manage_iam ? 1 : 0
+
   project     = var.gcp_project_id
   role_id     = "zillizByocIK8sBootstrap${local.role_suffix}"
   title       = "Zilliz BYOC-I Kubernetes Bootstrap ${var.prefix_name}"
@@ -134,12 +150,16 @@ resource "google_project_iam_custom_role" "booter_kubernetes_bootstrap" {
 }
 
 resource "google_project_iam_member" "booter_kubernetes_bootstrap" {
+  count = var.manage_iam ? 1 : 0
+
   project = var.gcp_project_id
-  role    = google_project_iam_custom_role.booter_kubernetes_bootstrap.id
-  member  = "serviceAccount:${google_service_account.booter.email}"
+  role    = google_project_iam_custom_role.booter_kubernetes_bootstrap[0].id
+  member  = "serviceAccount:${local.booter_sa.email}"
 }
 
 resource "google_project_iam_custom_role" "maintenance_project_reader" {
+  count = var.manage_iam ? 1 : 0
+
   project     = var.gcp_project_id
   role_id     = "zillizByocIProjectReader${local.role_suffix}"
   title       = "Zilliz BYOC-I Project Reader ${var.prefix_name}"
@@ -151,19 +171,23 @@ resource "google_project_iam_custom_role" "maintenance_project_reader" {
 }
 
 resource "google_project_iam_member" "maintenance_project_reader" {
+  count = var.manage_iam ? 1 : 0
+
   project = var.gcp_project_id
-  role    = google_project_iam_custom_role.maintenance_project_reader.id
-  member  = "serviceAccount:${google_service_account.management.email}"
+  role    = google_project_iam_custom_role.maintenance_project_reader[0].id
+  member  = "serviceAccount:${local.management_sa.email}"
 }
 
 resource "google_service_account_iam_member" "management_can_use_node_sa" {
-  service_account_id = google_service_account.gke_node.name
+  count = var.manage_iam ? 1 : 0
+
+  service_account_id = local.gke_node_sa.name
   role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.management.email}"
+  member             = "serviceAccount:${local.management_sa.email}"
 }
 
 resource "google_project_iam_custom_role" "maintenance_mig_resize" {
-  count = var.enable_direct_mig_resize ? 1 : 0
+  count = var.manage_iam && var.enable_direct_mig_resize ? 1 : 0
 
   project     = var.gcp_project_id
   role_id     = "zillizByocIMigResize${local.role_suffix}"
@@ -178,11 +202,11 @@ resource "google_project_iam_custom_role" "maintenance_mig_resize" {
 }
 
 resource "google_project_iam_member" "maintenance_mig_resize" {
-  count = var.enable_direct_mig_resize ? 1 : 0
+  count = var.manage_iam && var.enable_direct_mig_resize ? 1 : 0
 
   project = var.gcp_project_id
   role    = google_project_iam_custom_role.maintenance_mig_resize[0].id
-  member  = "serviceAccount:${google_service_account.management.email}"
+  member  = "serviceAccount:${local.management_sa.email}"
 
   condition {
     title       = "zilliz_byoc_i_gke_mig_only"
@@ -192,9 +216,11 @@ resource "google_project_iam_member" "maintenance_mig_resize" {
 }
 
 resource "google_project_iam_member" "storage_object_admin" {
+  count = var.manage_iam ? 1 : 0
+
   project = var.gcp_project_id
   role    = "roles/storage.objectAdmin"
-  member  = "serviceAccount:${google_service_account.storage.email}"
+  member  = "serviceAccount:${local.storage_sa.email}"
 
   condition {
     title       = "zilliz_byoc_i_storage_object_admin"
@@ -204,9 +230,11 @@ resource "google_project_iam_member" "storage_object_admin" {
 }
 
 resource "google_project_iam_member" "storage_bucket_viewer" {
+  count = var.manage_iam ? 1 : 0
+
   project = var.gcp_project_id
   role    = "roles/storage.bucketViewer"
-  member  = "serviceAccount:${google_service_account.storage.email}"
+  member  = "serviceAccount:${local.storage_sa.email}"
 
   condition {
     title       = "zilliz_byoc_i_storage_bucket_viewer"
@@ -216,34 +244,38 @@ resource "google_project_iam_member" "storage_bucket_viewer" {
 }
 
 resource "google_service_account_iam_member" "storage_workload_identity" {
-  for_each = {
+  for_each = var.manage_iam ? {
     for ksa in var.storage_workload_identity_ksas :
     "${ksa.namespace}/${ksa.name}" => ksa
-  }
+  } : {}
 
-  service_account_id = google_service_account.storage.name
+  service_account_id = local.storage_sa.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.gcp_project_id}.svc.id.goog[${each.value.namespace}/${each.value.name}]"
 }
 
 resource "google_service_account_iam_member" "management_workload_identity" {
-  for_each = {
+  for_each = var.manage_iam ? {
     for ksa in var.management_workload_identity_ksas :
     "${ksa.namespace}/${ksa.name}" => ksa
-  }
+  } : {}
 
-  service_account_id = google_service_account.management.name
+  service_account_id = local.management_sa.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.gcp_project_id}.svc.id.goog[${each.value.namespace}/${each.value.name}]"
 }
 
 resource "google_service_account_iam_member" "storage_workload_identity_cluster" {
-  service_account_id = google_service_account.storage.name
+  count = var.manage_iam ? 1 : 0
+
+  service_account_id = local.storage_sa.name
   role               = "roles/iam.workloadIdentityUser"
   member             = local.storage_cluster_workload_identity_member
 }
 
 resource "google_project_iam_custom_role" "booter_self_delete" {
+  count = var.manage_iam ? 1 : 0
+
   project = var.gcp_project_id
   role_id = "zillizByocIBooterDelete${local.role_suffix}"
   title   = "Zilliz BYOC-I Booter Self Delete ${var.prefix_name}"
@@ -281,9 +313,11 @@ resource "terraform_data" "booter_self_delete_tag_validation" {
 }
 
 resource "google_project_iam_member" "booter_self_delete" {
+  count = var.manage_iam ? 1 : 0
+
   project = var.gcp_project_id
-  role    = google_project_iam_custom_role.booter_self_delete.id
-  member  = "serviceAccount:${google_service_account.booter.email}"
+  role    = google_project_iam_custom_role.booter_self_delete[0].id
+  member  = "serviceAccount:${local.booter_sa.email}"
 
   condition {
     title       = "zilliz_byoc_i_booter_self_delete"
@@ -295,6 +329,8 @@ resource "google_project_iam_member" "booter_self_delete" {
 }
 
 resource "google_project_iam_custom_role" "booter_zone_operation_viewer" {
+  count = var.manage_iam ? 1 : 0
+
   project     = var.gcp_project_id
   role_id     = "zillizByocIBooterOpViewer${local.role_suffix}"
   title       = "Zilliz BYOC-I Booter Operation Viewer ${var.prefix_name}"
@@ -306,9 +342,11 @@ resource "google_project_iam_custom_role" "booter_zone_operation_viewer" {
 }
 
 resource "google_project_iam_member" "booter_zone_operation_viewer" {
+  count = var.manage_iam ? 1 : 0
+
   project = var.gcp_project_id
-  role    = google_project_iam_custom_role.booter_zone_operation_viewer.id
-  member  = "serviceAccount:${google_service_account.booter.email}"
+  role    = google_project_iam_custom_role.booter_zone_operation_viewer[0].id
+  member  = "serviceAccount:${local.booter_sa.email}"
 
   condition {
     title       = "zilliz_byoc_i_booter_zone_operations"

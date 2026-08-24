@@ -1,11 +1,16 @@
 locals {
-  sa_prefix          = trimsuffix(substr(var.prefix_name, 0, 18), "-")
-  gke_node_sa_name   = var.gke_node_service_account_name != "" ? var.gke_node_service_account_name : "${local.sa_prefix}-node"
-  management_sa_name = var.management_service_account_name != "" ? var.management_service_account_name : "${local.sa_prefix}-maintenance"
-  storage_sa_name    = var.storage_service_account_name != "" ? var.storage_service_account_name : "${local.sa_prefix}-storage"
-  booter_sa_name     = var.booter_service_account_name != "" ? var.booter_service_account_name : "${local.sa_prefix}-booter"
-  role_suffix_raw    = replace(title(replace(var.prefix_name, "-", " ")), " ", "")
-  role_suffix        = substr(local.role_suffix_raw, 0, 20)
+  sa_prefix               = trimsuffix(substr(var.prefix_name, 0, 18), "-")
+  gke_node_sa_name        = var.gke_node_service_account_name != "" ? var.gke_node_service_account_name : "${local.sa_prefix}-node"
+  management_sa_name      = var.management_service_account_name != "" ? var.management_service_account_name : "${local.sa_prefix}-maintenance"
+  storage_sa_name         = var.storage_service_account_name != "" ? var.storage_service_account_name : "${local.sa_prefix}-storage"
+  booter_sa_name          = var.booter_service_account_name != "" ? var.booter_service_account_name : "${local.sa_prefix}-booter"
+  create_service_accounts = var.service_account_mode == "create"
+  gke_node_sa             = local.create_service_accounts ? google_service_account.gke_node[0] : data.google_service_account.gke_node[0]
+  management_sa           = local.create_service_accounts ? google_service_account.management[0] : data.google_service_account.management[0]
+  storage_sa              = local.create_service_accounts ? google_service_account.storage[0] : data.google_service_account.storage[0]
+  booter_sa               = local.create_service_accounts ? google_service_account.booter[0] : data.google_service_account.booter[0]
+  role_suffix_raw         = replace(title(replace(var.prefix_name, "-", " ")), " ", "")
+  role_suffix             = substr(local.role_suffix_raw, 0, 20)
 
   storage_cluster_workload_identity_member = "principalSet://iam.googleapis.com/projects/${data.google_project.this.number}/locations/global/workloadIdentityPools/${var.gcp_project_id}.svc.id.goog/kubernetes.cluster/https://container.googleapis.com/v1/projects/${var.gcp_project_id}/locations/${var.gke_location}/clusters/${var.gke_cluster_name}"
 

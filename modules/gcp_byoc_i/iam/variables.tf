@@ -23,26 +23,43 @@ variable "storage_bucket_name" {
   type        = string
 }
 
+variable "service_account_mode" {
+  description = "Service account lifecycle mode. create provisions the four BYOC-I service accounts; existing reads customer-managed accounts."
+  type        = string
+  default     = "create"
+
+  validation {
+    condition     = contains(["create", "existing"], var.service_account_mode)
+    error_message = "service_account_mode must be create or existing."
+  }
+}
+
+variable "manage_iam" {
+  description = "Whether Terraform creates BYOC-I custom roles and manages project/service-account IAM bindings."
+  type        = bool
+  default     = true
+}
+
 variable "gke_node_service_account_name" {
-  description = "GKE node service account account_id. Defaults to <prefix_name>-node."
+  description = "GKE node service account account_id. Defaults to <prefix_name>-node in create mode and is required in existing mode."
   type        = string
   default     = ""
 }
 
 variable "management_service_account_name" {
-  description = "Maintenance service account account_id. Defaults to <prefix_name>-maintenance."
+  description = "Maintenance service account account_id. Defaults to <prefix_name>-maintenance in create mode and is required in existing mode."
   type        = string
   default     = ""
 }
 
 variable "storage_service_account_name" {
-  description = "Storage service account account_id. Defaults to <prefix_name>-storage."
+  description = "Storage service account account_id. Defaults to <prefix_name>-storage in create mode and is required in existing mode."
   type        = string
   default     = ""
 }
 
 variable "booter_service_account_name" {
-  description = "Booter VM service account account_id. Defaults to <prefix_name>-booter."
+  description = "Booter VM service account account_id. Defaults to <prefix_name>-booter in create mode and is required in existing mode."
   type        = string
   default     = ""
 }

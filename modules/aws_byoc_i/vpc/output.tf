@@ -19,3 +19,7 @@ output "public_subnets" {
   value = module.vpc.public_subnets
 }
 
+output "availability_zones" {
+  description = "Availability zones used by the private subnets"
+  value       = local.azs
+}

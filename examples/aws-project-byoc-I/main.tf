@@ -20,6 +20,7 @@ module "s3" {
   prefix_name          = local.prefix_name
   dataplane_id         = local.dataplane_id
   customer_bucket_name = var.customer_bucket_name
+  force_destroy        = var.bucket_force_destroy
   custom_tags          = var.custom_tags
   enable_s3_kms        = var.enable_s3_kms
   s3_kms_key_arn       = var.s3_kms_key_arn

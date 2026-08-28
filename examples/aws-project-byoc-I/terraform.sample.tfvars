@@ -58,6 +58,10 @@ private_link_security_group_name = "your-endpoint-sg-name"
 # If empty, uses "${dataplane_id}-milvus" as bucket name
 customer_bucket_name = "your-bucket-name"
 
+# Whether Terraform should delete a non-empty S3 bucket during destroy.
+# Keep false by default to protect bucket data.
+bucket_force_destroy = false
+
 # The name of the customer EKS cluster
 # If empty, uses "${dataplane_id}" as EKS cluster name
 customer_eks_cluster_name = "your-eks-cluster-name"

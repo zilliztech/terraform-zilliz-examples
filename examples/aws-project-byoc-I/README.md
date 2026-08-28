@@ -510,6 +510,45 @@ After deployment completes, verify resources:
    - Check project status
    - Verify data plane connectivity
 
+## Destroying the Infrastructure
+
+Choose one of the following workflows depending on whether the S3 bucket and its data should be deleted or retained. Run the commands from this example directory and provide the same variables and credentials used for deployment. The examples below assume those values are stored in `terraform.tfvars`.
+
+### Delete the S3 Bucket
+
+By default, `bucket_force_destroy` is `false`, so AWS rejects deletion of a non-empty bucket. To delete the bucket and all objects in it, first update only the S3 bucket with `bucket_force_destroy=true`:
+
+```bash
+ZILLIZCLOUD_API_KEY=<your-zilliz-api-key> \
+terraform apply \
+  -target='module.s3.module.s3_bucket.aws_s3_bucket.this[0]' \
+  -var='bucket_force_destroy=true'
+```
+
+Review the plan and confirm that the S3 bucket is updated in place. Then destroy the complete deployment with the same value:
+
+```bash
+ZILLIZCLOUD_API_KEY=<your-zilliz-api-key> \
+terraform destroy \
+  -var='bucket_force_destroy=true'
+```
+
+This operation permanently deletes all objects in the S3 bucket and the bucket itself.
+
+### Retain the S3 Bucket
+
+To destroy the rest of the deployment without deleting the S3 bucket, back up the Terraform state and remove the complete S3 module from state before running destroy:
+
+```bash
+terraform state pull > terraform-state-backup.json
+terraform state rm 'module.s3'
+
+ZILLIZCLOUD_API_KEY=<your-zilliz-api-key> \
+terraform destroy
+```
+
+The bucket and its objects remain in AWS, but Terraform no longer manages them. A later deployment must import the bucket and its related S3 resources before Terraform can manage them again. Store `terraform-state-backup.json` securely because Terraform state can contain sensitive information.
+
 ## Outputs
 
 After successful deployment:

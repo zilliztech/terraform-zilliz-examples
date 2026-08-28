@@ -99,6 +99,12 @@ variable "customer_bucket_name" {
   default     = ""
 }
 
+variable "bucket_force_destroy" {
+  description = "Whether to force destroy non-empty S3 buckets."
+  type        = bool
+  default     = false
+}
+
 variable "customer_eks_cluster_name" {
   description = "The name of the customer EKS cluster"
   type        = string

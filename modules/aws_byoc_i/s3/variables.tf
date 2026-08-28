@@ -19,6 +19,12 @@ variable "customer_bucket_name" {
   default     = ""
 }
 
+variable "force_destroy" {
+  description = "Whether to force destroy non-empty buckets."
+  type        = bool
+  default     = false
+}
+
 variable "enable_s3_kms" {
   description = "Enable S3 KMS usage"
   type        = bool

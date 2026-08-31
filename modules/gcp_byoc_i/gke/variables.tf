@@ -112,7 +112,9 @@ variable "node_initial_count" {
   type        = number
   default     = null
   validation {
-    condition     = var.node_initial_count == null || (var.node_initial_count >= 0 && floor(var.node_initial_count) == var.node_initial_count)
+    condition = var.node_initial_count == null ? true : (
+      var.node_initial_count >= 0 && floor(var.node_initial_count) == var.node_initial_count
+    )
     error_message = "node_initial_count must be null or a non-negative integer."
   }
 }
@@ -122,7 +124,9 @@ variable "node_disk_size_gb" {
   type        = number
   default     = null
   validation {
-    condition     = var.node_disk_size_gb == null || (var.node_disk_size_gb > 0 && floor(var.node_disk_size_gb) == var.node_disk_size_gb)
+    condition = var.node_disk_size_gb == null ? true : (
+      var.node_disk_size_gb > 0 && floor(var.node_disk_size_gb) == var.node_disk_size_gb
+    )
     error_message = "node_disk_size_gb must be null or a positive integer."
   }
 }

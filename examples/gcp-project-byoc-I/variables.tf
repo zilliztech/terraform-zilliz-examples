@@ -332,7 +332,9 @@ variable "gke_node_initial_count" {
   type        = number
   default     = null
   validation {
-    condition     = var.gke_node_initial_count == null || (var.gke_node_initial_count >= 0 && floor(var.gke_node_initial_count) == var.gke_node_initial_count)
+    condition = var.gke_node_initial_count == null ? true : (
+      var.gke_node_initial_count >= 0 && floor(var.gke_node_initial_count) == var.gke_node_initial_count
+    )
     error_message = "gke_node_initial_count must be null or a non-negative integer."
   }
 }
@@ -342,7 +344,9 @@ variable "gke_node_disk_size_gb" {
   type        = number
   default     = null
   validation {
-    condition     = var.gke_node_disk_size_gb == null || (var.gke_node_disk_size_gb > 0 && floor(var.gke_node_disk_size_gb) == var.gke_node_disk_size_gb)
+    condition = var.gke_node_disk_size_gb == null ? true : (
+      var.gke_node_disk_size_gb > 0 && floor(var.gke_node_disk_size_gb) == var.gke_node_disk_size_gb
+    )
     error_message = "gke_node_disk_size_gb must be null or a positive integer."
   }
 }

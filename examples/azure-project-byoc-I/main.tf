@@ -129,11 +129,12 @@ module "milvus_aks" {
   storage_identity_id           = local.common_storage_identity_id
 
   # Optional AKS configuration
-  env          = var.env
-  dataplane_id = local.data_plane_id
-  agent_tag    = local.agent_config.tag
-  auth_token   = local.agent_config.auth_token
-  custom_tags  = local.common_tags
+  env               = var.env
+  dataplane_id      = local.data_plane_id
+  agent_tag         = local.agent_config.tag
+  tunnel_client_tag = local.agent_config.tunnel_client_image_url
+  auth_token        = local.agent_config.auth_token
+  custom_tags       = local.common_tags
 
   depends_on = [module.vnet, module.zilliz_private_endpoint, module.storage_identity]
 }

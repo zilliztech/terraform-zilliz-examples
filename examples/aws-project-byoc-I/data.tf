@@ -76,8 +76,9 @@ locals {
   # Configuration object for Zilliz monitoring and management agent
   # Contains authentication token and container image URL for agent deployment
   agent_config = {
-    auth_token = data.zillizcloud_byoc_i_project_settings.this.op_config.token
-    tag        = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
+    auth_token              = data.zillizcloud_byoc_i_project_settings.this.op_config.token
+    tag                     = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
+    tunnel_client_image_url = data.zillizcloud_byoc_i_project_settings.this.op_config.tunnel_client_image_url
   }
 
   # Tiered node quota from API (separate provider field, null when not enabled)

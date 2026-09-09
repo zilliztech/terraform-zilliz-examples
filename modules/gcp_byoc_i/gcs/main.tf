@@ -18,10 +18,11 @@ moved {
   to   = google_storage_bucket.this[0]
 }
 
-data "google_project" "this" {
+# Fetching the service agent creates it on demand for new projects before KMS IAM grants.
+data "google_storage_project_service_account" "gcs" {
   count = local.grant_gcs_kms_key_iam ? 1 : 0
 
-  project_id = var.gcp_project_id
+  project = var.gcp_project_id
 }
 
 resource "google_kms_key_ring" "gcs" {
@@ -44,7 +45,7 @@ resource "google_kms_crypto_key_iam_member" "gcs_cmek" {
 
   crypto_key_id = local.effective_gcs_kms_key_name
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
-  member        = "serviceAccount:service-${data.google_project.this[0].number}@gs-project-accounts.iam.gserviceaccount.com"
+  member        = "serviceAccount:${data.google_storage_project_service_account.gcs[0].email_address}"
 
   depends_on = [google_kms_crypto_key.gcs]
 }

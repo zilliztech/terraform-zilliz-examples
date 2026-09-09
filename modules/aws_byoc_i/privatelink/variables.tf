@@ -8,6 +8,12 @@ variable "region" {
   type        = string
 }
 
+variable "endpoint_service_name" {
+  description = "Full AWS VPC endpoint service name published by Zilliz Cloud"
+  type        = string
+  default     = ""
+}
+
 variable "dataplane_id" {
   description = "Dataplane ID"
   type        = string

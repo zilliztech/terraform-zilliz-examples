@@ -7,7 +7,15 @@ data "aws_subnet" "customer_private" {
   id       = each.value
 }
 
+data "zillizcloud_byoc_vpc_endpoint_service" "this" {
+  count = local.enable_private_link && local.configured_vpce_service_id == "" ? 1 : 0
+
+  cloud_id = "aws"
+  region   = local.region
+}
+
 locals {
+  config = yamldecode(file("${path.module}/../../modules/conf.yaml"))
   # Boolean flag to determine if customer is providing their own existing VPC infrastructure
   # Returns true if customer_vpc_id variable is not empty, false otherwise
   is_existing_vpc = var.customer_vpc_id != ""
@@ -68,6 +76,13 @@ locals {
   # Flag indicating whether VPC private link should be enabled for secure connectivity
   # Determined by Zilliz cloud project configuration for enhanced network security
   enable_private_link = data.zillizcloud_byoc_i_project_settings.this.private_link_enabled
+
+  configured_vpce_service_id = trimspace(try(local.config.vpce_service_ids[local.region], ""))
+  vpce_service_name = !local.enable_private_link ? "" : (
+    local.configured_vpce_service_id != "" ?
+    "com.amazonaws.vpce.${local.region}.${local.configured_vpce_service_id}" :
+    data.zillizcloud_byoc_vpc_endpoint_service.this[0].endpoint_service
+  )
 
   # External ID for cross-account IAM role assumption security
   # Used by Zilliz cloud services to securely access customer AWS resources

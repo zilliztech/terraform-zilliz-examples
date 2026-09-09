@@ -31,3 +31,8 @@ variable "enable_private_link" {
   default     = false
 }
 
+variable "endpoint_service_name" {
+  description = "Full AWS VPC endpoint service name published by Zilliz Cloud"
+  type        = string
+  default     = ""
+}

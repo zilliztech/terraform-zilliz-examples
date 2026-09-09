@@ -52,7 +52,10 @@ locals {
     length(var.minimal_roles.node_role.name) > 0 ? var.minimal_roles.node_role.name : "${local.prefix_name}-eks-node-role"
   ) : "${local.prefix_name}-eks-node-role" # fallback for resource creation
 
-  eks_cluster_oidc_issuer_thumbprint = local.config.eks_cluster_oidc_issuer_thumbprint[var.region]
+  configured_eks_cluster_oidc_issuer_thumbprint = trimspace(try(local.config.eks_cluster_oidc_issuer_thumbprint[var.region], ""))
+  eks_cluster_oidc_issuer_thumbprint = local.configured_eks_cluster_oidc_issuer_thumbprint != "" ? (
+    local.configured_eks_cluster_oidc_issuer_thumbprint
+  ) : data.tls_certificate.eks_oidc[0].certificates[0].sha1_fingerprint
 
   # Security group ingress protocols
   # sg_ingress_protocol = ["tcp", "udp"]

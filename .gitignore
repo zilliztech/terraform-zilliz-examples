@@ -16,6 +16,11 @@ crash.*.log
 !*.tfvars
 !*.tfvars.json
 
+# ...but never the real values. Committed examples use terraform.sample.tfvars
+# or *.tfvars.json; a bare terraform.tfvars is a live, environment-specific file.
+**/terraform.tfvars
+**/*.auto.tfvars
+
 # Ignore override files
 override.tf
 override.tf.json

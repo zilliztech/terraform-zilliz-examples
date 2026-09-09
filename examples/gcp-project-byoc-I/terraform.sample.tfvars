@@ -108,3 +108,8 @@ gcp_project_id = "customer-gcp-project"
 # Usually do not override these unless Zilliz instructs you to use custom tunnel hosts.
 # agent_server_host = "cloud-tunnel.gcp-us-west1.byoc.cloud.zilliz.com"
 # agent_tunnel_host = "k8sxxxxxxxx.gcp-us-west1.byoc.cloud.zilliz.com"
+
+# GCS and PVC disk CMEK are enabled by default; empty key names create dedicated keys.
+# enable_pd_kms = true
+# pd_kms_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/example/cryptoKeys/pd"
+# grant_pd_kms_key_iam = true

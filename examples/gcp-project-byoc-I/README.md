@@ -132,7 +132,7 @@ bucket_mode          = "existing"
 customer_bucket_name = "customer-existing-bucket"
 ```
 
-The bucket must already exist and be accessible to the Terraform runner. In `existing` mode, Terraform reads the bucket and still configures the BYOC-I storage IAM permissions against it, but does not change bucket settings, labels, encryption, or lifecycle. `enable_gcs_kms` must remain `false`; configure encryption on the existing bucket outside this example.
+The bucket must already exist and be accessible to the Terraform runner. In `existing` mode, Terraform reads the bucket and still configures the BYOC-I storage IAM permissions against it, but does not change bucket settings, labels, encryption, or lifecycle. `enable_gcs_kms` must be explicitly set to `false`; configure encryption on the existing bucket outside this example.
 
 Do not switch a bucket already managed in this state directly from `create` to `existing`, because Terraform would plan to destroy the managed resource. Remove it from state first with `terraform state rm module.gcs.google_storage_bucket.this[0]`, then change the mode.
 
@@ -279,7 +279,7 @@ The booter VM always uses a dedicated booter service account. The Zilliz BYOC or
 
 ### GCS Bucket CMEK
 
-The GCS bucket uses Google-managed encryption by default. To use a customer-managed Cloud KMS key for new bucket objects, enable CMEK:
+New GCS buckets use a customer-managed Cloud KMS key by default. The default setting is:
 
 ```hcl
 enable_gcs_kms = true
@@ -401,3 +401,20 @@ terraform destroy \
   -var="gcp_project_id=<YourGcpProjectId>" \
   -var="bucket_force_destroy=true"
 ```
+
+### Default CMEK for new dataplanes
+
+New BYOC-I dataplanes enable GCS and PVC Persistent Disk CMEK by default.
+`enable_gcs_kms = false` and `enable_pd_kms = false` independently opt out.
+An empty `pd_kms_key_name` creates a dedicated regional key; otherwise supply a full
+Cloud KMS crypto key resource name in the GKE region. The cluster project's Compute
+Engine service agent receives Encrypter/Decrypter access. For a pre-authorized
+customer key, set `grant_pd_kms_key_iam = false`. The runner needs KMS creation/IAM
+permissions, including in the key project when using a cross-project key.
+
+The disk key is passed through `ext_config.pd_kms_key_name` to paas-deploy's
+`gp3-etcd` PD CSI StorageClass. Deploy a bootstrap image containing that support
+before using this example. This does not enable node boot disk or Secrets CMEK.
+Existing dataplane updates and disk migrations are outside this example's scope.
+For `bucket_mode = "existing"`, explicitly set `enable_gcs_kms = false`; the bucket
+owner configures its encryption independently.

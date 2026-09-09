@@ -93,3 +93,7 @@ output "master_ipv4_cidr_block" {
 output "psc_endpoint_ip" {
   value = local.psc_endpoint_ip
 }
+
+output "pd_kms_key_name" {
+  value = module.pd_kms.key_name
+}

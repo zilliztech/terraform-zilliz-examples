@@ -40,7 +40,7 @@ variable "labels" {
 variable "enable_gcs_kms" {
   description = "Enable Cloud KMS customer-managed encryption key for the GCS bucket."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "gcs_kms_key_name" {

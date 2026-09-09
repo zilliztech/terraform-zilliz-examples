@@ -154,6 +154,7 @@ locals {
   }
 
   ext_config = {
+    pd_kms_key_name    = module.pd_kms.key_name
     gcp_project_id     = var.gcp_project_id
     network_project_id = local.network_project_id
     is_shared_vpc      = local.is_shared_vpc

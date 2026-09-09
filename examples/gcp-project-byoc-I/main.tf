@@ -121,6 +121,7 @@ module "workload_identity" {
 
   manage_iam                     = var.manage_iam
   gcp_project_id                 = var.gcp_project_id
+  gcp_project_number             = data.google_project.this.number
   gke_location                   = module.gke.cluster_location
   gke_cluster_name               = module.gke.cluster_name
   storage_sa_name                = module.iam.storage_sa_name

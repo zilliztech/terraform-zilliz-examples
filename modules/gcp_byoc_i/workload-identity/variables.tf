@@ -3,6 +3,11 @@ variable "gcp_project_id" {
   type        = string
 }
 
+variable "gcp_project_number" {
+  description = "Customer GCP project number, resolved outside the GKE-dependent module so IAM members remain known during planning."
+  type        = string
+}
+
 variable "manage_iam" {
   description = "Whether Terraform manages the BYOC-I Workload Identity bindings."
   type        = bool

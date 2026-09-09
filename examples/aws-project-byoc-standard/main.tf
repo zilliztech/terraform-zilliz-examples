@@ -1,3 +1,20 @@
+locals {
+  config                     = yamldecode(file("${path.module}/../../modules/conf.yaml"))
+  configured_vpce_service_id = trimspace(try(local.config.vpce_service_ids[var.region], ""))
+  vpce_service_name = !var.enable_private_link ? "" : (
+    local.configured_vpce_service_id != "" ?
+    "com.amazonaws.vpce.${var.region}.${local.configured_vpce_service_id}" :
+    data.zillizcloud_private_endpoint_services.this[0].endpoint_services[0].endpoint_service
+  )
+}
+
+data "zillizcloud_private_endpoint_services" "this" {
+  count = var.enable_private_link && local.configured_vpce_service_id == "" ? 1 : 0
+
+  region_id = "aws-${var.region}"
+  page_size = 1
+}
+
 module "aws_bucket" {
   source = "../../modules/aws_byoc/aws_bucket"
 
@@ -20,10 +37,11 @@ module "aws_iam" {
 module "aws_vpc" {
   source = "../../modules/aws_byoc/aws_vpc"
 
-  region              = var.region
-  vpc_cidr            = var.vpc_cidr
-  name                = var.name
-  enable_private_link = var.enable_private_link
+  region                = var.region
+  vpc_cidr              = var.vpc_cidr
+  name                  = var.name
+  enable_private_link   = var.enable_private_link
+  endpoint_service_name = local.vpce_service_name
 }
 
 

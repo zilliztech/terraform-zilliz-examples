@@ -33,6 +33,7 @@ module "private_link" {
   prefix_name                = local.prefix_name
   dataplane_id               = local.dataplane_id
   region                     = local.region
+  endpoint_service_name      = local.vpce_service_name
   vpc_id                     = local.vpc_id
   subnet_ids                 = local.private_link_subnet_ids
   security_group_ids         = local.private_link_security_group_ids

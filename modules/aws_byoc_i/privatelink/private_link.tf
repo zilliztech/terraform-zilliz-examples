@@ -1,7 +1,6 @@
 resource "aws_vpc_endpoint" "byoc_endpoint" {
   vpc_id              = var.vpc_id
-  // get the vpce service id from the vpce_config
-  service_name        = "com.amazonaws.vpce.${var.region}.${local.config.vpce_service_ids[var.region]}"
+  service_name        = local.endpoint_service_name
   vpc_endpoint_type   = "Interface"
   subnet_ids          = var.subnet_ids
   security_group_ids  = local.security_group_ids
@@ -13,5 +12,5 @@ resource "aws_vpc_endpoint" "byoc_endpoint" {
     Caller = data.aws_caller_identity.current.arn
   }, var.custom_tags)
 
-  depends_on = [ aws_security_group.byoc_endpoint_sg ]
+  depends_on = [aws_security_group.byoc_endpoint_sg]
 }

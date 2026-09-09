@@ -1,15 +1,15 @@
 data "aws_caller_identity" "current" {}
 
 locals {
-  config = yamldecode(file("${path.module}/../../conf.yaml"))
+  config                = yamldecode(file("${path.module}/../../conf.yaml"))
+  endpoint_service_name = var.endpoint_service_name != "" ? var.endpoint_service_name : "com.amazonaws.vpce.${var.region}.${local.config.vpce_service_ids[var.region]}"
 }
 
 resource "aws_vpc_endpoint" "byoc_endpoint" {
   count = var.enable_private_link ? 1 : 0
 
-  vpc_id = module.vpc.vpc_id
-  // get the vpce service id from the vpce_config
-  service_name        = "com.amazonaws.vpce.${var.region}.${local.config.vpce_service_ids[var.region]}"
+  vpc_id              = module.vpc.vpc_id
+  service_name        = local.endpoint_service_name
   vpc_endpoint_type   = "Interface"
   subnet_ids          = module.vpc.private_subnets
   security_group_ids  = [aws_security_group.zilliz_byoc_sg.id]

@@ -1,6 +1,5 @@
 locals {
   required_project_services = toset(concat([
-    "cloudresourcemanager.googleapis.com",
     "artifactregistry.googleapis.com",
     "compute.googleapis.com",
     "container.googleapis.com",
@@ -11,6 +10,14 @@ locals {
   var.gke_binary_authorization_evaluation_mode != "" ? ["binaryauthorization.googleapis.com"] : []))
 }
 
+# Keep this API separate so project metadata reads do not wait on unrelated APIs.
+resource "google_project_service" "cloud_resource_manager" {
+  project = var.gcp_project_id
+  service = "cloudresourcemanager.googleapis.com"
+
+  disable_on_destroy = false
+}
+
 resource "google_project_service" "required" {
   for_each = local.required_project_services
 
@@ -18,4 +25,6 @@ resource "google_project_service" "required" {
   service = each.key
 
   disable_on_destroy = false
+
+  depends_on = [google_project_service.cloud_resource_manager]
 }

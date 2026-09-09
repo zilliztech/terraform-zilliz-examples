@@ -12,8 +12,6 @@ locals {
   role_suffix_raw         = replace(title(replace(var.prefix_name, "-", " ")), " ", "")
   role_suffix             = substr(local.role_suffix_raw, 0, 20)
 
-  storage_cluster_workload_identity_member = "principalSet://iam.googleapis.com/projects/${data.google_project.this.number}/locations/global/workloadIdentityPools/${var.gcp_project_id}.svc.id.goog/kubernetes.cluster/https://container.googleapis.com/v1/projects/${var.gcp_project_id}/locations/${var.gke_location}/clusters/${var.gke_cluster_name}"
-
   # GKE truncates the cluster-name portion of managed instance group names based on node pool name length.
   gke_mig_cluster_name_prefix = substr(var.gke_cluster_name, 0, min(length(var.gke_cluster_name), 21))
   gke_mig_resize_condition    = "resource.name.extract(\"instanceGroupManagers/{name}\").startsWith(\"gke-${local.gke_mig_cluster_name_prefix}\")"

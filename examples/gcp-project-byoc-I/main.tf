@@ -57,7 +57,6 @@ module "iam" {
   management_service_account_name = var.customer_management_service_account_name
   storage_service_account_name    = var.customer_storage_service_account_name
   booter_service_account_name     = var.customer_booter_service_account_name
-  storage_workload_identity_ksas  = local.storage_workload_identity_ksas
   enable_direct_mig_resize        = var.enable_direct_mig_resize
   booter_instance_name            = local.booter_vm_name
   booter_zone                     = local.gcp_zones[0]
@@ -113,6 +112,25 @@ module "gke" {
   depends_on = [google_project_service.required, terraform_data.gke_input_validation, module.iam, module.shared_vpc_iam]
 }
 
+# GKE creates the <gcp_project_id>.svc.id.goog Workload Identity pool implicitly with
+# the first Workload Identity enabled cluster in the project, so these bindings must be
+# applied after module.gke. module.gke depends on module.iam for the node service
+# account, which is why they cannot live in module.iam.
+module "workload_identity" {
+  source = "../../modules/gcp_byoc_i/workload-identity"
+
+  manage_iam                     = var.manage_iam
+  gcp_project_id                 = var.gcp_project_id
+  gcp_project_number             = data.google_project.this.number
+  gke_location                   = module.gke.cluster_location
+  gke_cluster_name               = module.gke.cluster_name
+  storage_sa_name                = module.iam.storage_sa_name
+  management_sa_name             = module.iam.management_sa_name
+  storage_workload_identity_ksas = local.storage_workload_identity_ksas
+
+  depends_on = [google_project_service.required, module.iam, module.gke]
+}
+
 module "shared_vpc_iam" {
   count  = local.is_shared_vpc && var.manage_shared_vpc_iam ? 1 : 0
   source = "../../modules/gcp_byoc_i/shared-vpc-iam"
@@ -165,7 +183,7 @@ module "booter_vm" {
   labels                          = local.common_labels
   resource_manager_tags           = local.vendor_resource_manager_tags
 
-  depends_on = [google_project_service.required, terraform_data.vendor_tag_input_validation, module.iam, module.gke, module.private_link]
+  depends_on = [google_project_service.required, terraform_data.vendor_tag_input_validation, module.iam, module.workload_identity, module.gke, module.private_link]
 }
 
 resource "zillizcloud_byoc_i_project_agent" "this" {
@@ -216,6 +234,7 @@ resource "zillizcloud_byoc_i_project" "this" {
     module.gcs,
     module.pd_kms,
     module.iam,
+    module.workload_identity,
     module.private_link,
     module.booter_vm,
   ]

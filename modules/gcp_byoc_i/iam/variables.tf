@@ -64,29 +64,6 @@ variable "booter_service_account_name" {
   default     = ""
 }
 
-variable "storage_workload_identity_ksas" {
-  description = "Kubernetes service accounts allowed to impersonate storage_sa via GKE Workload Identity."
-  type = list(object({
-    namespace = string
-    name      = string
-  }))
-  default = []
-}
-
-variable "management_workload_identity_ksas" {
-  description = "Kubernetes service accounts allowed to impersonate management_sa via GKE Workload Identity."
-  type = list(object({
-    namespace = string
-    name      = string
-  }))
-  default = [
-    {
-      namespace = "infra"
-      name      = "infra-agent-sa"
-    }
-  ]
-}
-
 variable "enable_direct_mig_resize" {
   description = "Enable direct GKE-managed MIG resize permissions for maintenance_sa. Required for node group scale operations."
   type        = bool

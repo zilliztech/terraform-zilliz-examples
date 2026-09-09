@@ -243,36 +243,6 @@ resource "google_project_iam_member" "storage_bucket_viewer" {
   }
 }
 
-resource "google_service_account_iam_member" "storage_workload_identity" {
-  for_each = var.manage_iam ? {
-    for ksa in var.storage_workload_identity_ksas :
-    "${ksa.namespace}/${ksa.name}" => ksa
-  } : {}
-
-  service_account_id = local.storage_sa.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.gcp_project_id}.svc.id.goog[${each.value.namespace}/${each.value.name}]"
-}
-
-resource "google_service_account_iam_member" "management_workload_identity" {
-  for_each = var.manage_iam ? {
-    for ksa in var.management_workload_identity_ksas :
-    "${ksa.namespace}/${ksa.name}" => ksa
-  } : {}
-
-  service_account_id = local.management_sa.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.gcp_project_id}.svc.id.goog[${each.value.namespace}/${each.value.name}]"
-}
-
-resource "google_service_account_iam_member" "storage_workload_identity_cluster" {
-  count = var.manage_iam ? 1 : 0
-
-  service_account_id = local.storage_sa.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = local.storage_cluster_workload_identity_member
-}
-
 resource "google_project_iam_custom_role" "booter_self_delete" {
   count = var.manage_iam ? 1 : 0
 

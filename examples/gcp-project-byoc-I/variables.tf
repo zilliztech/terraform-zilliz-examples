@@ -460,7 +460,7 @@ variable "bucket_force_destroy" {
 variable "enable_gcs_kms" {
   description = "Enable Cloud KMS customer-managed encryption key for the GCS bucket."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "gcs_kms_key_name" {
@@ -507,7 +507,7 @@ variable "labels" {
 variable "enable_pd_kms" {
   description = "Enable CMEK for Persistent Disks provisioned by the bootstrap StorageClass."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "pd_kms_key_name" {

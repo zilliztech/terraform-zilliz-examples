@@ -1,6 +1,6 @@
 variable "enabled" {
   type    = bool
-  default = true
+  default = false
 }
 variable "key_name" {
   type    = string

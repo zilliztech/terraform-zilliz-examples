@@ -4,15 +4,15 @@ locals {
   vpce_service_name = !var.enable_private_link ? "" : (
     local.configured_vpce_service_id != "" ?
     "com.amazonaws.vpce.${var.region}.${local.configured_vpce_service_id}" :
-    data.zillizcloud_private_endpoint_services.this[0].endpoint_services[0].endpoint_service
+    data.zillizcloud_byoc_vpc_endpoint_service.this[0].endpoint_service
   )
 }
 
-data "zillizcloud_private_endpoint_services" "this" {
+data "zillizcloud_byoc_vpc_endpoint_service" "this" {
   count = var.enable_private_link && local.configured_vpce_service_id == "" ? 1 : 0
 
-  region_id = "aws-${var.region}"
-  page_size = 1
+  cloud_id = "aws"
+  region   = var.region
 }
 
 module "aws_bucket" {

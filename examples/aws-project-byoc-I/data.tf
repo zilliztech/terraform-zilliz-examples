@@ -7,11 +7,11 @@ data "aws_subnet" "customer_private" {
   id       = each.value
 }
 
-data "zillizcloud_private_endpoint_services" "this" {
+data "zillizcloud_byoc_vpc_endpoint_service" "this" {
   count = local.enable_private_link && local.configured_vpce_service_id == "" ? 1 : 0
 
-  region_id = data.zillizcloud_byoc_i_project_settings.this.region
-  page_size = 1
+  cloud_id = "aws"
+  region   = local.region
 }
 
 locals {
@@ -81,7 +81,7 @@ locals {
   vpce_service_name = !local.enable_private_link ? "" : (
     local.configured_vpce_service_id != "" ?
     "com.amazonaws.vpce.${local.region}.${local.configured_vpce_service_id}" :
-    data.zillizcloud_private_endpoint_services.this[0].endpoint_services[0].endpoint_service
+    data.zillizcloud_byoc_vpc_endpoint_service.this[0].endpoint_service
   )
 
   # External ID for cross-account IAM role assumption security

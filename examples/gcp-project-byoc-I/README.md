@@ -454,6 +454,6 @@ An explicit `lb_subnet.name` continues to use direct lookup. The default `lb_sub
 
 ### Externally managed GCP APIs
 
-Set `enable_project_services = false` to skip Terraform's automatic GCP API enablement. The default is `true`. Required APIs must already be enabled by the customer, including Cloud KMS and Binary Authorization when those features are configured.
+Set `enable_project_services = false` to skip Terraform's automatic GCP API enablement. This temporary branch defaults to `false`; restore `true` before merging. Required APIs must already be enabled by the customer, including Cloud KMS and Binary Authorization when those features are configured.
 
 Switching an existing deployment to `false` removes the API resources from Terraform management but does not disable the APIs (`disable_on_destroy = false`).

@@ -24,9 +24,12 @@ resource "google_compute_subnetwork" "primary" {
     ip_cidr_range = local.created_pod_subnet_cidr
   }
 
-  secondary_ip_range {
-    range_name    = local.service_subnet_name
-    ip_cidr_range = local.created_service_subnet_cidr
+  dynamic "secondary_ip_range" {
+    for_each = local.managed_services ? [] : [1]
+    content {
+      range_name    = local.service_subnet_name
+      ip_cidr_range = local.created_service_subnet_cidr
+    }
   }
 }
 

@@ -1,4 +1,6 @@
 locals {
+  managed_services = var.service_subnet.mode == "gke-managed"
+
   create_vpc            = var.vpc_mode == "create"
   create_primary_subnet = var.subnet_mode == "create"
   create_lb_subnet      = var.lb_subnet_mode == "create"
@@ -6,7 +8,7 @@ locals {
   vpc_name             = var.vpc_name != "" ? var.vpc_name : "${var.prefix_name}-vpc"
   primary_subnet_name  = var.primary_subnet.name != "" ? var.primary_subnet.name : "${var.prefix_name}-primary"
   pod_subnet_name      = var.pod_subnet.name != "" ? var.pod_subnet.name : "${var.prefix_name}-pods"
-  service_subnet_name  = var.service_subnet.name != "" ? var.service_subnet.name : "${var.prefix_name}-services"
+  service_subnet_name  = local.managed_services ? "" : var.service_subnet.name != "" ? var.service_subnet.name : "${var.prefix_name}-services"
   lb_subnet_name       = var.lb_subnet.name != "" ? var.lb_subnet.name : "${var.prefix_name}-lb"
   router_name          = "${var.prefix_name}-router"
   nat_name             = "${var.prefix_name}-nat"
@@ -40,13 +42,13 @@ locals {
 
   primary_subnet_cidr = local.create_primary_subnet ? local.created_primary_subnet_cidr : local.primary_subnet.ip_cidr_range
   pod_subnet_cidr     = local.create_primary_subnet ? local.created_pod_subnet_cidr : try(one(local.existing_pod_ranges), "")
-  service_subnet_cidr = local.create_primary_subnet ? local.created_service_subnet_cidr : try(one(local.existing_service_ranges), "")
+  service_subnet_cidr = local.managed_services ? "" : local.create_primary_subnet ? local.created_service_subnet_cidr : try(one(local.existing_service_ranges), "")
   lb_subnet_cidr      = local.create_lb_subnet ? local.created_lb_subnet_cidr : local.lb_subnet.ip_cidr_range
-  internal_source_ranges = local.create_vpc ? [var.vpc_cidr] : distinct([
+  internal_source_ranges = local.create_vpc ? [var.vpc_cidr] : distinct(compact([
     local.primary_subnet_cidr,
     local.pod_subnet_cidr,
     local.service_subnet_cidr,
-  ])
+  ]))
 
   labels = merge(
     {

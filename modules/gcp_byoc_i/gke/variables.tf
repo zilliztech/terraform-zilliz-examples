@@ -50,7 +50,7 @@ variable "pod_subnet_name" {
 }
 
 variable "service_subnet_name" {
-  description = "Service secondary range name."
+  description = "Service secondary range name. Use an empty string for GKE-managed Services (GKE Standard 1.29+)."
   type        = string
 }
 

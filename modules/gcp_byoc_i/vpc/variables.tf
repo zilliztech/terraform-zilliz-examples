@@ -84,10 +84,18 @@ variable "pod_subnet" {
 variable "service_subnet" {
   description = "GKE service secondary range configuration."
   type = object({
+    mode = optional(string, "secondary-range")
     name = optional(string, "")
     cidr = optional(string, "")
   })
   default = {}
+
+  validation {
+    condition = contains(["secondary-range", "gke-managed"], var.service_subnet.mode) && (
+      var.service_subnet.mode != "gke-managed" || (var.service_subnet.name == "" && var.service_subnet.cidr == "")
+    )
+    error_message = "service_subnet.mode must be secondary-range or gke-managed; gke-managed cannot specify name or cidr."
+  }
 }
 
 variable "lb_subnet" {

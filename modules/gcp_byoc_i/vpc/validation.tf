@@ -27,8 +27,8 @@ resource "terraform_data" "validation" {
     }
 
     precondition {
-      condition     = var.subnet_mode == "create" || (var.pod_subnet.name != "" && var.service_subnet.name != "")
-      error_message = "pod_subnet.name and service_subnet.name must identify existing secondary ranges when subnet_mode = existing."
+      condition     = var.subnet_mode == "create" || (var.pod_subnet.name != "" && (local.managed_services || var.service_subnet.name != ""))
+      error_message = "pod_subnet.name and, unless gke-managed, service_subnet.name must identify existing secondary ranges when subnet_mode = existing."
     }
 
     precondition {
@@ -37,8 +37,8 @@ resource "terraform_data" "validation" {
     }
 
     precondition {
-      condition     = var.subnet_mode == "create" || (length(local.existing_pod_ranges) == 1 && length(local.existing_service_ranges) == 1)
-      error_message = "The existing primary subnet must contain exactly one matching Pod and Service secondary range."
+      condition     = var.subnet_mode == "create" || (length(local.existing_pod_ranges) == 1 && (local.managed_services || length(local.existing_service_ranges) == 1))
+      error_message = "The existing primary subnet must contain the Pod range and, unless gke-managed, the Service range."
     }
 
     precondition {

@@ -67,7 +67,7 @@ resource "google_container_cluster" "this" {
     for_each = var.enable_ip_alias ? [1] : []
     content {
       cluster_secondary_range_name  = var.pod_subnet_name
-      services_secondary_range_name = var.service_subnet_name
+      services_secondary_range_name = var.service_subnet_name != "" ? var.service_subnet_name : null
     }
   }
 

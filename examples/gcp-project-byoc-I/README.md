@@ -426,3 +426,17 @@ https://github.com/zilliztech/paas-deploy/pull/132 before enabling this option.
 This configures new PVC disks only. Node boot disks, Secrets, and GCS retain their
 independent configuration. Existing dataplane updates and disk migrations are
 outside this example's scope.
+
+### GKE-managed Service addresses
+
+For GKE Standard 1.29+, use the GKE-managed Service address range without a subnet secondary range:
+
+```hcl
+service_subnet = {
+  mode = "gke-managed"
+}
+```
+
+Do not set `name` or `cidr` in this mode. New subnets only create the Pod secondary range; existing subnets do not require a Service secondary range. An existing cluster must already use GKE-managed Services. This does not migrate an existing cluster's Service range.
+
+Omitting `service_subnet` preserves the current `secondary-range` mode: new subnets create a Service range, and existing subnets require its name. In `gke-managed` mode, `service_subnet_cidr` and the registration's `service_subnet_name` are empty because no subnet secondary range is used; the CIDR output does not describe the cluster's effective managed Service CIDR.

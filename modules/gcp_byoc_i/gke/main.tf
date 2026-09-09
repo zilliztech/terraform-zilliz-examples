@@ -123,12 +123,13 @@ resource "google_container_cluster" "this" {
 resource "google_container_node_pool" "this" {
   for_each = local.node_groups
 
-  project            = var.gcp_project_id
-  name               = each.key
-  location           = var.gcp_region
-  cluster            = local.cluster.name
-  node_locations     = var.gcp_zones
-  initial_node_count = var.node_initial_count != null ? var.node_initial_count : max(each.value.desired_size, each.value.min_size)
+  project        = var.gcp_project_id
+  name           = each.key
+  location       = var.gcp_region
+  cluster        = local.cluster.name
+  node_locations = var.gcp_zones
+  # GKE initializes this many nodes in EACH zone; quotas are totals across all zones.
+  initial_node_count = var.node_initial_count != null ? var.node_initial_count : ceil(max(each.value.desired_size, each.value.min_size) / length(var.gcp_zones))
   max_pods_per_node  = each.key == "core" ? 110 : 32
 
   autoscaling {

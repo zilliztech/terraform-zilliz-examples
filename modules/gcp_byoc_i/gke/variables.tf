@@ -11,6 +11,11 @@ variable "gcp_region" {
 variable "gcp_zones" {
   description = "GCP zones used as GKE node locations."
   type        = list(string)
+
+  validation {
+    condition     = length(var.gcp_zones) > 0 && length(distinct(var.gcp_zones)) == length(var.gcp_zones)
+    error_message = "gcp_zones must contain at least one zone and no duplicates."
+  }
 }
 
 variable "cluster_name" {
@@ -108,7 +113,7 @@ variable "workload_pool" {
 }
 
 variable "node_initial_count" {
-  description = "Optional initial node count override applied to every BYOC-I node pool. Leave null to use the node-group desired/minimum size."
+  description = "Optional initial node count PER ZONE override applied to every BYOC-I node pool. Leave null to divide the node-group desired/minimum total by the number of zones, rounding up."
   type        = number
   default     = null
   validation {

@@ -8,16 +8,6 @@ resource "terraform_data" "service_account_name_validation" {
 
   lifecycle {
     precondition {
-      condition = length(distinct([
-        local.gke_node_sa_name,
-        local.management_sa_name,
-        local.storage_sa_name,
-        local.booter_sa_name,
-      ])) == 4
-      error_message = "GKE node, maintenance, storage, and booter service account names must be distinct. The booter VM must use a dedicated booter service account."
-    }
-
-    precondition {
       condition = var.service_account_mode != "existing" || alltrue([
         var.gke_node_service_account_name != "",
         var.management_service_account_name != "",

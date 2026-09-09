@@ -9,7 +9,7 @@ This example provisions a GCP BYOC-I dataplane with customer-managed infrastruct
 - GKE private regional cluster and node pools from BYOC-I quota settings, or dedicated BYOC-I node pools in an existing compatible cluster
 - GCP service accounts for GKE nodes, maintenance, storage, and the booter VM
 - Optional Private Service Connect endpoint
-- Short-lived GCE booter VM that uses a dedicated booter service account to install `cloud-agent` into GKE, then self-deletes after a TTL
+- Short-lived GCE booter VM that uses the configured booter service account to install `cloud-agent` into GKE, then self-deletes after a TTL
 - Per-dataplane Resource Manager tag for tag-scoped booter self-delete permissions by default
 - `zillizcloud_byoc_i_project_agent` and `zillizcloud_byoc_i_project`
 
@@ -105,7 +105,7 @@ grant_gcs_kms_key_iam         = false
 grant_gke_secrets_kms_key_iam = false
 ```
 
-All four accounts must exist in `gcp_project_id` and have distinct account IDs. Terraform reads the accounts to obtain their canonical email and resource name but does not modify them when `manage_iam` is false.
+All four service account fields must reference accounts that exist in `gcp_project_id`; multiple fields can reference the same account. Terraform reads the accounts to obtain their canonical email and resource name but does not modify them when `manage_iam` is false.
 
 The customer-managed IAM configuration must provide the permissions defined in [`modules/gcp_byoc_i/iam/iam.tf`](../../modules/gcp_byoc_i/iam/iam.tf) and [`modules/gcp_byoc_i/workload-identity/main.tf`](../../modules/gcp_byoc_i/workload-identity/main.tf), including:
 
@@ -275,7 +275,7 @@ The PSC service attachment ID can be overridden with `gcp_psc_service_attachment
 
 The example grants the storage service account to the fixed BYOC-I Kubernetes service accounts used by Loki and Milvus bootstrap through GKE Workload Identity. It also grants storage Workload Identity access to the target GKE cluster because instance namespaces and service accounts are created at runtime.
 
-The booter VM always uses a dedicated booter service account. The Zilliz BYOC organization service account is not granted permission to impersonate the maintenance service account. The in-cluster `infra/infra-agent-sa` Kubernetes service account uses GKE Workload Identity to access the maintenance service account instead.
+The booter VM uses the configured booter service account, which can be shared with other roles in existing-account mode. The Zilliz BYOC organization service account is not granted permission to impersonate the maintenance service account. The in-cluster `infra/infra-agent-sa` Kubernetes service account uses GKE Workload Identity to access the maintenance service account instead.
 
 ### GCS Bucket CMEK
 

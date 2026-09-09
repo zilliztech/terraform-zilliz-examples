@@ -75,7 +75,7 @@ variable "subnet_mode" {
 }
 
 variable "lb_subnet_mode" {
-  description = "Regional managed proxy subnet lifecycle mode: create or existing."
+  description = "Create or reuse a regional managed proxy subnet. In existing mode, omit lb_subnet.name to discover the active subnet in the selected VPC and region."
   type        = string
   default     = "create"
 

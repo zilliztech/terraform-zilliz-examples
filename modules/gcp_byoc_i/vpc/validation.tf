@@ -47,11 +47,6 @@ resource "terraform_data" "validation" {
     }
 
     precondition {
-      condition     = var.lb_subnet_mode == "create" || var.lb_subnet.name != ""
-      error_message = "lb_subnet.name is required when lb_subnet_mode = existing."
-    }
-
-    precondition {
       condition     = var.lb_subnet_mode == "create" || local.lb_subnet.network == local.vpc.self_link
       error_message = "The existing LB subnet must belong to the selected VPC."
     }

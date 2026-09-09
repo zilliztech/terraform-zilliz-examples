@@ -440,3 +440,14 @@ service_subnet = {
 Do not set `name` or `cidr` in this mode. New subnets only create the Pod secondary range; existing subnets do not require a Service secondary range. An existing cluster must already use GKE-managed Services. This does not migrate an existing cluster's Service range.
 
 Omitting `service_subnet` preserves the current `secondary-range` mode: new subnets create a Service range, and existing subnets require its name. In `gke-managed` mode, `service_subnet_cidr` and the registration's `service_subnet_name` are empty because no subnet secondary range is used; the CIDR output does not describe the cluster's effective managed Service CIDR.
+
+### Discover an existing LB proxy-only subnet
+
+```hcl
+lb_subnet_mode = "existing"
+# lb_subnet can be omitted.
+```
+
+Without `lb_subnet.name`, Terraform discovers the unique `ACTIVE` subnet with purpose `REGIONAL_MANAGED_PROXY` in the selected network project, VPC, and region. This requires `compute.subnetworks.list` in the network project (the host project for Shared VPC). No match or multiple matches fails validation. The discovered name is passed to Zilliz registration.
+
+An explicit `lb_subnet.name` continues to use direct lookup. The default `lb_subnet_mode = "create"` still creates a subnet.

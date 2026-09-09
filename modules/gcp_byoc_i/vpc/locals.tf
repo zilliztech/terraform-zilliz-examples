@@ -1,4 +1,7 @@
 locals {
+  discover_lb_subnet = var.lb_subnet_mode == "existing" && var.lb_subnet.name == ""
+  lb_candidates      = local.discover_lb_subnet ? data.google_compute_subnetworks.lb_candidates[0].subnetworks : []
+
   managed_services = var.service_subnet.mode == "gke-managed"
 
   create_vpc            = var.vpc_mode == "create"

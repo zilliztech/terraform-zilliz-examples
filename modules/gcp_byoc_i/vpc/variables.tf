@@ -41,7 +41,7 @@ variable "subnet_mode" {
 }
 
 variable "lb_subnet_mode" {
-  description = "Whether Terraform creates the regional managed proxy subnet or uses an existing subnet."
+  description = "Create or reuse a regional managed proxy subnet. In existing mode, omit lb_subnet.name to discover the active subnet in the selected VPC and region."
   type        = string
   default     = "create"
 

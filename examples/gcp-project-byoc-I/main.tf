@@ -214,6 +214,7 @@ resource "zillizcloud_byoc_i_project" "this" {
     zillizcloud_byoc_i_project_agent.this,
     module.gke,
     module.gcs,
+    module.pd_kms,
     module.iam,
     module.private_link,
     module.booter_vm,
@@ -223,4 +224,17 @@ resource "zillizcloud_byoc_i_project" "this" {
     ignore_changes  = [data_plane_id, project_id, gcp, ext_config]
     prevent_destroy = true
   }
+}
+
+module "pd_kms" {
+  source = "../../modules/gcp_byoc_i/pd-kms"
+
+  enabled       = var.enable_pd_kms
+  key_name      = var.pd_kms_key_name
+  grant_key_iam = var.grant_pd_kms_key_iam
+  project_id    = var.gcp_project_id
+  region        = local.gcp_region
+  name_prefix   = module.gke.cluster_name
+
+  depends_on = [google_project_service.required]
 }

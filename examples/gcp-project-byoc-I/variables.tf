@@ -503,3 +503,21 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "enable_pd_kms" {
+  description = "Enable CMEK for Persistent Disks provisioned by the bootstrap StorageClass."
+  type        = bool
+  default     = false
+}
+
+variable "pd_kms_key_name" {
+  description = "Existing regional Cloud KMS crypto key for PVC disks. Empty creates a dedicated key."
+  type        = string
+  default     = ""
+}
+
+variable "grant_pd_kms_key_iam" {
+  description = "Grant the Compute Engine service agent access to an existing PD key. Created keys are always granted."
+  type        = bool
+  default     = true
+}

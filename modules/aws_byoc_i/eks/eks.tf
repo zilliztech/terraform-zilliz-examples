@@ -41,6 +41,11 @@ resource "aws_eks_cluster" "zilliz_byoc_cluster" {
 
 }
 
+data "tls_certificate" "eks_oidc" {
+  count = local.configured_eks_cluster_oidc_issuer_thumbprint == "" ? 1 : 0
+  url   = local.eks_cluster_oidc_issuer
+}
+
 
 
 

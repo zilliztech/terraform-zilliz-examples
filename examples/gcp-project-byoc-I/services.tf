@@ -19,7 +19,7 @@ resource "google_project_service" "cloud_resource_manager" {
 }
 
 resource "google_project_service" "required" {
-  for_each = local.required_project_services
+  for_each = var.enable_project_services ? local.required_project_services : toset([])
 
   project = var.gcp_project_id
   service = each.key

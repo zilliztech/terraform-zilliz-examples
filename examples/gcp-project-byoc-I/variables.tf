@@ -529,3 +529,9 @@ variable "grant_pd_kms_key_iam" {
   type        = bool
   default     = true
 }
+
+variable "enable_project_services" {
+  description = "Whether Terraform enables the required GCP APIs. Set false when APIs are enabled and managed externally."
+  type        = bool
+  default     = true
+}

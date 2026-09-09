@@ -451,3 +451,9 @@ lb_subnet_mode = "existing"
 Without `lb_subnet.name`, Terraform discovers the unique `ACTIVE` subnet with purpose `REGIONAL_MANAGED_PROXY` in the selected network project, VPC, and region. This requires `compute.subnetworks.list` in the network project (the host project for Shared VPC). No match or multiple matches fails validation. The discovered name is passed to Zilliz registration.
 
 An explicit `lb_subnet.name` continues to use direct lookup. The default `lb_subnet_mode = "create"` still creates a subnet.
+
+### Externally managed GCP APIs
+
+Set `enable_project_services = false` to skip Terraform's automatic GCP API enablement. The default is `true`. Required APIs must already be enabled by the customer, including Cloud KMS and Binary Authorization when those features are configured.
+
+Switching an existing deployment to `false` removes the API resources from Terraform management but does not disable the APIs (`disable_on_destroy = false`).

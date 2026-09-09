@@ -114,3 +114,6 @@ gcp_project_id = "customer-gcp-project"
 # Empty creates a dedicated regional key; otherwise supply an existing key.
 # pd_kms_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/example/cryptoKeys/pd"
 # grant_pd_kms_key_iam = true
+
+# Skip API enablement when the required GCP APIs are already managed externally.
+# enable_project_services = false

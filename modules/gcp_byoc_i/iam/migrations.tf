@@ -69,11 +69,6 @@ moved {
 }
 
 moved {
-  from = google_service_account_iam_member.storage_workload_identity_cluster
-  to   = google_service_account_iam_member.storage_workload_identity_cluster[0]
-}
-
-moved {
   from = google_project_iam_custom_role.booter_self_delete
   to   = google_project_iam_custom_role.booter_self_delete[0]
 }

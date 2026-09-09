@@ -107,11 +107,11 @@ grant_gke_secrets_kms_key_iam = false
 
 All four accounts must exist in `gcp_project_id` and have distinct account IDs. Terraform reads the accounts to obtain their canonical email and resource name but does not modify them when `manage_iam` is false.
 
-The customer-managed IAM configuration must provide the permissions defined in [`modules/gcp_byoc_i/iam/iam.tf`](../../modules/gcp_byoc_i/iam/iam.tf), including:
+The customer-managed IAM configuration must provide the permissions defined in [`modules/gcp_byoc_i/iam/iam.tf`](../../modules/gcp_byoc_i/iam/iam.tf) and [`modules/gcp_byoc_i/workload-identity/main.tf`](../../modules/gcp_byoc_i/workload-identity/main.tf), including:
 
 - GKE node logging, monitoring, and default node service account permissions.
 - Maintenance cluster update, operation read, project metadata read, and optional managed-instance-group resize permissions.
-- Storage object/bucket access and storage/maintenance Workload Identity bindings.
+- Storage object/bucket access and storage/maintenance Workload Identity bindings. The `<gcp_project_id>.svc.id.goog` pool only exists once the project has a Workload Identity enabled GKE cluster, so these bindings must be created after the cluster.
 - Booter Kubernetes bootstrap, VM self-delete, and zone-operation read permissions.
 - `roles/iam.serviceAccountUser` from the maintenance service account to the node service account.
 

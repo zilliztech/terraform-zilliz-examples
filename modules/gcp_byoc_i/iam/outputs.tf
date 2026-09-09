@@ -13,3 +13,11 @@ output "storage_sa_email" {
 output "booter_sa_email" {
   value = local.booter_sa.email
 }
+
+output "storage_sa_name" {
+  value = local.storage_sa.name
+}
+
+output "management_sa_name" {
+  value = local.management_sa.name
+}

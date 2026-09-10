@@ -21,6 +21,8 @@ gcp_project_id = "customer-gcp-project"
 # For an existing regional managed proxy subnet:
 # lb_subnet_mode = "existing"
 # lb_subnet = { name = "customer-lb-proxy" }
+# If the dataplane does not use a regional managed proxy load balancer:
+# lb_subnet_mode = "disabled"
 # Disable creation when existing networking already provides these capabilities.
 # create_cloud_nat = false
 # create_firewall_rules = false
@@ -114,3 +116,6 @@ gcp_project_id = "customer-gcp-project"
 # Empty creates a dedicated regional key; otherwise supply an existing key.
 # pd_kms_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/example/cryptoKeys/pd"
 # grant_pd_kms_key_iam = true
+
+# Skip API enablement when the required GCP APIs are already managed externally.
+# enable_project_services = false

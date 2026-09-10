@@ -41,13 +41,13 @@ variable "subnet_mode" {
 }
 
 variable "lb_subnet_mode" {
-  description = "Whether Terraform creates the regional managed proxy subnet or uses an existing subnet."
+  description = "Create, reuse, or disable the regional managed proxy subnet. In existing mode, omit lb_subnet.name to discover the active subnet in the selected VPC and region."
   type        = string
   default     = "create"
 
   validation {
-    condition     = contains(["create", "existing"], var.lb_subnet_mode)
-    error_message = "lb_subnet_mode must be create or existing."
+    condition     = contains(["create", "existing", "disabled"], var.lb_subnet_mode)
+    error_message = "lb_subnet_mode must be create, existing, or disabled."
   }
 }
 
@@ -84,10 +84,18 @@ variable "pod_subnet" {
 variable "service_subnet" {
   description = "GKE service secondary range configuration."
   type = object({
+    mode = optional(string, "secondary-range")
     name = optional(string, "")
     cidr = optional(string, "")
   })
   default = {}
+
+  validation {
+    condition = contains(["secondary-range", "gke-managed"], var.service_subnet.mode) && (
+      var.service_subnet.mode != "gke-managed" || (var.service_subnet.name == "" && var.service_subnet.cidr == "")
+    )
+    error_message = "service_subnet.mode must be secondary-range or gke-managed; gke-managed cannot specify name or cidr."
+  }
 }
 
 variable "lb_subnet" {

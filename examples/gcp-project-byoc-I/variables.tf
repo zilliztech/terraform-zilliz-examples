@@ -75,13 +75,13 @@ variable "subnet_mode" {
 }
 
 variable "lb_subnet_mode" {
-  description = "Regional managed proxy subnet lifecycle mode: create or existing."
+  description = "Create, reuse, or disable the regional managed proxy subnet. In existing mode, omit lb_subnet.name to discover the active subnet in the selected VPC and region."
   type        = string
   default     = "create"
 
   validation {
-    condition     = contains(["create", "existing"], var.lb_subnet_mode)
-    error_message = "lb_subnet_mode must be create or existing."
+    condition     = contains(["create", "existing", "disabled"], var.lb_subnet_mode)
+    error_message = "lb_subnet_mode must be create, existing, or disabled."
   }
 }
 
@@ -205,10 +205,18 @@ variable "pod_subnet" {
 variable "service_subnet" {
   description = "Optional GKE service secondary range override."
   type = object({
+    mode = optional(string, "secondary-range")
     name = optional(string, "")
     cidr = optional(string, "")
   })
   default = {}
+
+  validation {
+    condition = contains(["secondary-range", "gke-managed"], var.service_subnet.mode) && (
+      var.service_subnet.mode != "gke-managed" || (var.service_subnet.name == "" && var.service_subnet.cidr == "")
+    )
+    error_message = "service_subnet.mode must be secondary-range or gke-managed; gke-managed cannot specify name or cidr."
+  }
 }
 
 variable "lb_subnet" {
@@ -518,6 +526,12 @@ variable "pd_kms_key_name" {
 
 variable "grant_pd_kms_key_iam" {
   description = "Grant the Compute Engine service agent access to an existing PD key. Created keys are always granted."
+  type        = bool
+  default     = true
+}
+
+variable "enable_project_services" {
+  description = "Whether Terraform enables the required GCP APIs. Set false when APIs are enabled and managed externally."
   type        = bool
   default     = true
 }

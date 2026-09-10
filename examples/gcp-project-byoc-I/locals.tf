@@ -15,6 +15,11 @@ locals {
 
   network_project_id = var.network_project_id != "" ? var.network_project_id : var.gcp_project_id
   is_shared_vpc      = local.network_project_id != var.gcp_project_id
+  service_subnet_api_name = (
+    var.service_subnet.mode == "gke-managed"
+    ? "gke-managed"
+    : module.vpc.service_subnet_name
+  )
 
   vpc_name         = var.customer_vpc_name != "" ? var.customer_vpc_name : "${local.prefix_name}-vpc"
   gke_cluster_name = var.customer_gke_cluster_name != "" ? var.customer_gke_cluster_name : "${local.prefix_name}-gke"

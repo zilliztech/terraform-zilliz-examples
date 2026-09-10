@@ -55,7 +55,7 @@ output "service_subnet_name" {
 }
 
 output "lb_subnet_name" {
-  value = local.lb_subnet.name
+  value = var.lb_subnet_mode == "disabled" ? "" : local.lb_subnet.name
 }
 
 output "nat_ip" {

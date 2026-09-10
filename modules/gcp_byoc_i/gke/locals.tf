@@ -7,7 +7,7 @@ locals {
   )
 
   existing_cluster_pod_range        = local.create_cluster ? "" : try(data.google_container_cluster.existing[0].ip_allocation_policy[0].cluster_secondary_range_name, "")
-  existing_cluster_service_range    = local.create_cluster ? "" : try(data.google_container_cluster.existing[0].ip_allocation_policy[0].services_secondary_range_name, "")
+  existing_cluster_service_range    = local.create_cluster ? "" : try(coalesce(data.google_container_cluster.existing[0].ip_allocation_policy[0].services_secondary_range_name, ""), "")
   existing_cluster_workload_pool    = local.create_cluster ? "" : try(data.google_container_cluster.existing[0].workload_identity_config[0].workload_pool, "")
   existing_cluster_private_nodes    = local.create_cluster ? false : try(data.google_container_cluster.existing[0].private_cluster_config[0].enable_private_nodes, false)
   existing_cluster_encryption_state = local.create_cluster ? "" : try(data.google_container_cluster.existing[0].database_encryption[0].state, "")

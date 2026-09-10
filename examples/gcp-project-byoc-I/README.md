@@ -9,7 +9,7 @@ This example provisions a GCP BYOC-I dataplane with customer-managed infrastruct
 - GKE private regional cluster and node pools from BYOC-I quota settings, or dedicated BYOC-I node pools in an existing compatible cluster
 - GCP service accounts for GKE nodes, maintenance, storage, and the booter VM
 - Optional Private Service Connect endpoint
-- Short-lived GCE booter VM that uses a dedicated booter service account to install `cloud-agent` into GKE, then self-deletes after a TTL
+- Short-lived GCE booter VM that uses the configured booter service account to install `cloud-agent` into GKE, then self-deletes after a TTL
 - Per-dataplane Resource Manager tag for tag-scoped booter self-delete permissions by default
 - `zillizcloud_byoc_i_project_agent` and `zillizcloud_byoc_i_project`
 
@@ -46,7 +46,7 @@ Network ownership and resource lifecycle are controlled independently:
 | `network_project_id` | empty or a project ID | Empty uses `gcp_project_id`; a different project selects a Shared VPC host project |
 | `vpc_mode` | `create`, `existing` | Create a dedicated VPC or read an existing VPC |
 | `subnet_mode` | `create`, `existing` | Create the primary GKE subnet and secondary ranges, or read an existing subnet |
-| `lb_subnet_mode` | `create`, `existing` | Create or read the regional managed proxy subnet |
+| `lb_subnet_mode` | `create`, `existing`, `disabled` | Create, read/discover, or omit the regional managed proxy subnet |
 | `create_cloud_nat` | `true`, `false` | Create dedicated Router/NAT resources, or use existing egress |
 | `create_firewall_rules` | `true`, `false` | Create BYOC-I firewall rules, or let the customer manage them |
 | `manage_shared_vpc_iam` | `true`, `false` | Manage the GKE service-agent grants in the Shared VPC host project |
@@ -105,7 +105,7 @@ grant_gcs_kms_key_iam         = false
 grant_gke_secrets_kms_key_iam = false
 ```
 
-All four accounts must exist in `gcp_project_id` and have distinct account IDs. Terraform reads the accounts to obtain their canonical email and resource name but does not modify them when `manage_iam` is false.
+All four service account fields must reference accounts that exist in `gcp_project_id`; multiple fields can reference the same account. Terraform reads the accounts to obtain their canonical email and resource name but does not modify them when `manage_iam` is false.
 
 The customer-managed IAM configuration must provide the permissions defined in [`modules/gcp_byoc_i/iam/iam.tf`](../../modules/gcp_byoc_i/iam/iam.tf) and [`modules/gcp_byoc_i/workload-identity/main.tf`](../../modules/gcp_byoc_i/workload-identity/main.tf), including:
 
@@ -275,7 +275,7 @@ The PSC service attachment ID can be overridden with `gcp_psc_service_attachment
 
 The example grants the storage service account to the fixed BYOC-I Kubernetes service accounts used by Loki and Milvus bootstrap through GKE Workload Identity. It also grants storage Workload Identity access to the target GKE cluster because instance namespaces and service accounts are created at runtime.
 
-The booter VM always uses a dedicated booter service account. The Zilliz BYOC organization service account is not granted permission to impersonate the maintenance service account. The in-cluster `infra/infra-agent-sa` Kubernetes service account uses GKE Workload Identity to access the maintenance service account instead.
+The booter VM uses the configured booter service account, which can be shared with other roles in existing-account mode. The Zilliz BYOC organization service account is not granted permission to impersonate the maintenance service account. The in-cluster `infra/infra-agent-sa` Kubernetes service account uses GKE Workload Identity to access the maintenance service account instead.
 
 ### GCS Bucket CMEK
 
@@ -426,3 +426,44 @@ https://github.com/zilliztech/paas-deploy/pull/132 before enabling this option.
 This configures new PVC disks only. Node boot disks, Secrets, and GCS retain their
 independent configuration. Existing dataplane updates and disk migrations are
 outside this example's scope.
+
+### GKE-managed Service addresses
+
+For GKE Standard 1.29+, use the GKE-managed Service address range without a subnet secondary range:
+
+```hcl
+service_subnet = {
+  mode = "gke-managed"
+}
+```
+
+Do not set `name` or `cidr` in this mode. New subnets only create the Pod secondary range; existing subnets do not require a Service secondary range. An existing cluster must already use GKE-managed Services. This does not migrate an existing cluster's Service range.
+
+Omitting `service_subnet` preserves the current `secondary-range` mode: new subnets create a Service range, and existing subnets require its name. In `gke-managed` mode, `service_subnet_cidr` and the registration's `service_subnet_name` are empty because no subnet secondary range is used; the CIDR output does not describe the cluster's effective managed Service CIDR.
+
+### Discover an existing LB proxy-only subnet
+
+```hcl
+lb_subnet_mode = "existing"
+# lb_subnet can be omitted.
+```
+
+Without `lb_subnet.name`, Terraform discovers the unique `ACTIVE` subnet with purpose `REGIONAL_MANAGED_PROXY` in the selected network project, VPC, and region. This requires `compute.subnetworks.list` in the network project (the host project for Shared VPC). No match or multiple matches fails validation. The discovered name is passed to Zilliz registration.
+
+An explicit `lb_subnet.name` continues to use direct lookup. The default `lb_subnet_mode = "create"` still creates a subnet.
+
+### Disable the LB proxy-only subnet
+
+When the dataplane does not use a regional internal managed load balancer, disable the proxy-only subnet:
+
+```hcl
+lb_subnet_mode = "disabled"
+```
+
+Do not set `lb_subnet.name` or `lb_subnet.cidr` in this mode. Terraform does not create, read, or discover an LB subnet, and both `lb_subnet_name` and `lb_subnet_cidr` are empty in outputs and Zilliz registration. Omitting `lb_subnet_mode` preserves the backward-compatible default `create` behavior.
+
+### Externally managed GCP APIs
+
+Set `enable_project_services = false` to skip Terraform's automatic GCP API enablement. The backward-compatible default is `true`. Required APIs must already be enabled by the customer when this is disabled, including Cloud KMS and Binary Authorization when those features are configured.
+
+Switching an existing deployment to `false` removes the API resources from Terraform management but does not disable the APIs (`disable_on_destroy = false`).

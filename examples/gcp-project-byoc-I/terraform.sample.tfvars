@@ -81,6 +81,7 @@ gcp_project_id = "customer-gcp-project"
 # Set to existing to reuse a customer-managed GCS bucket without managing its lifecycle.
 # bucket_mode = "create"
 # Required when bucket_mode = "existing".
+# New GKE clusters must enroll in a release channel (UNSPECIFIED is rejected).
 # gke_release_channel = "REGULAR"
 # gke_binary_authorization_evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
 # gke_enable_identity_service = true

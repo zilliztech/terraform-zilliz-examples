@@ -370,9 +370,9 @@ variable "gke_node_image_type" {
 }
 
 variable "gke_release_channel" {
-  description = "GKE release channel."
+  description = "GKE release channel. UNSPECIFIED is rejected for new clusters; REGULAR is the default."
   type        = string
-  default     = "UNSPECIFIED"
+  default     = "REGULAR"
   validation {
     condition     = contains(["UNSPECIFIED", "RAPID", "REGULAR", "STABLE", "EXTENDED"], upper(var.gke_release_channel))
     error_message = "gke_release_channel must be UNSPECIFIED, RAPID, REGULAR, STABLE, or EXTENDED."
@@ -420,9 +420,9 @@ variable "gke_node_auto_repair" {
 }
 
 variable "gke_node_auto_upgrade" {
-  description = "Whether to enable automatic upgrades for GKE node pools."
+  description = "Whether to enable automatic upgrades for GKE node pools. Must be true when the cluster is enrolled in a release channel."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "enable_direct_mig_resize" {

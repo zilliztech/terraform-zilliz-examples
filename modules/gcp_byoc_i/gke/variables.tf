@@ -162,9 +162,9 @@ variable "deletion_protection" {
 }
 
 variable "release_channel" {
-  description = "GKE release channel."
+  description = "GKE release channel. UNSPECIFIED is rejected for new clusters; REGULAR is the default."
   type        = string
-  default     = "UNSPECIFIED"
+  default     = "REGULAR"
   validation {
     condition     = contains(["UNSPECIFIED", "RAPID", "REGULAR", "STABLE", "EXTENDED"], upper(var.release_channel))
     error_message = "release_channel must be UNSPECIFIED, RAPID, REGULAR, STABLE, or EXTENDED."
@@ -212,9 +212,9 @@ variable "node_auto_repair" {
 }
 
 variable "node_auto_upgrade" {
-  description = "Whether to enable automatic upgrades for GKE node pools."
+  description = "Whether to enable automatic upgrades for GKE node pools. Must be true when the cluster is enrolled in a release channel."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "enable_secrets_encryption" {

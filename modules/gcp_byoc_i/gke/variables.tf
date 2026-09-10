@@ -251,6 +251,12 @@ variable "boot_disk_kms_key_name" {
   }
 }
 
+variable "node_group_local_ssd_counts" {
+  description = "Override Local SSD counts used as GKE ephemeral storage. Defaults are search=4 and tiered=8. Set a group to 0 to omit Local SSDs (required when CMEK org policy forbids Local SSD)."
+  type        = map(number)
+  default     = {}
+}
+
 variable "labels" {
   description = "Labels to apply to GKE resources."
   type        = map(string)

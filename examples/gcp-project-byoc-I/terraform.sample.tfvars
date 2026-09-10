@@ -107,6 +107,8 @@ gcp_project_id = "customer-gcp-project"
 # Optional dedicated key for GKE node and booter VM boot disks. Defaults to gke_secrets_kms_key_name.
 # Required under org policy constraints/gcp.restrictNonCmekServices.
 # gke_boot_disk_kms_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/gke-secrets/cryptoKeys/gke-secrets"
+# Local SSD cannot use CMEK. Set to 0 under gcp.restrictNonCmekServices / S3NS France data boundary.
+# gke_node_group_local_ssd_counts = { search = 0, tiered = 0 }
 # enable_resource_manager_tags = true
 # Leave tag IDs empty to let Terraform create a per-dataplane tag.
 # vendor_tag_key_id = "tagKeys/1234567890"

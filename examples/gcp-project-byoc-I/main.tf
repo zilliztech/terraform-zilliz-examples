@@ -102,6 +102,7 @@ module "gke" {
   secrets_kms_key_name                 = var.gke_secrets_kms_key_name
   grant_secrets_kms_key_iam            = var.grant_gke_secrets_kms_key_iam
   boot_disk_kms_key_name               = var.gke_boot_disk_kms_key_name != "" ? var.gke_boot_disk_kms_key_name : var.gke_secrets_kms_key_name
+  node_group_local_ssd_counts          = var.gke_node_group_local_ssd_counts
   labels                               = local.common_labels
   master_authorized_networks = [
     {

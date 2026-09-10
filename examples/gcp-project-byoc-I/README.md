@@ -356,6 +356,15 @@ gke_secrets_kms_key_name      = "projects/<gcp-project-id>/locations/<region>/ke
 
 The Compute Engine and GKE service agents need `roles/cloudkms.cryptoKeyEncrypterDecrypter` on that key. For a pre-authorized customer key, keep `grant_gke_secrets_kms_key_iam = false`.
 
+Search and tiered node groups attach Local SSDs for ephemeral NVMe storage by default (`search=4`, `tiered=8`). Local SSDs cannot be encrypted with Cloud KMS CMEK. Projects under `gcp.restrictNonCmekServices` (including the S3NS France data boundary) reject those node pools. Disable Local SSDs with:
+
+```hcl
+gke_node_group_local_ssd_counts = {
+  search = 0
+  tiered = 0
+}
+```
+
 The booter image is not required in `terraform.tfvars`. Production defaults to `gcr.io/zilliz-byoc-prod/gcp-byoc-i-booter:latest`; UAT defaults to `gcr.io/zilliz-byoc-uat/gcp-byoc-i-booter:latest`. To use a customer-owned image repository for both the booter and cloud-agent images, set `image_repo_url` to the repository base URL without image name or tag:
 
 ```hcl

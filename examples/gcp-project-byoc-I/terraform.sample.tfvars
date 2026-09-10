@@ -103,6 +103,9 @@ gcp_project_id = "customer-gcp-project"
 # gke_secrets_kms_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/gke-secrets/cryptoKeys/gke-secrets"
 # Set false if the GKE service agent already has KMS encrypter/decrypter permission on the existing key.
 # grant_gke_secrets_kms_key_iam = true
+# Optional dedicated key for GKE node and booter VM boot disks. Defaults to gke_secrets_kms_key_name.
+# Required under org policy constraints/gcp.restrictNonCmekServices.
+# gke_boot_disk_kms_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/gke-secrets/cryptoKeys/gke-secrets"
 # enable_resource_manager_tags = true
 # Leave tag IDs empty to let Terraform create a per-dataplane tag.
 # vendor_tag_key_id = "tagKeys/1234567890"

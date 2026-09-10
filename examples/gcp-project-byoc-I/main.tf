@@ -101,6 +101,7 @@ module "gke" {
   enable_secrets_encryption            = var.enable_gke_secrets_encryption
   secrets_kms_key_name                 = var.gke_secrets_kms_key_name
   grant_secrets_kms_key_iam            = var.grant_gke_secrets_kms_key_iam
+  boot_disk_kms_key_name               = var.gke_boot_disk_kms_key_name != "" ? var.gke_boot_disk_kms_key_name : var.gke_secrets_kms_key_name
   labels                               = local.common_labels
   master_authorized_networks = [
     {
@@ -182,6 +183,7 @@ module "booter_vm" {
   agent_config                    = local.agent_config
   labels                          = local.common_labels
   resource_manager_tags           = local.vendor_resource_manager_tags
+  boot_disk_kms_key_name          = var.gke_boot_disk_kms_key_name != "" ? var.gke_boot_disk_kms_key_name : var.gke_secrets_kms_key_name
 
   depends_on = [google_project_service.required, terraform_data.vendor_tag_input_validation, module.iam, module.workload_identity, module.gke, module.private_link]
 }

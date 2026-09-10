@@ -240,6 +240,17 @@ variable "grant_secrets_kms_key_iam" {
   default     = true
 }
 
+variable "boot_disk_kms_key_name" {
+  description = "Cloud KMS key for GKE node boot disks. Leave empty to reuse secrets_kms_key_name when secrets encryption is enabled. Required under gcp.restrictNonCmekServices."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.boot_disk_kms_key_name == "" || can(regex("^projects/[^/]+/locations/[^/]+/keyRings/[^/]+/cryptoKeys/[^/]+$", var.boot_disk_kms_key_name))
+    error_message = "boot_disk_kms_key_name must be empty or a full Cloud KMS crypto key resource name."
+  }
+}
+
 variable "labels" {
   description = "Labels to apply to GKE resources."
   type        = map(string)

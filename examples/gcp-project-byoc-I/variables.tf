@@ -506,6 +506,17 @@ variable "grant_gke_secrets_kms_key_iam" {
   default     = true
 }
 
+variable "gke_boot_disk_kms_key_name" {
+  description = "Cloud KMS key for GKE node boot disks. Defaults to gke_secrets_kms_key_name."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.gke_boot_disk_kms_key_name == "" || can(regex("^projects/[^/]+/locations/[^/]+/keyRings/[^/]+/cryptoKeys/[^/]+$", var.gke_boot_disk_kms_key_name))
+    error_message = "gke_boot_disk_kms_key_name must be empty or a full Cloud KMS crypto key resource name."
+  }
+}
+
 variable "labels" {
   description = "Labels applied to supported GCP resources."
   type        = map(string)

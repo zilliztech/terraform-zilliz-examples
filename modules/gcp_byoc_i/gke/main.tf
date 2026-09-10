@@ -105,6 +105,15 @@ resource "google_container_cluster" "this" {
     workload_pool = var.workload_pool != "" ? var.workload_pool : "${var.gcp_project_id}.svc.id.goog"
   }
 
+  # Temporary default pool (removed immediately) still creates boot disks,
+  # which gcp.restrictNonCmekServices rejects without a KMS key.
+  dynamic "node_config" {
+    for_each = local.effective_boot_disk_kms_key_name != "" ? [1] : []
+    content {
+      boot_disk_kms_key = local.effective_boot_disk_kms_key_name
+    }
+  }
+
   dynamic "database_encryption" {
     for_each = var.enable_secrets_encryption ? [1] : []
 
@@ -150,16 +159,17 @@ resource "google_container_node_pool" "this" {
   }
 
   node_config {
-    disk_size_gb    = var.node_disk_size_gb != null ? var.node_disk_size_gb : max(each.value.disk_size, 100)
-    disk_type       = "pd-balanced"
-    image_type      = var.node_image_type
-    labels          = local.node_group_labels[each.key]
-    machine_type    = each.value.instance_types
-    preemptible     = false
-    service_account = var.gke_node_sa_email
-    spot            = upper(each.value.capacity_type) == "SPOT"
-    tags            = ["zilliz-byoc", each.key]
-    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+    disk_size_gb      = var.node_disk_size_gb != null ? var.node_disk_size_gb : max(each.value.disk_size, 100)
+    disk_type         = "pd-balanced"
+    image_type        = var.node_image_type
+    labels            = local.node_group_labels[each.key]
+    machine_type      = each.value.instance_types
+    preemptible       = false
+    service_account   = var.gke_node_sa_email
+    spot              = upper(each.value.capacity_type) == "SPOT"
+    tags              = ["zilliz-byoc", each.key]
+    oauth_scopes      = ["https://www.googleapis.com/auth/cloud-platform"]
+    boot_disk_kms_key = local.effective_boot_disk_kms_key_name != "" ? local.effective_boot_disk_kms_key_name : null
 
     metadata = {
       disable-legacy-endpoints = "true"

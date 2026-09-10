@@ -12,8 +12,8 @@ resource "terraform_data" "validation" {
     }
 
     precondition {
-      condition     = var.vpc_mode == "existing" || (var.subnet_mode == "create" && var.lb_subnet_mode == "create")
-      error_message = "A newly created VPC requires Terraform-created primary and LB subnets."
+      condition     = var.vpc_mode == "existing" || (var.subnet_mode == "create" && contains(["create", "disabled"], var.lb_subnet_mode))
+      error_message = "A newly created VPC requires a Terraform-created primary subnet and either a created or disabled LB subnet."
     }
 
     precondition {
@@ -47,8 +47,13 @@ resource "terraform_data" "validation" {
     }
 
     precondition {
-      condition     = var.lb_subnet_mode == "create" || local.lb_subnet.network == local.vpc.self_link
+      condition     = var.lb_subnet_mode == "existing" ? local.lb_subnet.network == local.vpc.self_link : true
       error_message = "The existing LB subnet must belong to the selected VPC."
+    }
+
+    precondition {
+      condition     = var.lb_subnet_mode != "disabled" || (var.lb_subnet.name == "" && var.lb_subnet.cidr == "")
+      error_message = "lb_subnet.name and lb_subnet.cidr must be empty when lb_subnet_mode is disabled."
     }
   }
 }

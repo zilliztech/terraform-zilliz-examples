@@ -75,3 +75,27 @@ run "create_keeps_default" {
     error_message = "Create mode must preserve the default proxy subnet."
   }
 }
+
+run "disabled_skips_lb_subnet" {
+  command = plan
+  variables { lb_subnet_mode = "disabled" }
+  assert {
+    condition = (
+      length(data.google_compute_subnetworks.lb_candidates) == 0 &&
+      length(data.google_compute_subnetwork.existing_lb) == 0 &&
+      length(google_compute_subnetwork.lb) == 0 &&
+      output.lb_subnet_name == "" &&
+      output.lb_subnet_cidr == ""
+    )
+    error_message = "Disabled mode must not create, read, or discover an LB subnet and must return empty outputs."
+  }
+}
+
+run "disabled_rejects_lb_subnet_input" {
+  command = plan
+  variables {
+    lb_subnet_mode = "disabled"
+    lb_subnet      = { name = "must-not-be-used" }
+  }
+  expect_failures = [terraform_data.validation]
+}

@@ -41,13 +41,13 @@ variable "subnet_mode" {
 }
 
 variable "lb_subnet_mode" {
-  description = "Create or reuse a regional managed proxy subnet. In existing mode, omit lb_subnet.name to discover the active subnet in the selected VPC and region."
+  description = "Create, reuse, or disable the regional managed proxy subnet. In existing mode, omit lb_subnet.name to discover the active subnet in the selected VPC and region."
   type        = string
   default     = "create"
 
   validation {
-    condition     = contains(["create", "existing"], var.lb_subnet_mode)
-    error_message = "lb_subnet_mode must be create or existing."
+    condition     = contains(["create", "existing", "disabled"], var.lb_subnet_mode)
+    error_message = "lb_subnet_mode must be create, existing, or disabled."
   }
 }
 

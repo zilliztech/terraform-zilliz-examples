@@ -22,7 +22,7 @@ data "google_compute_subnetworks" "lb_candidates" {
 }
 
 data "google_compute_subnetwork" "existing_lb" {
-  count = local.create_lb_subnet ? 0 : 1
+  count = var.lb_subnet_mode == "existing" ? 1 : 0
 
   project = var.network_project_id
   name    = local.discover_lb_subnet ? try(one(local.lb_candidates).name, local.lb_subnet_name) : local.lb_subnet_name

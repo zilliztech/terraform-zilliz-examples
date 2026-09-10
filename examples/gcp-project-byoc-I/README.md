@@ -46,7 +46,7 @@ Network ownership and resource lifecycle are controlled independently:
 | `network_project_id` | empty or a project ID | Empty uses `gcp_project_id`; a different project selects a Shared VPC host project |
 | `vpc_mode` | `create`, `existing` | Create a dedicated VPC or read an existing VPC |
 | `subnet_mode` | `create`, `existing` | Create the primary GKE subnet and secondary ranges, or read an existing subnet |
-| `lb_subnet_mode` | `create`, `existing` | Create or read the regional managed proxy subnet |
+| `lb_subnet_mode` | `create`, `existing`, `disabled` | Create, read/discover, or omit the regional managed proxy subnet |
 | `create_cloud_nat` | `true`, `false` | Create dedicated Router/NAT resources, or use existing egress |
 | `create_firewall_rules` | `true`, `false` | Create BYOC-I firewall rules, or let the customer manage them |
 | `manage_shared_vpc_iam` | `true`, `false` | Manage the GKE service-agent grants in the Shared VPC host project |
@@ -451,6 +451,16 @@ lb_subnet_mode = "existing"
 Without `lb_subnet.name`, Terraform discovers the unique `ACTIVE` subnet with purpose `REGIONAL_MANAGED_PROXY` in the selected network project, VPC, and region. This requires `compute.subnetworks.list` in the network project (the host project for Shared VPC). No match or multiple matches fails validation. The discovered name is passed to Zilliz registration.
 
 An explicit `lb_subnet.name` continues to use direct lookup. The default `lb_subnet_mode = "create"` still creates a subnet.
+
+### Disable the LB proxy-only subnet
+
+When the dataplane does not use a regional internal managed load balancer, disable the proxy-only subnet:
+
+```hcl
+lb_subnet_mode = "disabled"
+```
+
+Do not set `lb_subnet.name` or `lb_subnet.cidr` in this mode. Terraform does not create, read, or discover an LB subnet, and both `lb_subnet_name` and `lb_subnet_cidr` are empty in outputs and Zilliz registration. Omitting `lb_subnet_mode` preserves the backward-compatible default `create` behavior.
 
 ### Externally managed GCP APIs
 

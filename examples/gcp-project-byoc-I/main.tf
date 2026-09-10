@@ -205,7 +205,7 @@ resource "zillizcloud_byoc_i_project" "this" {
       vpc_name            = module.vpc.vpc_name
       primary_subnet_name = module.vpc.primary_subnet_name
       pod_subnet_name     = module.vpc.pod_subnet_name
-      service_subnet_name = module.vpc.service_subnet_name
+      service_subnet_name = local.service_subnet_api_name
       lb_subnet_name      = module.vpc.lb_subnet_name
       psc_endpoint_ip     = local.psc_endpoint_ip
     }

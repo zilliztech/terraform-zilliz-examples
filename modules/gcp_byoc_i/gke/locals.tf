@@ -68,4 +68,8 @@ locals {
     for name, group in var.k8s_node_groups : name => group
     if group.max_size > 0 && contains(keys(local.node_group_labels), name)
   }
+  # Resolve overrides before validating all enabled pools, including defaults.
+  node_group_disk_types = {
+    for name, group in local.node_groups : name => try(var.node_group_disk_overrides[name].disk_type, "pd-balanced")
+  }
 }

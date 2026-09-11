@@ -134,3 +134,8 @@ gcp_project_id = "customer-gcp-project"
 #   search = { disk_size_gb = 1500, disk_type = "pd-ssd" }
 #   tiered = { disk_size_gb = 3000, disk_type = "pd-ssd" }
 # }
+
+# For a pool using a compatible machine such as n4-standard-16, disk_type may be
+# "hyperdisk-balanced" instead of "pd-ssd" above. This does not change machine type.
+# N4 needs an explicit Hyperdisk Balanced override; N2 cannot boot from Hyperdisk.
+# IOPS/throughput use service defaults.

@@ -577,7 +577,7 @@ variable "gke_node_group_disk_overrides" {
   type        = map(object({ disk_size_gb = number, disk_type = string }))
   default     = {}
   validation {
-    condition     = alltrue([for name, disk in var.gke_node_group_disk_overrides : contains(["core", "fundamental", "search", "tiered", "index"], name) && disk.disk_size_gb >= 100 && floor(disk.disk_size_gb) == disk.disk_size_gb && contains(["pd-standard", "pd-balanced", "pd-ssd"], disk.disk_type)])
-    error_message = "Use a valid pool, an integer size >= 100 GiB, and pd-standard, pd-balanced or pd-ssd."
+    condition     = alltrue([for name, disk in var.gke_node_group_disk_overrides : contains(["core", "fundamental", "search", "tiered", "index"], name) && disk.disk_size_gb >= 100 && floor(disk.disk_size_gb) == disk.disk_size_gb && contains(["pd-standard", "pd-balanced", "pd-ssd", "hyperdisk-balanced"], disk.disk_type)])
+    error_message = "Use a valid pool, an integer size >= 100 GiB, and pd-standard, pd-balanced, pd-ssd or hyperdisk-balanced."
   }
 }

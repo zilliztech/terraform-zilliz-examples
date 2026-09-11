@@ -166,7 +166,7 @@ resource "google_container_node_pool" "this" {
 
   node_config {
     disk_size_gb      = try(var.node_group_disk_overrides[each.key].disk_size_gb, var.node_disk_size_gb != null ? var.node_disk_size_gb : max(each.value.disk_size, 100))
-    disk_type         = try(var.node_group_disk_overrides[each.key].disk_type, "pd-balanced")
+    disk_type         = local.node_group_disk_types[each.key]
     image_type        = var.node_image_type
     labels            = local.node_group_labels[each.key]
     machine_type      = each.value.instance_types
@@ -217,6 +217,14 @@ resource "google_container_node_pool" "this" {
 
   lifecycle {
     ignore_changes = [initial_node_count]
+    precondition {
+      condition     = !startswith(each.value.instance_types, "n2-") || local.node_group_disk_types[each.key] != "hyperdisk-balanced"
+      error_message = "N2 pool ${each.key} cannot use hyperdisk-balanced as a boot disk; choose pd-balanced/pd-ssd or a compatible machine."
+    }
+    precondition {
+      condition     = !startswith(each.value.instance_types, "n4-") || local.node_group_disk_types[each.key] == "hyperdisk-balanced"
+      error_message = "N4 pool ${each.key} requires a hyperdisk-balanced boot disk; set node_group_disk_overrides for this pool."
+    }
     precondition {
       condition     = upper(var.release_channel) == "UNSPECIFIED" || var.node_auto_upgrade
       error_message = "Opt into node_auto_upgrade when selecting a release channel."

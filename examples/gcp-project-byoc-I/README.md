@@ -399,8 +399,23 @@ requiring replacement, set `tiered=0` and provide a tiered boot disk override
 
 Boot disk override precedence is per-pool override, then the global
 `gke_node_disk_size_gb`, then the existing node-group disk size with its 100 GiB
-minimum. Supported overrides are `pd-standard`, `pd-balanced`, and `pd-ssd` on
-compatible machines; Hyperdisk performance controls are outside this change.
+minimum. Supported overrides are `pd-standard`, `pd-balanced`, `pd-ssd`, and `hyperdisk-balanced` on
+compatible machines. For a pool configured with an N4 machine (for example
+`n4-standard-16`), select Hyperdisk Balanced explicitly:
+
+```hcl
+gke_node_group_local_ssd_counts = { search = 0 }
+gke_node_group_disk_overrides = {
+  search = { disk_size_gb = 1500, disk_type = "hyperdisk-balanced" }
+}
+```
+
+This disk override does not change the pool's machine type. N2 cannot use a
+Hyperdisk boot disk; N4 requires Hyperdisk Balanced among the supported options.
+Checks use the effective disk type for every enabled pool, including defaults.
+See [Google's Hyperdisk Balanced compatibility guide](https://docs.cloud.google.com/compute/docs/disks/hd-types/hyperdisk-balanced).
+IOPS and throughput use provider/service defaults; explicit performance controls
+are outside this change.
 
 Without Local SSD, disk-backed `emptyDir` uses the boot disk. OS, images, logs and
 GKE reservations share this capacity, so 1500 GiB raw does not mean 1500 GiB of Pod

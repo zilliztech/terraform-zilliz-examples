@@ -89,6 +89,7 @@ module "gke" {
   workload_pool                        = var.gke_workload_pool
   node_initial_count                   = var.gke_node_initial_count
   node_disk_size_gb                    = var.gke_node_disk_size_gb
+  node_group_disk_overrides            = var.gke_node_group_disk_overrides
   node_image_type                      = var.gke_node_image_type
   release_channel                      = upper(var.gke_release_channel)
   binary_authorization_evaluation_mode = upper(var.gke_binary_authorization_evaluation_mode)
@@ -101,6 +102,8 @@ module "gke" {
   enable_secrets_encryption            = var.enable_gke_secrets_encryption
   secrets_kms_key_name                 = var.gke_secrets_kms_key_name
   grant_secrets_kms_key_iam            = var.grant_gke_secrets_kms_key_iam
+  boot_disk_kms_key_name               = var.gke_boot_disk_kms_key_name != "" ? var.gke_boot_disk_kms_key_name : var.gke_secrets_kms_key_name
+  node_group_local_ssd_counts          = var.gke_node_group_local_ssd_counts
   labels                               = local.common_labels
   master_authorized_networks = [
     {
@@ -182,6 +185,7 @@ module "booter_vm" {
   agent_config                    = local.agent_config
   labels                          = local.common_labels
   resource_manager_tags           = local.vendor_resource_manager_tags
+  boot_disk_kms_key_name          = var.gke_boot_disk_kms_key_name != "" ? var.gke_boot_disk_kms_key_name : var.gke_secrets_kms_key_name
 
   depends_on = [google_project_service.required, terraform_data.vendor_tag_input_validation, module.iam, module.workload_identity, module.gke, module.private_link]
 }

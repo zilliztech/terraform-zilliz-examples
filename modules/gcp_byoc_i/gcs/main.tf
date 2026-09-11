@@ -38,6 +38,11 @@ resource "google_kms_crypto_key" "gcs" {
 
   name     = local.gcs_kms_crypto_key_name
   key_ring = google_kms_key_ring.gcs[0].id
+
+  version_template {
+    algorithm        = "GOOGLE_SYMMETRIC_ENCRYPTION"
+    protection_level = "HSM"
+  }
 }
 
 resource "google_kms_crypto_key_iam_member" "gcs_cmek" {

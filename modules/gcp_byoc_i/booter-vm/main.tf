@@ -20,6 +20,7 @@ resource "google_compute_instance" "this" {
       size  = 20
       type  = "pd-balanced"
     }
+    kms_key_self_link = var.boot_disk_kms_key_name != "" ? var.boot_disk_kms_key_name : null
   }
 
   network_interface {

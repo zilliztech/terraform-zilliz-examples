@@ -6,6 +6,9 @@ locals {
   secrets_kms_crypto_key_name    = "${local.secrets_kms_name_prefix}-secrets-key"
   effective_secrets_kms_key_name = var.enable_secrets_encryption ? (var.secrets_kms_key_name != "" ? var.secrets_kms_key_name : try(google_kms_crypto_key.secrets[0].id, "")) : ""
   provided_secrets_kms_location  = try(split("/", var.secrets_kms_key_name)[3], "")
+  # Node boot disks are a separate CMEK surface from etcd secrets encryption.
+  # Reuse the secrets key when no dedicated boot-disk key is supplied.
+  effective_boot_disk_kms_key_name = var.boot_disk_kms_key_name != "" ? var.boot_disk_kms_key_name : local.effective_secrets_kms_key_name
 }
 
 data "google_project" "this" {

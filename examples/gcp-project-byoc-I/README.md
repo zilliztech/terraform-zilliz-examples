@@ -337,6 +337,42 @@ grant_gke_secrets_kms_key_iam = false
 
 This setting encrypts Kubernetes Secrets stored in GKE etcd. It does not configure node disk CMEK or GCS bucket encryption. Enabling or changing the key on an existing cluster updates the GKE cluster; review the Terraform plan before applying.
 
+### GKE and Booter VM Boot Disk CMEK
+
+Org policy `constraints/gcp.restrictNonCmekServices` rejects GKE cluster creation unless node boot disks specify a Cloud KMS key. Application-layer secrets encryption does not satisfy that constraint.
+
+When `gke_secrets_kms_key_name` or `gke_boot_disk_kms_key_name` is set, Terraform applies the key to:
+
+- the temporary default node pool created with the cluster (`remove_default_node_pool = true` still provisions boot disks)
+- every BYOC-I node pool
+- the booter VM boot disk
+
+```hcl
+enable_gke_secrets_encryption = true
+gke_secrets_kms_key_name      = "projects/<gcp-project-id>/locations/<region>/keyRings/<key-ring>/cryptoKeys/<key>"
+# Optional override; defaults to gke_secrets_kms_key_name.
+# gke_boot_disk_kms_key_name  = "projects/<gcp-project-id>/locations/<region>/keyRings/<key-ring>/cryptoKeys/<key>"
+```
+
+The Compute Engine and GKE service agents need `roles/cloudkms.cryptoKeyEncrypterDecrypter` on that key. For a pre-authorized customer key, keep `grant_gke_secrets_kms_key_iam = false`.
+
+Search and tiered node groups attach Local SSDs for ephemeral NVMe storage by default (`search=4`, `tiered=8`). Overrides merge over those defaults, so naming one pool does not disable Local SSD on the other. Local SSDs cannot be encrypted with Cloud KMS CMEK. Projects under `gcp.restrictNonCmekServices` (including the S3NS France data boundary) reject those node pools. Disable Local SSDs and size the boot disk to replace the NVMe:
+
+```hcl
+gke_node_group_local_ssd_counts = {
+  search = 0
+  tiered = 0
+}
+gke_node_group_disk_overrides = {
+  search = {
+    disk_size_gb = 1500
+    disk_type    = "pd-ssd"
+  }
+}
+```
+
+Omitting Local SSD drops `node-role/nvme-quota` on that pool so DiskANN is not scheduled against NVMe capacity that no longer exists. Ephemeral storage then uses the boot disk (`pd-balanced` 100+ GiB unless overridden). On `n2-standard-16`, `pd-ssd` read IOPS are `6000 + 30 × GiB` up to 25,000 per VM, so about 634 GiB saturates IOPS; larger disks buy throughput.
+
 The booter image is not required in `terraform.tfvars`. Production defaults to `gcr.io/zilliz-byoc-prod/gcp-byoc-i-booter:latest`; UAT defaults to `gcr.io/zilliz-byoc-uat/gcp-byoc-i-booter:latest`. To use a customer-owned image repository for both the booter and cloud-agent images, set `image_repo_url` to the repository base URL without image name or tag:
 
 ```hcl

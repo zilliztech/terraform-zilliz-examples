@@ -370,9 +370,9 @@ variable "gke_node_image_type" {
 }
 
 variable "gke_release_channel" {
-  description = "GKE release channel."
+  description = "GKE release channel. UNSPECIFIED is rejected for new clusters; REGULAR is the default."
   type        = string
-  default     = "UNSPECIFIED"
+  default     = "REGULAR"
   validation {
     condition     = contains(["UNSPECIFIED", "RAPID", "REGULAR", "STABLE", "EXTENDED"], upper(var.gke_release_channel))
     error_message = "gke_release_channel must be UNSPECIFIED, RAPID, REGULAR, STABLE, or EXTENDED."
@@ -420,9 +420,9 @@ variable "gke_node_auto_repair" {
 }
 
 variable "gke_node_auto_upgrade" {
-  description = "Whether to enable automatic upgrades for GKE node pools."
+  description = "Whether to enable automatic upgrades for GKE node pools. Must be true when the cluster is enrolled in a release channel."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "enable_direct_mig_resize" {
@@ -504,6 +504,32 @@ variable "grant_gke_secrets_kms_key_iam" {
   description = "Whether Terraform grants the GKE service agent roles/cloudkms.cryptoKeyEncrypterDecrypter on an existing gke_secrets_kms_key_name. Terraform-created keys are always granted."
   type        = bool
   default     = true
+}
+
+variable "gke_boot_disk_kms_key_name" {
+  description = "Cloud KMS key for GKE node boot disks. Defaults to gke_secrets_kms_key_name."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.gke_boot_disk_kms_key_name == "" || can(regex("^projects/[^/]+/locations/[^/]+/keyRings/[^/]+/cryptoKeys/[^/]+$", var.gke_boot_disk_kms_key_name))
+    error_message = "gke_boot_disk_kms_key_name must be empty or a full Cloud KMS crypto key resource name."
+  }
+}
+
+variable "gke_node_group_local_ssd_counts" {
+  description = "Per-pool local NVMe SSD overrides, merged over the module defaults {search=4, tiered=8}. Set a pool to 0 where local SSD is unavailable."
+  type        = map(number)
+  default     = {}
+}
+
+variable "gke_node_group_disk_overrides" {
+  description = "Per-pool boot disk override for pools running without local NVMe SSD."
+  type = map(object({
+    disk_size_gb = number
+    disk_type    = string
+  }))
+  default = {}
 }
 
 variable "labels" {

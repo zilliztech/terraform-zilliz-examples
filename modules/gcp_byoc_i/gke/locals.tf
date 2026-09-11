@@ -35,12 +35,18 @@ locals {
       "node-role/milvus-tool" = "true"
       "capacity-type"         = "ON_DEMAND"
     }
-    search = {
-      "zilliz-group-name"    = "search"
-      "node-role/diskANN"    = "true"
-      "node-role/milvus"     = "true"
-      "node-role/nvme-quota" = "200"
-    }
+    # nvme-quota advertises per-node NVMe capacity to the control plane, so it is
+    # only correct while the pool actually has local SSD.
+    search = merge(
+      {
+        "zilliz-group-name" = "search"
+        "node-role/diskANN" = "true"
+        "node-role/milvus"  = "true"
+      },
+      try(local.effective_local_ssd_counts["search"], 0) > 0
+      ? { "node-role/nvme-quota" = "200" }
+      : {},
+    )
     index = {
       "zilliz-group-name"    = "index"
       "node-role/index-pool" = "true"
@@ -57,9 +63,23 @@ locals {
     }
   }
 
-  node_group_local_ssd_counts = {
+  default_local_ssd_counts = {
     search = 4
     tiered = 8
+  }
+
+  # Merged over the defaults so naming one pool cannot silently disable local SSD
+  # on another.
+  effective_local_ssd_counts = merge(
+    local.default_local_ssd_counts,
+    var.node_group_local_ssd_counts,
+  )
+
+  # Pools set to 0 must leave the map entirely: the dynamic block in main.tf keys
+  # off contains(keys(...)), not the value.
+  node_group_local_ssd_counts = {
+    for name, count in local.effective_local_ssd_counts : name => count
+    if count > 0
   }
 
   node_groups = {

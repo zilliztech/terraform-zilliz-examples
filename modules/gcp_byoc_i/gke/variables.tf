@@ -162,9 +162,9 @@ variable "deletion_protection" {
 }
 
 variable "release_channel" {
-  description = "GKE release channel."
+  description = "GKE release channel. UNSPECIFIED is rejected for new clusters; REGULAR is the default."
   type        = string
-  default     = "UNSPECIFIED"
+  default     = "REGULAR"
   validation {
     condition     = contains(["UNSPECIFIED", "RAPID", "REGULAR", "STABLE", "EXTENDED"], upper(var.release_channel))
     error_message = "release_channel must be UNSPECIFIED, RAPID, REGULAR, STABLE, or EXTENDED."
@@ -212,9 +212,9 @@ variable "node_auto_repair" {
 }
 
 variable "node_auto_upgrade" {
-  description = "Whether to enable automatic upgrades for GKE node pools."
+  description = "Whether to enable automatic upgrades for GKE node pools. Must be true when the cluster is enrolled in a release channel."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "enable_secrets_encryption" {
@@ -238,6 +238,71 @@ variable "grant_secrets_kms_key_iam" {
   description = "Whether Terraform grants the GKE service agent roles/cloudkms.cryptoKeyEncrypterDecrypter on an existing secrets_kms_key_name. Terraform-created keys are always granted."
   type        = bool
   default     = true
+}
+
+variable "boot_disk_kms_key_name" {
+  description = "Cloud KMS key for GKE node boot disks. Leave empty to reuse secrets_kms_key_name when secrets encryption is enabled. Required under gcp.restrictNonCmekServices."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.boot_disk_kms_key_name == "" || can(regex("^projects/[^/]+/locations/[^/]+/keyRings/[^/]+/cryptoKeys/[^/]+$", var.boot_disk_kms_key_name))
+    error_message = "boot_disk_kms_key_name must be empty or a full Cloud KMS crypto key resource name."
+  }
+}
+
+variable "node_group_local_ssd_counts" {
+  description = "Per-pool local NVMe SSD overrides, merged over the module defaults {search=4, tiered=8}. Set a pool to 0 where local SSD is unavailable; its ephemeral storage then comes from the boot disk."
+  type        = map(number)
+  default     = {}
+
+  validation {
+    condition = alltrue([
+      for name in keys(var.node_group_local_ssd_counts) :
+      contains(["core", "search", "index", "fundamental", "tiered"], name)
+    ])
+    error_message = "Unknown pool name. Valid: core, search, index, fundamental, tiered."
+  }
+
+  validation {
+    condition = alltrue([
+      for n in values(var.node_group_local_ssd_counts) : n >= 0 && floor(n) == n
+    ])
+    error_message = "Local SSD counts must be non-negative integers."
+  }
+}
+
+variable "node_group_disk_overrides" {
+  description = "Per-pool boot disk override. Pools absent from this map fall back to node_disk_size_gb or the node-group quota minimum."
+  type = map(object({
+    disk_size_gb = number
+    disk_type    = string
+  }))
+  default = {}
+
+  validation {
+    condition = alltrue([
+      for name in keys(var.node_group_disk_overrides) :
+      contains(["core", "search", "index", "fundamental", "tiered"], name)
+    ])
+    error_message = "Unknown pool name in node_group_disk_overrides."
+  }
+
+  validation {
+    condition = alltrue([
+      for o in values(var.node_group_disk_overrides) :
+      o.disk_size_gb >= 100 && floor(o.disk_size_gb) == o.disk_size_gb
+    ])
+    error_message = "disk_size_gb must be an integer of at least 100."
+  }
+
+  validation {
+    condition = alltrue([
+      for o in values(var.node_group_disk_overrides) :
+      contains(["pd-standard", "pd-balanced", "pd-ssd", "hyperdisk-balanced"], o.disk_type)
+    ])
+    error_message = "disk_type must be pd-standard, pd-balanced, pd-ssd or hyperdisk-balanced."
+  }
 }
 
 variable "labels" {

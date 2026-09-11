@@ -39,6 +39,7 @@ module "gcs" {
   enable_gcs_kms        = var.enable_gcs_kms
   gcs_kms_key_name      = var.gcs_kms_key_name
   grant_gcs_kms_key_iam = var.grant_gcs_kms_key_iam
+  kms_protection_level  = var.gcs_kms_protection_level
 
   depends_on = [google_project_service.required, terraform_data.bucket_input_validation]
 }
@@ -100,7 +101,11 @@ module "gke" {
   node_auto_upgrade                    = var.gke_node_auto_upgrade
   enable_secrets_encryption            = var.enable_gke_secrets_encryption
   secrets_kms_key_name                 = var.gke_secrets_kms_key_name
+  kms_protection_level                 = var.gke_secrets_kms_protection_level
   grant_secrets_kms_key_iam            = var.grant_gke_secrets_kms_key_iam
+  boot_disk_kms_key_name               = module.pd_kms.key_name
+  node_group_local_ssd_counts          = var.gke_node_group_local_ssd_counts
+  node_group_disk_overrides            = var.gke_node_group_disk_overrides
   labels                               = local.common_labels
   master_authorized_networks = [
     {
@@ -182,6 +187,7 @@ module "booter_vm" {
   agent_config                    = local.agent_config
   labels                          = local.common_labels
   resource_manager_tags           = local.vendor_resource_manager_tags
+  boot_disk_kms_key_name          = module.pd_kms.key_name
 
   depends_on = [google_project_service.required, terraform_data.vendor_tag_input_validation, module.iam, module.workload_identity, module.gke, module.private_link]
 }
@@ -248,12 +254,13 @@ resource "zillizcloud_byoc_i_project" "this" {
 module "pd_kms" {
   source = "../../modules/gcp_byoc_i/pd-kms"
 
-  enabled       = var.enable_pd_kms
-  key_name      = var.pd_kms_key_name
-  grant_key_iam = var.grant_pd_kms_key_iam
-  project_id    = var.gcp_project_id
-  region        = local.gcp_region
-  name_prefix   = module.gke.cluster_name
+  enabled              = var.enable_pd_kms
+  key_name             = var.pd_kms_key_name
+  grant_key_iam        = var.grant_pd_kms_key_iam
+  kms_protection_level = var.pd_kms_protection_level
+  project_id           = var.gcp_project_id
+  region               = local.gcp_region
+  name_prefix          = local.gke_cluster_name
 
   depends_on = [google_project_service.required]
 }

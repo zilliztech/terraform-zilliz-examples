@@ -58,8 +58,10 @@ locals {
   }
 
   node_group_local_ssd_counts = {
-    search = 4
-    tiered = 8
+    for name, count in merge(
+      { search = 4, tiered = 8 },
+      var.node_group_local_ssd_counts,
+    ) : name => count if count > 0
   }
 
   node_groups = {

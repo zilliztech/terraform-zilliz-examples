@@ -54,3 +54,13 @@ variable "grant_gcs_kms_key_iam" {
   type        = bool
   default     = true
 }
+
+variable "kms_protection_level" {
+  description = "Protection level for newly created keys only. Existing keys are reused unchanged."
+  type        = string
+  default     = "SOFTWARE"
+  validation {
+    condition     = contains(["SOFTWARE", "HSM"], var.kms_protection_level)
+    error_message = "Protection level must be SOFTWARE or HSM."
+  }
+}

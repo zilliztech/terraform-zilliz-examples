@@ -81,6 +81,8 @@ gcp_project_id = "customer-gcp-project"
 # Set to existing to reuse a customer-managed GCS bucket without managing its lifecycle.
 # bucket_mode = "create"
 # Required when bucket_mode = "existing".
+# Opt in if the project rejects no-channel creation; defaults remain UNSPECIFIED/false.
+# gke_node_auto_upgrade = true
 # gke_release_channel = "REGULAR"
 # gke_binary_authorization_evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
 # gke_enable_identity_service = true
@@ -103,6 +105,10 @@ gcp_project_id = "customer-gcp-project"
 # gke_secrets_kms_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/gke-secrets/cryptoKeys/gke-secrets"
 # Set false if the GKE service agent already has KMS encrypter/decrypter permission on the existing key.
 # grant_gke_secrets_kms_key_iam = true
+# enable_pd_kms also encrypts GKE node and booter boot disks using pd_kms_key_name.
+# Leave pd_kms_key_name empty to create one shared disk key.
+# Local SSD cannot use CMEK. If disallowed, also size/type the replacement boot disk.
+# gke_node_group_local_ssd_counts = { search = 0, tiered = 0 }
 # enable_resource_manager_tags = true
 # Leave tag IDs empty to let Terraform create a per-dataplane tag.
 # vendor_tag_key_id = "tagKeys/1234567890"
@@ -111,7 +117,7 @@ gcp_project_id = "customer-gcp-project"
 # agent_server_host = "cloud-tunnel.gcp-us-west1.byoc.cloud.zilliz.com"
 # agent_tunnel_host = "k8sxxxxxxxx.gcp-us-west1.byoc.cloud.zilliz.com"
 
-# Optional CMEK for new PVC Persistent Disks (disabled by default).
+# Optional shared CMEK for PVC and GKE/booter boot disks (disabled by default).
 # enable_pd_kms = true
 # Empty creates a dedicated regional key; otherwise supply an existing key.
 # pd_kms_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/example/cryptoKeys/pd"
@@ -119,3 +125,12 @@ gcp_project_id = "customer-gcp-project"
 
 # Skip API enablement when the required GCP APIs are already managed externally.
 # enable_project_services = false
+
+# Protection level applies only to module-created keys; default is SOFTWARE.
+# gcs_kms_protection_level = "HSM"
+# pd_kms_protection_level = "HSM"
+# gke_secrets_kms_protection_level = "HSM"
+# gke_node_group_disk_overrides = {
+#   search = { disk_size_gb = 1500, disk_type = "pd-ssd" }
+#   tiered = { disk_size_gb = 3000, disk_type = "pd-ssd" }
+# }

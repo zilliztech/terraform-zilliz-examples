@@ -162,7 +162,7 @@ variable "deletion_protection" {
 }
 
 variable "release_channel" {
-  description = "GKE release channel."
+  description = "GKE release channel. Defaults to UNSPECIFIED for compatibility; new customers may need to opt into REGULAR and node auto-upgrade."
   type        = string
   default     = "UNSPECIFIED"
   validation {
@@ -212,7 +212,7 @@ variable "node_auto_repair" {
 }
 
 variable "node_auto_upgrade" {
-  description = "Whether to enable automatic upgrades for GKE node pools."
+  description = "Whether to enable automatic upgrades for GKE node pools. Opt in when selecting a release channel; upgrades can affect workloads."
   type        = bool
   default     = false
 }
@@ -240,8 +240,50 @@ variable "grant_secrets_kms_key_iam" {
   default     = true
 }
 
+variable "boot_disk_kms_key_name" {
+  description = "Cloud KMS key for GKE node boot disks. Empty disables boot disk CMEK, independently of secrets encryption. Required under gcp.restrictNonCmekServices."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.boot_disk_kms_key_name == "" || can(regex("^projects/[^/]+/locations/[^/]+/keyRings/[^/]+/cryptoKeys/[^/]+$", var.boot_disk_kms_key_name))
+    error_message = "boot_disk_kms_key_name must be empty or a full Cloud KMS crypto key resource name."
+  }
+}
+
+variable "node_group_local_ssd_counts" {
+  validation {
+    condition     = alltrue([for name, count in var.node_group_local_ssd_counts : contains(["core", "fundamental", "search", "tiered", "index"], name) && count >= 0 && floor(count) == count])
+    error_message = "Local SSD overrides require a valid pool name and a non-negative integer."
+  }
+
+  description = "Override Local SSD counts used as GKE ephemeral storage. Defaults are search=4 and tiered=8. Set a group to 0 to omit Local SSDs (required when CMEK org policy forbids Local SSD)."
+  type        = map(number)
+  default     = {}
+}
+
 variable "labels" {
   description = "Labels to apply to GKE resources."
   type        = map(string)
   default     = {}
+}
+
+variable "kms_protection_level" {
+  description = "Protection level for newly created keys only. Existing keys are reused unchanged."
+  type        = string
+  default     = "SOFTWARE"
+  validation {
+    condition     = contains(["SOFTWARE", "HSM"], var.kms_protection_level)
+    error_message = "Protection level must be SOFTWARE or HSM."
+  }
+}
+
+variable "node_group_disk_overrides" {
+  description = "Per-pool boot disk overrides. Unspecified pools retain existing disk defaults."
+  type        = map(object({ disk_size_gb = number, disk_type = string }))
+  default     = {}
+  validation {
+    condition     = alltrue([for name, disk in var.node_group_disk_overrides : contains(["core", "fundamental", "search", "tiered", "index"], name) && disk.disk_size_gb >= 100 && floor(disk.disk_size_gb) == disk.disk_size_gb && contains(["pd-standard", "pd-balanced", "pd-ssd"], disk.disk_type)])
+    error_message = "Use a valid pool, an integer size >= 100 GiB, and pd-standard, pd-balanced or pd-ssd."
+  }
 }

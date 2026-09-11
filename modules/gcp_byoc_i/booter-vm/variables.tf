@@ -113,3 +113,9 @@ variable "serial_log_timeout_seconds" {
     error_message = "serial_log_timeout_seconds must be greater than 0."
   }
 }
+
+variable "boot_disk_kms_key_name" {
+  description = "Cloud KMS key for the booter VM boot disk. Required under gcp.restrictNonCmekServices."
+  type        = string
+  default     = ""
+}

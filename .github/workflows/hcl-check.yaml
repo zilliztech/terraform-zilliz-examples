@@ -43,3 +43,42 @@ jobs:
               cd -
             fi
           done
+  gcp-cmek-storage:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory:
+          - modules/gcp_byoc_i/gke
+          - modules/gcp_byoc_i/pd-kms
+          - modules/gcp_byoc_i/gcs
+          - modules/gcp_byoc_i/booter-vm
+          - examples/gcp-project-byoc-I
+    defaults:
+      run:
+        working-directory: ${{ matrix.directory }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+      - name: Match the GCP example provider version
+        if: matrix.directory != 'examples/gcp-project-byoc-I'
+        run: |
+          cat > ci-providers_override.tf <<'HCL'
+          terraform {
+            required_providers {
+              google = {
+                source  = "hashicorp/google"
+                version = "~> 6.32.0"
+              }
+            }
+          }
+          HCL
+      - run: terraform init -backend=false
+      - run: terraform validate
+      - name: Run offline mock tests
+        run: |
+          if [ -d tests ]; then
+            terraform test
+          fi

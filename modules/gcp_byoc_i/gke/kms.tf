@@ -6,6 +6,9 @@ locals {
   secrets_kms_crypto_key_name    = "${local.secrets_kms_name_prefix}-secrets-key"
   effective_secrets_kms_key_name = var.enable_secrets_encryption ? (var.secrets_kms_key_name != "" ? var.secrets_kms_key_name : try(google_kms_crypto_key.secrets[0].id, "")) : ""
   provided_secrets_kms_location  = try(split("/", var.secrets_kms_key_name)[3], "")
+  # Node boot disks are a separate CMEK surface from etcd secrets encryption.
+  # Boot disk encryption is explicitly opt-in, independent of secrets encryption.
+  effective_boot_disk_kms_key_name = var.boot_disk_kms_key_name
 }
 
 data "google_project" "this" {
@@ -27,6 +30,10 @@ resource "google_kms_crypto_key" "secrets" {
 
   name     = local.secrets_kms_crypto_key_name
   key_ring = google_kms_key_ring.secrets[0].id
+  version_template {
+    algorithm        = "GOOGLE_SYMMETRIC_ENCRYPTION"
+    protection_level = var.kms_protection_level
+  }
 }
 
 resource "google_kms_crypto_key_iam_member" "gke_secrets" {

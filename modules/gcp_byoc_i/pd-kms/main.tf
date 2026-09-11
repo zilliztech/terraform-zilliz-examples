@@ -15,6 +15,11 @@ resource "google_kms_crypto_key" "pd" {
   count    = local.create_key ? 1 : 0
   name     = "${local.prefix}-pd-key"
   key_ring = google_kms_key_ring.pd[0].id
+
+  version_template {
+    algorithm        = "GOOGLE_SYMMETRIC_ENCRYPTION"
+    protection_level = var.kms_protection_level
+  }
 }
 
 data "google_project" "cluster" {

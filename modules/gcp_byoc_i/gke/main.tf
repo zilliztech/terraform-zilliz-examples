@@ -177,6 +177,16 @@ resource "google_container_node_pool" "this" {
     oauth_scopes      = ["https://www.googleapis.com/auth/cloud-platform"]
     boot_disk_kms_key = local.effective_boot_disk_kms_key_name != "" ? local.effective_boot_disk_kms_key_name : null
 
+    dynamic "boot_disk" {
+      for_each = try(var.node_group_disk_overrides[each.key].provisioned_iops, null) != null || try(var.node_group_disk_overrides[each.key].provisioned_throughput, null) != null ? [var.node_group_disk_overrides[each.key]] : []
+      content {
+        disk_type              = boot_disk.value.disk_type
+        size_gb                = boot_disk.value.disk_size_gb
+        provisioned_iops       = boot_disk.value.provisioned_iops
+        provisioned_throughput = boot_disk.value.provisioned_throughput
+      }
+    }
+
     metadata = {
       disable-legacy-endpoints = "true"
     }

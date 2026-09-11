@@ -414,8 +414,26 @@ This disk override does not change the pool's machine type. N2 cannot use a
 Hyperdisk boot disk; N4 requires Hyperdisk Balanced among the supported options.
 Checks use the effective disk type for every enabled pool, including defaults.
 See [Google's Hyperdisk Balanced compatibility guide](https://docs.cloud.google.com/compute/docs/disks/hd-types/hyperdisk-balanced).
-IOPS and throughput use provider/service defaults; explicit performance controls
-are outside this change.
+Optional per-pool performance settings require Google provider 6.48 or later
+(the example pins the 6.48 series):
+
+```hcl
+gke_node_group_disk_overrides = {
+  search = {
+    disk_size_gb = 1500
+    disk_type = "hyperdisk-balanced"
+    provisioned_iops = 80000
+    provisioned_throughput = 1200 # MiB/s
+  }
+}
+```
+
+Both performance fields are optional; omit them to retain provider/service defaults.
+Only Hyperdisk Balanced accepts these fields. Terraform validates the disk type
+and positive integer inputs; GCP enforces disk capacity, IOPS/throughput ratios,
+machine limits and quotas. Provisioned values are not a workload performance guarantee.
+Run `terraform init -upgrade` when upgrading from the previous provider pin.
+Changing boot disk performance can roll nodes; review the deployment plan.
 
 Without Local SSD, disk-backed `emptyDir` uses the boot disk. OS, images, logs and
 GKE reservations share this capacity, so 1500 GiB raw does not mean 1500 GiB of Pod

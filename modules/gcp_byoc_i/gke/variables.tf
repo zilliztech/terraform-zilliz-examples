@@ -280,10 +280,29 @@ variable "kms_protection_level" {
 
 variable "node_group_disk_overrides" {
   description = "Per-pool boot disk overrides. Unspecified pools retain existing disk defaults."
-  type        = map(object({ disk_size_gb = number, disk_type = string }))
-  default     = {}
+  type = map(object({
+    disk_size_gb           = number
+    disk_type              = string
+    provisioned_iops       = optional(number)
+    provisioned_throughput = optional(number)
+  }))
+  default = {}
   validation {
     condition     = alltrue([for name, disk in var.node_group_disk_overrides : contains(["core", "fundamental", "search", "tiered", "index"], name) && disk.disk_size_gb >= 100 && floor(disk.disk_size_gb) == disk.disk_size_gb && contains(["pd-standard", "pd-balanced", "pd-ssd", "hyperdisk-balanced"], disk.disk_type)])
     error_message = "Use a valid pool, an integer size >= 100 GiB, and pd-standard, pd-balanced, pd-ssd or hyperdisk-balanced."
   }
+  validation {
+    condition = alltrue([for disk in var.node_group_disk_overrides :
+      (disk.provisioned_iops == null && disk.provisioned_throughput == null) || disk.disk_type == "hyperdisk-balanced"
+    ])
+    error_message = "Provisioned IOPS/throughput require hyperdisk-balanced."
+  }
+  validation {
+    condition = alltrue([for disk in var.node_group_disk_overrides :
+      (disk.provisioned_iops == null ? true : disk.provisioned_iops > 0 && floor(disk.provisioned_iops) == disk.provisioned_iops) &&
+      (disk.provisioned_throughput == null ? true : disk.provisioned_throughput > 0 && floor(disk.provisioned_throughput) == disk.provisioned_throughput)
+    ])
+    error_message = "Provisioned IOPS and throughput (MiB/s) must be positive integers when specified."
+  }
+
 }

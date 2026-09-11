@@ -518,9 +518,18 @@ variable "gke_boot_disk_kms_key_name" {
 }
 
 variable "gke_node_group_local_ssd_counts" {
-  description = "Override Local SSD counts for BYOC-I node groups. Defaults are search=4 and tiered=8. Set a group to 0 when Local SSD is forbidden (for example gcp.restrictNonCmekServices)."
+  description = "Per-pool local NVMe SSD overrides, merged over the module defaults {search=4, tiered=8}. Set a pool to 0 where local SSD is unavailable."
   type        = map(number)
   default     = {}
+}
+
+variable "gke_node_group_disk_overrides" {
+  description = "Per-pool boot disk override for pools running without local NVMe SSD."
+  type = map(object({
+    disk_size_gb = number
+    disk_type    = string
+  }))
+  default = {}
 }
 
 variable "labels" {

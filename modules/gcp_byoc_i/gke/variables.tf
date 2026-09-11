@@ -252,9 +252,57 @@ variable "boot_disk_kms_key_name" {
 }
 
 variable "node_group_local_ssd_counts" {
-  description = "Override Local SSD counts used as GKE ephemeral storage. Defaults are search=4 and tiered=8. Set a group to 0 to omit Local SSDs (required when CMEK org policy forbids Local SSD)."
+  description = "Per-pool local NVMe SSD overrides, merged over the module defaults {search=4, tiered=8}. Set a pool to 0 where local SSD is unavailable; its ephemeral storage then comes from the boot disk."
   type        = map(number)
   default     = {}
+
+  validation {
+    condition = alltrue([
+      for name in keys(var.node_group_local_ssd_counts) :
+      contains(["core", "search", "index", "fundamental", "tiered"], name)
+    ])
+    error_message = "Unknown pool name. Valid: core, search, index, fundamental, tiered."
+  }
+
+  validation {
+    condition = alltrue([
+      for n in values(var.node_group_local_ssd_counts) : n >= 0 && floor(n) == n
+    ])
+    error_message = "Local SSD counts must be non-negative integers."
+  }
+}
+
+variable "node_group_disk_overrides" {
+  description = "Per-pool boot disk override. Pools absent from this map fall back to node_disk_size_gb or the node-group quota minimum."
+  type = map(object({
+    disk_size_gb = number
+    disk_type    = string
+  }))
+  default = {}
+
+  validation {
+    condition = alltrue([
+      for name in keys(var.node_group_disk_overrides) :
+      contains(["core", "search", "index", "fundamental", "tiered"], name)
+    ])
+    error_message = "Unknown pool name in node_group_disk_overrides."
+  }
+
+  validation {
+    condition = alltrue([
+      for o in values(var.node_group_disk_overrides) :
+      o.disk_size_gb >= 100 && floor(o.disk_size_gb) == o.disk_size_gb
+    ])
+    error_message = "disk_size_gb must be an integer of at least 100."
+  }
+
+  validation {
+    condition = alltrue([
+      for o in values(var.node_group_disk_overrides) :
+      contains(["pd-standard", "pd-balanced", "pd-ssd", "hyperdisk-balanced"], o.disk_type)
+    ])
+    error_message = "disk_type must be pd-standard, pd-balanced, pd-ssd or hyperdisk-balanced."
+  }
 }
 
 variable "labels" {

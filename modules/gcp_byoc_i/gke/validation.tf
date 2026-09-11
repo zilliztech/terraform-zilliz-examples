@@ -63,3 +63,33 @@ resource "terraform_data" "existing_cluster_validation" {
     }
   }
 }
+
+# Boot disk / machine type compatibility. Variable validation blocks cannot
+# reference other variables at required_version >= 1.6.0, so the cross-check
+# lives here and fails the plan rather than the apply.
+resource "terraform_data" "node_disk_validation" {
+  for_each = var.node_group_disk_overrides
+
+  input = {
+    pool      = each.key
+    disk_type = each.value.disk_type
+  }
+
+  lifecycle {
+    precondition {
+      condition = (
+        !startswith(each.value.disk_type, "hyperdisk")
+        || !startswith(try(var.k8s_node_groups[each.key].instance_types, ""), "n2-")
+      )
+      error_message = "Hyperdisk boot disks are unsupported on N2; pool ${each.key} needs a Hyperdisk-capable machine type."
+    }
+
+    precondition {
+      condition = (
+        !startswith(try(var.k8s_node_groups[each.key].instance_types, ""), "n4-")
+        || each.value.disk_type == "hyperdisk-balanced"
+      )
+      error_message = "N4 machine types support only hyperdisk-balanced boot disks; pool ${each.key} sets ${each.value.disk_type}."
+    }
+  }
+}

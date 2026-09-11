@@ -89,6 +89,7 @@ module "gke" {
   workload_pool                        = var.gke_workload_pool
   node_initial_count                   = var.gke_node_initial_count
   node_disk_size_gb                    = var.gke_node_disk_size_gb
+  node_group_disk_overrides            = var.gke_node_group_disk_overrides
   node_image_type                      = var.gke_node_image_type
   release_channel                      = upper(var.gke_release_channel)
   binary_authorization_evaluation_mode = upper(var.gke_binary_authorization_evaluation_mode)

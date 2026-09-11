@@ -159,8 +159,11 @@ resource "google_container_node_pool" "this" {
   }
 
   node_config {
-    disk_size_gb      = var.node_disk_size_gb != null ? var.node_disk_size_gb : max(each.value.disk_size, 100)
-    disk_type         = "pd-balanced"
+    disk_size_gb = try(
+      var.node_group_disk_overrides[each.key].disk_size_gb,
+      var.node_disk_size_gb != null ? var.node_disk_size_gb : max(each.value.disk_size, 100),
+    )
+    disk_type         = try(var.node_group_disk_overrides[each.key].disk_type, "pd-balanced")
     image_type        = var.node_image_type
     labels            = local.node_group_labels[each.key]
     machine_type      = each.value.instance_types

@@ -370,7 +370,7 @@ variable "gke_node_image_type" {
 }
 
 variable "gke_release_channel" {
-  description = "GKE release channel."
+  description = "GKE release channel. Defaults to UNSPECIFIED for compatibility; new customers may need to opt into REGULAR and node auto-upgrade."
   type        = string
   default     = "UNSPECIFIED"
   validation {
@@ -420,7 +420,7 @@ variable "gke_node_auto_repair" {
 }
 
 variable "gke_node_auto_upgrade" {
-  description = "Whether to enable automatic upgrades for GKE node pools."
+  description = "Whether to enable automatic upgrades for GKE node pools. Opt in when selecting a release channel; upgrades can affect workloads."
   type        = bool
   default     = false
 }
@@ -506,6 +506,12 @@ variable "grant_gke_secrets_kms_key_iam" {
   default     = true
 }
 
+variable "gke_node_group_local_ssd_counts" {
+  description = "Override Local SSD counts for BYOC-I node groups. Defaults are search=4 and tiered=8. Set a group to 0 when Local SSD is forbidden (for example gcp.restrictNonCmekServices)."
+  type        = map(number)
+  default     = {}
+}
+
 variable "labels" {
   description = "Labels applied to supported GCP resources."
   type        = map(string)
@@ -513,13 +519,13 @@ variable "labels" {
 }
 
 variable "enable_pd_kms" {
-  description = "Enable CMEK for Persistent Disks provisioned by the bootstrap StorageClass."
+  description = "Enable shared CMEK for PVC Persistent Disks and GKE/booter boot disks."
   type        = bool
   default     = false
 }
 
 variable "pd_kms_key_name" {
-  description = "Existing regional Cloud KMS crypto key for PVC disks. Empty creates a dedicated key."
+  description = "Existing regional Cloud KMS crypto key for PVC and boot disks. Empty creates one shared disk key."
   type        = string
   default     = ""
 }
@@ -534,4 +540,63 @@ variable "enable_project_services" {
   description = "Whether Terraform enables the required GCP APIs. Set false when APIs are enabled and managed externally."
   type        = bool
   default     = true
+}
+
+variable "gcs_kms_protection_level" {
+  description = "Protection level for newly created keys only. Existing keys are reused unchanged."
+  type        = string
+  default     = "SOFTWARE"
+  validation {
+    condition     = contains(["SOFTWARE", "HSM"], var.gcs_kms_protection_level)
+    error_message = "Protection level must be SOFTWARE or HSM."
+  }
+}
+
+variable "pd_kms_protection_level" {
+  description = "Protection level for newly created keys only. Existing keys are reused unchanged."
+  type        = string
+  default     = "SOFTWARE"
+  validation {
+    condition     = contains(["SOFTWARE", "HSM"], var.pd_kms_protection_level)
+    error_message = "Protection level must be SOFTWARE or HSM."
+  }
+}
+
+variable "gke_secrets_kms_protection_level" {
+  description = "Protection level for newly created keys only. Existing keys are reused unchanged."
+  type        = string
+  default     = "SOFTWARE"
+  validation {
+    condition     = contains(["SOFTWARE", "HSM"], var.gke_secrets_kms_protection_level)
+    error_message = "Protection level must be SOFTWARE or HSM."
+  }
+}
+
+variable "gke_node_group_disk_overrides" {
+  description = "Per-pool boot disk overrides. Unspecified pools retain existing disk defaults."
+  type = map(object({
+    disk_size_gb           = number
+    disk_type              = string
+    provisioned_iops       = optional(number)
+    provisioned_throughput = optional(number)
+  }))
+  default = {}
+  validation {
+    condition     = alltrue([for name, disk in var.gke_node_group_disk_overrides : contains(["core", "fundamental", "search", "tiered", "index"], name) && disk.disk_size_gb >= 100 && floor(disk.disk_size_gb) == disk.disk_size_gb && contains(["pd-standard", "pd-balanced", "pd-ssd", "hyperdisk-balanced"], disk.disk_type)])
+    error_message = "Use a valid pool, an integer size >= 100 GiB, and pd-standard, pd-balanced, pd-ssd or hyperdisk-balanced."
+  }
+  validation {
+    condition = alltrue([for disk in var.gke_node_group_disk_overrides :
+      (disk.provisioned_iops == null && disk.provisioned_throughput == null) || disk.disk_type == "hyperdisk-balanced"
+    ])
+    error_message = "Provisioned IOPS/throughput require hyperdisk-balanced."
+  }
+  validation {
+    condition = alltrue([for disk in var.gke_node_group_disk_overrides :
+      (disk.provisioned_iops == null ? true : disk.provisioned_iops > 0 && floor(disk.provisioned_iops) == disk.provisioned_iops) &&
+      (disk.provisioned_throughput == null ? true : disk.provisioned_throughput > 0 && floor(disk.provisioned_throughput) == disk.provisioned_throughput)
+    ])
+    error_message = "Provisioned IOPS and throughput (MiB/s) must be positive integers when specified."
+  }
+
 }

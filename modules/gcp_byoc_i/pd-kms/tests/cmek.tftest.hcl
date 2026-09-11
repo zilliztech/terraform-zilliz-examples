@@ -83,3 +83,28 @@ run "key_without_enable_remains_disabled" {
     error_message = "Providing a key alone must not enable CMEK."
   }
 }
+
+run "create_software_key" {
+  command = plan
+  variables {
+    enabled = true
+
+  }
+  assert {
+    condition     = google_kms_crypto_key.pd[0].version_template[0].protection_level == "SOFTWARE"
+    error_message = "New keys must use selected protection level, defaulting to SOFTWARE."
+  }
+}
+
+run "create_hsm_key" {
+  command = plan
+  variables {
+    enabled              = true
+    kms_protection_level = "HSM"
+
+  }
+  assert {
+    condition     = google_kms_crypto_key.pd[0].version_template[0].protection_level == "HSM"
+    error_message = "New keys must use selected protection level, defaulting to SOFTWARE."
+  }
+}

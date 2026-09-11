@@ -17,3 +17,13 @@ variable "grant_key_iam" {
 variable "project_id" { type = string }
 variable "region" { type = string }
 variable "name_prefix" { type = string }
+
+variable "kms_protection_level" {
+  description = "Protection level for newly created keys only. Existing keys are reused unchanged."
+  type        = string
+  default     = "SOFTWARE"
+  validation {
+    condition     = contains(["SOFTWARE", "HSM"], var.kms_protection_level)
+    error_message = "Protection level must be SOFTWARE or HSM."
+  }
+}

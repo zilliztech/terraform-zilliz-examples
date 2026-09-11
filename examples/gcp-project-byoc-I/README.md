@@ -337,6 +337,133 @@ grant_gke_secrets_kms_key_iam = false
 
 This setting encrypts Kubernetes Secrets stored in GKE etcd. It does not configure node disk CMEK or GCS bucket encryption. Enabling or changing the key on an existing cluster updates the GKE cluster; review the Terraform plan before applying.
 
+### Disk CMEK and key protection levels
+
+PVC disks, GKE node boot disks (including the temporary default pool), and the
+booter boot disk share the existing PD KMS configuration and one IAM binding:
+
+```hcl
+enable_pd_kms = true
+# Supply an existing regional key, or leave empty to create one shared disk key.
+pd_kms_key_name = "projects/<key-project>/locations/<region>/keyRings/<ring>/cryptoKeys/<key>"
+# Set false only for a supplied key whose Compute Engine service agent is already authorized.
+grant_pd_kms_key_iam = true
+```
+
+The key location must match the deployment region. The principal is
+`service-<deployment-project-number>@compute-system.iam.gserviceaccount.com`
+and requires `roles/cloudkms.cryptoKeyEncrypterDecrypter` on the key. Cross-project
+keys require permission to manage the key's IAM when automatic grants are enabled.
+Module-created keys are always granted to the Compute Engine service agent.
+
+The default `enable_pd_kms = false` leaves disk CMEK disabled. A supplied key alone
+does not enable encryption. There is no separate boot-disk key or IAM switch.
+**Existing deployments with `enable_pd_kms = true` will also enable boot-disk CMEK
+after this upgrade, potentially replacing node pools and the booter.** Review the
+plan and schedule disruption before applying. Disabling this option affects both
+PVC and boot-disk configuration and removes the module-managed key/grant as applicable.
+
+GKE Secrets encryption remains independent and covers etcd secrets only. Existing
+compliant keys, including EKM keys, can be reused subject to service and organization
+policy requirements; EKM infrastructure is not provisioned by this example.
+
+For keys created by these modules, protection level is independently configurable:
+
+```hcl
+gcs_kms_protection_level         = "HSM"
+pd_kms_protection_level          = "HSM"
+gke_secrets_kms_protection_level = "HSM"
+```
+
+All three default to `SOFTWARE`; supported creation options are `SOFTWARE` and
+`HSM`. These settings do not modify keys supplied by resource name. EKM setup is
+not provisioned by this example. Review organization policy and the Terraform plan
+before changing any existing key configuration; no automatic key migration is provided.
+
+### Optional Local SSD replacement
+
+Local SSD cannot use CMEK. If your environment disallows it, replace the search
+pool's local ephemeral storage with a suitably sized boot disk:
+
+```hcl
+gke_node_group_local_ssd_counts = { search = 0 }
+gke_node_group_disk_overrides = {
+  search = { disk_size_gb = 1500, disk_type = "pd-ssd" }
+}
+```
+
+Overrides are merged with `search=4, tiered=8`; specifying only search leaves tiered
+unchanged. Zero omits the Local SSD configuration. For an enabled tiered pool also
+requiring replacement, set `tiered=0` and provide a tiered boot disk override
+(original raw Local SSD capacity is 3000 GiB).
+
+Boot disk override precedence is per-pool override, then the global
+`gke_node_disk_size_gb`, then the existing node-group disk size with its 100 GiB
+minimum. Supported overrides are `pd-standard`, `pd-balanced`, `pd-ssd`, and `hyperdisk-balanced` on
+compatible machines. For a pool configured with an N4 machine (for example
+`n4-standard-16`), select Hyperdisk Balanced explicitly:
+
+```hcl
+gke_node_group_local_ssd_counts = { search = 0 }
+gke_node_group_disk_overrides = {
+  search = { disk_size_gb = 1500, disk_type = "hyperdisk-balanced" }
+}
+```
+
+This disk override does not change the pool's machine type. N2 cannot use a
+Hyperdisk boot disk; N4 requires Hyperdisk Balanced among the supported options.
+Checks use the effective disk type for every enabled pool, including defaults.
+See [Google's Hyperdisk Balanced compatibility guide](https://docs.cloud.google.com/compute/docs/disks/hd-types/hyperdisk-balanced).
+Optional per-pool performance settings require Google provider 6.48 or later
+(the example pins the 6.48 series):
+
+```hcl
+gke_node_group_disk_overrides = {
+  search = {
+    disk_size_gb = 1500
+    disk_type = "hyperdisk-balanced"
+    provisioned_iops = 80000
+    provisioned_throughput = 1200 # MiB/s
+  }
+}
+```
+
+Both performance fields are optional; omit them to retain provider/service defaults.
+Only Hyperdisk Balanced accepts these fields. Terraform validates the disk type
+and positive integer inputs; GCP enforces disk capacity, IOPS/throughput ratios,
+machine limits and quotas. Provisioned values are not a workload performance guarantee.
+Run `terraform init -upgrade` when upgrading from the previous provider pin.
+Changing boot disk performance can roll nodes; review the deployment plan.
+
+Without Local SSD, disk-backed `emptyDir` uses the boot disk. OS, images, logs and
+GKE reservations share this capacity, so 1500 GiB raw does not mean 1500 GiB of Pod
+allocatable storage. Omitting the disk override can leave the pool on a small
+`pd-balanced` boot disk. Existing DiskANN scheduling labels are retained; validate
+published resource quotas, Pod scheduling and workload performance before production.
+
+The temporary default pool's boot key is applied only on cluster creation; later
+key changes are ignored on that removed pool to avoid replacing the GKE cluster.
+Standalone node pools continue to manage their boot key normally.
+
+Changing boot disk CMEK or removing Local SSD can replace nodes/node pools or the
+booter. Review the replacement list in the plan and schedule any disruption.
+These generic configuration options do not establish CRYPT3NS product support.
+
+### Release channel and automatic upgrades
+
+Defaults remain `gke_release_channel = "UNSPECIFIED"` and
+`gke_node_auto_upgrade = false` to preserve existing behavior. Customers whose GKE
+API rejects no-channel cluster creation can explicitly opt in:
+
+```hcl
+gke_release_channel   = "REGULAR"
+gke_node_auto_upgrade = true
+```
+
+Selecting a release channel requires opting into automatic node upgrades in this
+module. Upgrades can affect workloads. Leaving node auto-upgrade disabled is not a
+guarantee that GKE will never perform a mandatory maintenance or end-of-support upgrade.
+
 The booter image is not required in `terraform.tfvars`. Production defaults to `gcr.io/zilliz-byoc-prod/gcp-byoc-i-booter:latest`; UAT defaults to `gcr.io/zilliz-byoc-uat/gcp-byoc-i-booter:latest`. To use a customer-owned image repository for both the booter and cloud-agent images, set `image_repo_url` to the repository base URL without image name or tag:
 
 ```hcl
@@ -402,30 +529,16 @@ terraform destroy \
   -var="bucket_force_destroy=true"
 ```
 
-### Optional PVC Persistent Disk CMEK
+### PVC StorageClass integration
 
-PVC disk CMEK is disabled by default (`enable_pd_kms = false`). To enable it for a
-new dataplane:
-
-```hcl
-enable_pd_kms = true
-# Optional: reuse a customer key instead of creating a dedicated key.
-# pd_kms_key_name = "projects/customer/locations/us-west1/keyRings/storage/cryptoKeys/pd"
-```
-
-An empty `pd_kms_key_name` creates a dedicated regional key. An existing key must
-use a full Cloud KMS crypto key resource name in the GKE region. The cluster
-project's Compute Engine service agent receives Encrypter/Decrypter access. For a
-pre-authorized customer key, set `grant_pd_kms_key_iam = false`. The runner needs
-KMS creation/IAM permissions, including in the key project for cross-project keys.
-Setting a key name alone does not enable CMEK.
-
-When enabled, the effective key is passed through `ext_config.pd_kms_key_name` to
-paas-deploy's `gp3-etcd` PD CSI StorageClass. Release a bootstrap image containing
-https://github.com/zilliztech/paas-deploy/pull/132 before enabling this option.
-This configures new PVC disks only. Node boot disks, Secrets, and GCS retain their
-independent configuration. Existing dataplane updates and disk migrations are
-outside this example's scope.
+The shared `enable_pd_kms` / `pd_kms_key_name` configuration described above also
+passes the effective key through `ext_config.pd_kms_key_name` to paas-deploy's
+`gp3-etcd` PD CSI StorageClass. A bootstrap image containing
+https://github.com/zilliztech/paas-deploy/pull/132 is required for this integration.
+StorageClass encryption applies to newly provisioned PVC disks; it does not
+re-encrypt existing PVCs. Existing dataplane bootstrap updates and PVC disk
+migrations remain outside this example's scope. GKE Secrets and GCS use their own
+independent CMEK settings.
 
 ### GKE-managed Service addresses
 

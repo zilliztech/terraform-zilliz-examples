@@ -207,11 +207,6 @@ K8S_SG_ID="${aws_eks_cluster.zilliz_byoc_cluster.vpc_config[0].cluster_security_
 # for each the subnets in var.customer_pod_subnet_ids to get the availability zone list
 SUBNET_IDS='${join(" ", var.customer_pod_subnet_ids)}'
 SUBNET_AZS=""
-if [ -z "$SUBNET_IDS" ]; then
-  echo "No pod subnets provided, exiting."
-  exit 0
-fi
-
 for subnet_id in $SUBNET_IDS; do
   # Remove quotes if present
   subnet_id=$(echo $subnet_id | tr -d '"')

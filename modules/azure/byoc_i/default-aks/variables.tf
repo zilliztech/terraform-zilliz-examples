@@ -116,6 +116,12 @@ variable "agent_tag" {
   type        = string
 }
 
+variable "tunnel_client_tag" {
+  description = "Tunnel client image tag (empty disables the tunnel-client sidecar)"
+  type        = string
+  default     = ""
+}
+
 variable "env" {
   description = "Environment name"
   type        = string

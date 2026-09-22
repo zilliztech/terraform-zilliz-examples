@@ -301,6 +301,29 @@ grant_gcs_kms_key_iam = false
 
 The KMS key location must be compatible with the bucket location. Changing the bucket default KMS key affects new objects written after the change; existing objects are not automatically re-encrypted.
 
+### Milvus Client-Side Encryption (CSE)
+
+Milvus CSE is independent of the GCS bucket, Persistent Disk, and GKE Secrets KMS settings above. Enable it for a new DataPlane with a dedicated regional symmetric key:
+
+```hcl
+enable_cse = true
+```
+
+With an empty `gcp_cse_key_name`, Terraform creates the key and a dedicated CMEK service account (`cseSa`) in the customer GCP project. It grants `cseSa` `roles/cloudkms.cryptoKeyEncrypterDecrypter` and `roles/cloudkms.viewer` on that key. The new key and identity are protected from Terraform destruction. Bucket Integration continues to use `storageSa`. To use an existing customer-managed key instead:
+
+```hcl
+enable_cse       = true
+gcp_cse_key_name = "projects/<key-project>/locations/<region>/keyRings/<ring>/cryptoKeys/<key>"
+```
+
+The key must be in the DataPlane region. For both new and existing keys, Terraform grants the dedicated `cseSa` the two key-scoped roles and grants the workload `storageSa` permission to impersonate `cseSa` using short-lived credentials. The Terraform runner must be able to create the identity and update the selected key's IAM policy, even when `manage_iam = false` for the other DataPlane resources. `cse_key_protection_level` selects `SOFTWARE` or `HSM` only for a newly created key.
+
+Terraform passes `cseSa` and the key resource name to the Zilliz Cloud BYOC-I provider as `gcp.cse.service_account_email` and `gcp.cse.default_key_name`. This registers a default CMEK integration during DataPlane bootstrap; each new Milvus cluster must still opt into CMEK. Existing DataPlanes ignore changes to the `gcp` block, so changing these variables later does not register a key on a running DataPlane. Do not replace a live DataPlane to enable CMEK; use the platform CMEK integration flow instead.
+
+With `enable_cse=false`, this example does not create a dedicated `cseSa`. The identity-only setup needed for adding CMEK later from the page is not covered by this Terraform example yet.
+
+This example requires a Zilliz Cloud Terraform provider build that supports `gcp.cse`; the published minimum version in `provider.tf` alone does not guarantee that support.
+
 ### GKE Application-layer Secrets Encryption
 
 Kubernetes Secrets stored in GKE etcd use Google-managed encryption by default. To add application-layer envelope encryption with a customer-managed Cloud KMS key, enable:

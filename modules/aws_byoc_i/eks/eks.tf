@@ -97,9 +97,9 @@ resource "aws_iam_openid_connect_provider" "eks" {
 }
 
 resource "aws_eks_access_policy_association" "example" {
-  cluster_name  = local.eks_cluster_name
+  cluster_name  = aws_eks_access_entry.test.cluster_name
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  principal_arn = local.maintenance_role.arn
+  principal_arn = aws_eks_access_entry.test.principal_arn
 
   access_scope {
     type = "cluster"
@@ -108,7 +108,7 @@ resource "aws_eks_access_policy_association" "example" {
 }
 
 resource "aws_eks_access_entry" "test" {
-  cluster_name  = local.eks_cluster_name
+  cluster_name  = aws_eks_cluster.zilliz_byoc_cluster.name
   principal_arn = local.maintenance_role.arn
   type          = "STANDARD"
 

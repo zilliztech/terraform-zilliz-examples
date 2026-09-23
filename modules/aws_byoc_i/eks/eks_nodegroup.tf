@@ -481,7 +481,8 @@ resource "aws_eks_node_group" "core" {
     ignore_changes = [scaling_config[0].desired_size]
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init]
+  # The booter uses the maintenance role to create Kubernetes resources.
+  depends_on = [aws_eks_addon.vpc-cni, time_sleep.wait_init, aws_eks_access_policy_association.example]
 }
 
 # aws_eks_node_group.index:
@@ -628,5 +629,6 @@ resource "aws_eks_node_group" "init" {
     ignore_changes = [scaling_config]
   }
 
-  depends_on = [aws_eks_addon.vpc-cni, aws_kms_grant.asg_ebs_kms_grant]
+  # Init also runs the booter when custom pod subnets are configured.
+  depends_on = [aws_eks_addon.vpc-cni, aws_kms_grant.asg_ebs_kms_grant, aws_eks_access_policy_association.example]
 }

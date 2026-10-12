@@ -200,6 +200,19 @@ resource "zillizcloud_byoc_i_project_agent" "this" {
   depends_on = [module.booter_vm]
 }
 
+module "cmek" {
+  source = "../../modules/gcp_byoc_i/cmek"
+
+  enabled                       = var.enable_cse
+  project_id                    = var.gcp_project_id
+  region                        = local.gcp_region
+  name_prefix                   = local.gke_cluster_name
+  storage_service_account_email = module.iam.storage_sa_email
+  key_name                      = var.gcp_cse_key_name
+  protection_level              = var.cse_key_protection_level
+  depends_on                    = [google_project_service.required]
+}
+
 resource "zillizcloud_byoc_i_project" "this" {
   project_id    = local.project_id
   data_plane_id = local.data_plane_id
@@ -207,6 +220,11 @@ resource "zillizcloud_byoc_i_project" "this" {
   gcp = {
     region     = data.zillizcloud_byoc_i_project_settings.this.region
     project_id = var.gcp_project_id
+
+    cse = var.enable_cse ? {
+      service_account_email = module.cmek.service_account_email
+      default_key_name      = module.cmek.key_name
+    } : null
 
     network = {
       vpc_name            = module.vpc.vpc_name

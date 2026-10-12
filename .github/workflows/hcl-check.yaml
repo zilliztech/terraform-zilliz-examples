@@ -49,6 +49,7 @@ jobs:
       fail-fast: false
       matrix:
         directory:
+          - modules/gcp_byoc_i/cmek
           - modules/gcp_byoc_i/gke
           - modules/gcp_byoc_i/pd-kms
           - modules/gcp_byoc_i/gcs

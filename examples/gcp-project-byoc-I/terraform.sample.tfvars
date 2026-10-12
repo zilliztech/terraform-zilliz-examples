@@ -101,6 +101,14 @@ gcp_project_id = "customer-gcp-project"
 # gcs_kms_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/example-key-ring/cryptoKeys/example-key"
 # For existing keys only, set to false if the Cloud Storage service agent has already been granted KMS encrypter/decrypter permission.
 # grant_gcs_kms_key_iam = true
+# Enable Milvus client-side encryption independently of GCS, disk, and GKE Secrets encryption.
+# enable_cse = true
+# Optional existing regional CryptoKey. Leave empty to create a dedicated symmetric key.
+# gcp_cse_key_name = "projects/customer-gcp-project/locations/us-west1/keyRings/milvus-cse/cryptoKeys/milvus-cse"
+# Terraform grants the storage GSA Encrypter/Decrypter and Viewer on both new and existing keys.
+# The Terraform runner needs permission to update the selected key's IAM policy.
+# Applies only to a newly created key; defaults to SOFTWARE.
+# cse_key_protection_level = "HSM"
 # Enable GKE application-layer encryption for Kubernetes Secrets stored in etcd.
 # enable_gke_secrets_encryption = true
 # Optional existing regional KMS key. Leave empty to let Terraform create one in the GKE region.

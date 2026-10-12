@@ -97,3 +97,10 @@ output "psc_endpoint_ip" {
 output "pd_kms_key_name" {
   value = module.pd_kms.key_name
 }
+output "cmek_service_account_email" {
+  value = module.cmek.service_account_email
+}
+
+output "gcp_cse_key_name" {
+  value = module.cmek.key_name
+}

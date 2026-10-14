@@ -120,44 +120,26 @@ Three things must be true for the tiered node group to use the custom AMI:
 
 2. **`local.ami_types.tiered` must resolve to `null`** when an override is set. The `lookup(var.k8s_node_group_image_id, "tiered", null)` check in the EKS module handles this automatically — tiered's `ami_type` becomes `null` (i.e. `CUSTOM`) as soon as you pass a tiered AMI, matching what EKS expects when the launch template supplies an `image_id`.
 
-3. **The `diskann` launch template userdata must run the NVMe mount *before* `${local.eks_bootstrap}`.** When EKS uses a custom AMI, kubelet is started by the bootstrap command you embed in userdata — not by EKS. If the NVMe mount script runs after kubelet has already started, `/var/lib/kubelet` is already on the EBS root volume and the symlink swap has no effect, so ephemeral storage ends up sized to the 100 GB root disk instead of the ~1.8 TB NVMe. Worse, if `${local.eks_bootstrap}` appears *outside* the `multipart/mixed` MIME part it will be silently ignored and the node will fail to register.
+3. **The `diskann` launch template userdata must prepare NVMe before EKS bootstrap.** Keep the storage setup as the first shell-script MIME part and `${local.eks_bootstrap}` after it, before the closing MIME boundary. The custom AMI bootstrap local already includes its own MIME-part header.
 
-   The correct layout for the `aws_launch_template.diskann` userdata heredoc:
+   Use the complete userdata block and `scripts/mount-nvme.sh` from
+   `modules/aws_byoc_i/eks` together. The userdata installs and starts
+   `zilliz-mount-nvme.service` before the `${local.eks_bootstrap}`
+   MIME part. Its systemd dependencies also prepare storage before nodeadm configuration,
+   kubelet, containerd, and Docker on subsequent boots.
 
-   ```hcl
-   user_data = base64encode(<<-USERDATA
-   MIME-Version: 1.0
-   Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
+   The service mounts the instance-store disk on every boot and initializes its
+   directories only when `/mnt/data/.initialized` is absent. Stop/start clears
+   the instance store, including this marker, so initialization runs again.
+   An ordinary reboot preserves the filesystem and marker. Do not persist an
+   instance-store UUID in `/etc/fstab` or place the marker on the EBS root disk.
 
-   --==MYBOUNDARY==
-   Content-Type: text/x-shellscript; charset="us-ascii"
-
-   #!/bin/bash
-   echo "Running zilliz NVMe mount script"
-   disk_volume=$(lsblk -J -o NAME,MODEL,SIZE | jq -r '.blockdevices[] | select(.model != null and (.model | test("Amazon EC2 NVMe Instance Storage"))) | .name')
-   echo $${disk_volume}
-   if [ -n "$${disk_volume}" ] && lsblk | fgrep -q $${disk_volume}; then
-       mkdir -p /mnt/data /var/lib/kubelet /var/lib/docker
-       mkfs.xfs /dev/$${disk_volume}
-       mount /dev/$${disk_volume} /mnt/data
-       chmod 0755 /mnt/data
-       mv /var/lib/kubelet /mnt/data/
-       mv /var/lib/docker /mnt/data/
-       ln -sf /mnt/data/kubelet /var/lib/kubelet
-       ln -sf /mnt/data/docker /var/lib/docker
-       UUID=$(lsblk -f | grep $${disk_volume} | awk '{print $$3}')
-       echo "UUID=$$UUID     /mnt/data   xfs    defaults,noatime  1   1" >> /etc/fstab
-   fi
-   echo "mount results $(cat /etc/fstab)"
-   echo 'NVMe mount done'
-   ${local.eks_bootstrap}
-   --==MYBOUNDARY==--
-
-   USERDATA
-   )
-   ```
+   This launch-template update applies to newly launched nodes. Existing warm
+   instances retain their installed script and fstab; updating the template
+   alone does not repair them. Plan their replacement through the managed node
+   group lifecycle before validating repeated suspend/resume cycles.
 
    Key points:
-   - `${local.eks_bootstrap}` is **inside** the MIME part, **after** the NVMe mount — never above the `--==MYBOUNDARY==` header.
-   - `$${...}` escapes bash variables so Terraform doesn't try to interpolate them; `${local.eks_bootstrap}` is a real Terraform interpolation.
+   - `${local.eks_bootstrap}` remains **after** the NVMe setup part and **before** the closing MIME boundary.
+   - The shell script is included with `file()`; its shell variables are not recursively interpreted by Terraform.
    - Verify on a running node: `df -h /var/lib/kubelet` should show a ~1.8 TB mount backed by the NVMe device, and `kubectl describe node` should report ephemeral-storage in the same range.

@@ -249,23 +249,36 @@ Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
 Content-Type: text/x-shellscript; charset="us-ascii"
 
 #!/bin/bash
-echo "Running zilliz NVMe mount script"
-disk_volume=$(lsblk -J -o NAME,MODEL,SIZE | jq -r '.blockdevices[] | select(.model != null and (.model | test("Amazon EC2 NVMe Instance Storage"))) | .name')
-echo $${disk_volume}
-if [ -n "$${disk_volume}" ] && lsblk | fgrep -q $${disk_volume}; then
-    mkdir -p /mnt/data /var/lib/kubelet /var/lib/docker
-    mkfs.xfs /dev/$${disk_volume}
-    mount /dev/$${disk_volume} /mnt/data
-    chmod 0755 /mnt/data
-    mv /var/lib/kubelet /mnt/data/
-    mv /var/lib/docker /mnt/data/
-    ln -sf /mnt/data/kubelet /var/lib/kubelet
-    ln -sf /mnt/data/docker /var/lib/docker
-    UUID=$(lsblk -f | grep $${disk_volume} | awk '{print $$3}')
-    echo "UUID=$$UUID     /mnt/data   xfs    defaults,noatime  1   1" >> /etc/fstab
-fi
-echo "mount results $(cat /etc/fstab)"
-echo 'NVMe mount done'
+set -euo pipefail
+install -d /usr/local/sbin
+cat > /usr/local/sbin/zilliz-mount-nvme <<'SCRIPT'
+${file("${path.module}/scripts/mount-nvme.sh")}
+SCRIPT
+chmod 0755 /usr/local/sbin/zilliz-mount-nvme
+cat > /etc/systemd/system/zilliz-mount-nvme.service <<'UNIT'
+[Unit]
+Description=Prepare Zilliz NVMe instance storage
+Before=nodeadm-config.service kubelet.service containerd.service docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/zilliz-mount-nvme
+RemainAfterExit=yes
+TimeoutStartSec=180
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+for service in nodeadm-config kubelet containerd docker; do
+    mkdir -p "/etc/systemd/system/$service.service.d"
+    cat > "/etc/systemd/system/$service.service.d/10-zilliz-nvme.conf" <<'UNIT'
+[Unit]
+Requires=zilliz-mount-nvme.service
+After=zilliz-mount-nvme.service
+UNIT
+done
+systemctl daemon-reload
+systemctl enable --now zilliz-mount-nvme.service
 ${local.eks_bootstrap}
 --==MYBOUNDARY==--
 

@@ -43,6 +43,17 @@ jobs:
               cd -
             fi
           done
+  aws-nvme-bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+          terraform_wrapper: false
+      - run: terraform fmt -check modules/aws_byoc_i/eks/eks_nodegroup.tf
+      - run: python3 -B -m unittest discover -s modules/aws_byoc_i/eks/tests -p 'test_*.py' -v
+
   gcp-cmek-storage:
     runs-on: ubuntu-latest
     strategy:

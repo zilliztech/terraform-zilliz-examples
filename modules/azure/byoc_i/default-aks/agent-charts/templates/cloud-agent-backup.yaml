@@ -1,21 +1,32 @@
+{{- $split := ne (trim (default "" (.Values.tunnelClient).image)) "" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    configmap.reloader.stakater.com/reload: cloud-agent
+    configmap.reloader.stakater.com/reload: {{ if $split }}cloud-agent-backup{{ else }}cloud-agent{{ end }}
   name: cloud-agent-backup
   namespace: vdc
 spec:
   replicas: 1
+  {{- if $split }}
+  strategy:
+    type: Recreate
+  {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/instance: vdc
       app.kubernetes.io/name: cloud-agent
+      {{- if $split }}
+      app.kubernetes.io/component: backup
+      {{- end }}
   template:
     metadata:
       labels:
         app.kubernetes.io/instance: vdc
         app.kubernetes.io/name: cloud-agent
+        {{- if $split }}
+        app.kubernetes.io/component: backup
+        {{- end }}
     spec:
       {{- if .Values.config.tunnel.endpointIp }}
       hostAliases:
@@ -71,6 +82,9 @@ spec:
         volumeMounts:
         - mountPath: /spring-config
           name: spring-config
+      {{- if $split }}
+      {{- include "cloud-agent.tunnelClient" . | nindent 6 }}
+      {{- end }}
       - command:
         - /bin/sh
         - -c

@@ -106,3 +106,12 @@ output "aks_kube_config" {
   sensitive   = true
 }
 
+output "cse_identity" {
+  description = "Dedicated Azure CSE managed identity, or null when disabled."
+  value       = module.cmek.identity
+}
+
+output "cse_key_identifier" {
+  description = "Existing Azure CSE Key URL, or null when disabled."
+  value       = module.cmek.key_identifier
+}

@@ -169,6 +169,19 @@ resource "zillizcloud_byoc_i_project_agent" "this" {
   depends_on = [module.milvus_aks]
 }
 
+module "cmek" {
+  source = "../../modules/azure/byoc_i/cmek"
+
+  enabled             = var.enable_cse
+  name_prefix         = local.name_prefix
+  location            = local.location
+  resource_group_name = local.resource_group_name
+  aks_oidc_issuer_url = module.milvus_aks.oidc_issuer_url
+  key_identifier      = var.azure_cse_key_identifier
+  key_vault_id        = var.azure_cse_key_vault_id
+  tags                = local.common_tags
+}
+
 # ============================================================================
 # 7. Zilliz Cloud Project Module
 # ============================================================================
@@ -195,11 +208,16 @@ resource "zillizcloud_byoc_i_project" "this" {
       storage_account_name = local.storage_account_name
       container_name       = local.storage_config.container_name
     }
+    cse = var.enable_cse ? {
+      identity               = module.cmek.identity
+      tenant_id              = data.azurerm_client_config.current.tenant_id
+      default_key_identifier = module.cmek.key_identifier
+    } : null
   }
 
   // depend on private link to establish agent tunnel connection
   depends_on = [zillizcloud_byoc_i_project_agent.this,
-  module.milvus_aks, module.zilliz_private_endpoint, module.storage_identity]
+  module.milvus_aks, module.zilliz_private_endpoint, module.storage_identity, module.cmek]
   lifecycle {
     ignore_changes  = [data_plane_id, project_id, azure, ext_config]
     prevent_destroy = true

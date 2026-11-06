@@ -3,6 +3,9 @@ image:
   tag: "test"
   registrykey: ""
 
+tunnelClient:
+  image: ""
+
 config:
   tunnel:
     serverHost: ""

@@ -63,12 +63,13 @@ variable "dataplane_id" {
 variable "agent_config" {
   description = "Cloud-agent bootstrap configuration passed to the booter container."
   type = object({
-    auth_token     = string
-    image          = string
-    server_host    = string
-    tunnel_host    = string
-    endpoint_ip    = optional(string, "")
-    gcp_project_id = string
+    auth_token          = string
+    image               = string
+    tunnel_client_image = optional(string, "")
+    server_host         = string
+    tunnel_host         = string
+    endpoint_ip         = optional(string, "")
+    gcp_project_id      = string
   })
   sensitive = true
 }

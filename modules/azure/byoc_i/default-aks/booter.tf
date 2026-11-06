@@ -17,8 +17,11 @@ EOF
   )
 
   agent_config = {
-    repository          = "${local.azure_agent_config.acr_name}.azurecr.io/${local.azure_agent_config.acr_prefix}"
-    tag                 = var.agent_tag
+    repository = "${local.azure_agent_config.acr_name}.azurecr.io/${local.azure_agent_config.acr_prefix}"
+    tag        = var.agent_tag
+    tunnelClientImage = trimspace(var.tunnel_client_tag) == "" ? "" : (
+      can(regex("/", var.tunnel_client_tag)) ? trimspace(var.tunnel_client_tag) : "${local.azure_agent_config.acr_name}.azurecr.io/${local.azure_agent_config.acr_prefix}/vdc/cloud-tunnel-client:${trimspace(var.tunnel_client_tag)}"
+    )
     serverHost          = local.server_host
     authToken           = var.auth_token
     dataPlaneId         = var.dataplane_id
@@ -77,7 +80,7 @@ resource "azapi_resource_action" "aks_run_command" {
   }
 
   timeouts {
-    create = "300s"  # 5 minutes - helm install + rollout may take time on fresh cluster
+    create = "300s" # 5 minutes - helm install + rollout may take time on fresh cluster
     update = "300s"
     delete = "60s"
   }

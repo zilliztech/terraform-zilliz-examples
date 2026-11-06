@@ -21,7 +21,9 @@ an old embedded-tunnel agent must not run alongside the sidecar.
 
 AWS passes the API value through `agent_config.tunnel_client_tag` to the booter.
 GCP resolves it into `agent_config.tunnel_client_image`, honoring the custom image
-repository and retaining full references when there is no override. Azure passes
+repository and retaining full references when there is no override. With a custom
+repository, explicit tags/digests are preserved and tagless full references use
+`:latest`; registry ports are not treated as tags. Azure passes
 `tunnel_client_tag` into its chart and resolves tags against the configured ACR.
 
 The sidecar shares the corresponding primary/backup ConfigMap, listens on
@@ -32,6 +34,9 @@ prove that the remote tunnel is authenticated. Main and backup retain `srvNo`
 
 This change targets new deployments. Existing Data Planes are upgraded manually
 through the established procedure. It is not an automatic fleet migration.
+
+The Azure example uses azurerm 4.x because its subnet configuration uses
+`service_endpoints`, which is not supported by azurerm 5.x.
 
 ## Offline validation
 

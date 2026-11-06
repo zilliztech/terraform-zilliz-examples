@@ -74,6 +74,14 @@ class TunnelSidecarTest(unittest.TestCase):
             ('split-v1', 'customer.example/vdc', 'customer.example/vdc/cloud-tunnel-client:split-v1'),
             ('registry.example/custom/tunnel:v1', 'customer.example/vdc', 'customer.example/vdc/cloud-tunnel-client:v1'),
             ('registry.example/custom/tunnel@sha256:abc', 'customer.example/vdc', 'customer.example/vdc/cloud-tunnel-client@sha256:abc'),
+            ('registry.example/custom/tunnel', '', 'registry.example/custom/tunnel'),
+            ('registry.example:5000/custom/tunnel', '', 'registry.example:5000/custom/tunnel'),
+            ('registry.example/custom/tunnel', 'customer.example/vdc', 'customer.example/vdc/cloud-tunnel-client:latest'),
+            ('registry.example:5000/custom/tunnel', 'customer.example/vdc', 'customer.example/vdc/cloud-tunnel-client:latest'),
+            ('registry.example:5000/custom/tunnel:v1', 'customer.example:5001/vdc', 'customer.example:5001/vdc/cloud-tunnel-client:v1'),
+            ('registry.example:5000/custom/tunnel@sha256:abc', 'customer.example:5001/vdc', 'customer.example:5001/vdc/cloud-tunnel-client@sha256:abc'),
+            (None, 'customer.example/vdc', ''), ('', 'customer.example/vdc', ''),
+            ('   ', 'customer.example/vdc', ''),
         ]
         for image, repository, expected in cases:
             with self.subTest(image=image, repository=repository), tempfile.TemporaryDirectory() as directory:

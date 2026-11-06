@@ -68,10 +68,14 @@ locals {
     "cloud-tunnel.${local.gcp_private_service_domain}.",
     "cloud-open-api.${local.gcp_private_service_domain}.",
   ]
-  agent_image_url            = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
-  tunnel_client_image_url    = data.zillizcloud_byoc_i_project_settings.this.op_config.tunnel_client_image_url == null ? "" : trimspace(data.zillizcloud_byoc_i_project_settings.this.op_config.tunnel_client_image_url)
-  tunnel_client_image_suffix = can(regex("@", local.tunnel_client_image_url)) ? "@${split("@", local.tunnel_client_image_url)[1]}" : ":${element(split(":", local.tunnel_client_image_url), length(split(":", local.tunnel_client_image_url)) - 1)}"
-  tunnel_client_repository   = replace(local.agent_image_repository, "/cloud-agent$/", "cloud-tunnel-client")
+  agent_image_url         = data.zillizcloud_byoc_i_project_settings.this.op_config.agent_image_url
+  tunnel_client_image_url = data.zillizcloud_byoc_i_project_settings.this.op_config.tunnel_client_image_url == null ? "" : trimspace(data.zillizcloud_byoc_i_project_settings.this.op_config.tunnel_client_image_url)
+  tunnel_client_image_suffix = can(regex("@", local.tunnel_client_image_url)) ? "@${split("@", local.tunnel_client_image_url)[1]}" : (
+    can(regex(":[^/:]+$", local.tunnel_client_image_url)) ? regex(":[^/:]+$", local.tunnel_client_image_url) : (
+      can(regex("/", local.tunnel_client_image_url)) ? ":latest" : ":${local.tunnel_client_image_url}"
+    )
+  )
+  tunnel_client_repository = replace(local.agent_image_repository, "/cloud-agent$/", "cloud-tunnel-client")
   tunnel_client_image = local.tunnel_client_image_url == "" ? "" : (
     local.image_repo_url != "" ? "${local.tunnel_client_repository}${local.tunnel_client_image_suffix}" : (
       can(regex("/", local.tunnel_client_image_url)) ? local.tunnel_client_image_url : "${local.tunnel_client_repository}:${local.tunnel_client_image_url}"

@@ -1,4 +1,4 @@
-{{- $split := ne (trim (default "" (.Values.tunnelClient).image)) "" -}}
+{{- if (not (trim (default "" (.Values.tunnelClient).image))) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -8,10 +8,6 @@ metadata:
   namespace: vdc
 spec:
   replicas: 1
-  {{- if $split }}
-  strategy:
-    type: Recreate
-  {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/instance: vdc
@@ -76,9 +72,6 @@ spec:
         volumeMounts:
         - mountPath: /spring-config
           name: spring-config
-      {{- if $split }}
-      {{- include "cloud-agent.tunnelClient" . | nindent 6 }}
-      {{- end }}
       - command:
         - /bin/sh
         - -c
@@ -144,3 +137,4 @@ spec:
       - configMap:
           name: cloud-agent-backup
         name: spring-config
+{{- end }}

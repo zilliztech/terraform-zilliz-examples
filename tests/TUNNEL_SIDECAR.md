@@ -47,3 +47,5 @@ python3 tests/test_tunnel_sidecar.py
 The checks render legacy/split Azure Deployments, compare uploaded ZIP contents
 and rendering against source, and evaluate the actual GCP Terraform image
 expressions for missing values, tags, full references and custom registries.
+
+Azure uses separate legacy and split Deployment templates, selected solely by the tunnel image. Common chart resources are shared.

@@ -40,6 +40,7 @@ class TunnelSidecarTest(unittest.TestCase):
                     self.assertIn('kubectl-proxy', containers)
                     config_name = next(v['configMap']['name'] for v in pod['volumes'] if v['name'] == 'spring-config')
                     self.assertEqual(config_name, name)
+                    self.assertEqual(d['metadata']['annotations']['configmap.reloader.stakater.com/reload'], config_name)
                     self.assertEqual(configs[name]['byoc']['tunnel']['srvNo'], 2 if name.endswith('backup') else 1)
                     if not image.strip():
                         self.assertNotIn('tunnel-client', containers)
@@ -61,7 +62,6 @@ class TunnelSidecarTest(unittest.TestCase):
                     self.assertEqual(env['BYOC_K8S_KEY'], 'test-token')
                     self.assertEqual(env['SPRING_APPLICATION_NAME'], 'tunnel-client-app')
                     self.assertIn('http://127.0.0.1:9999/cloud/check_healthy_db', sidecar['readinessProbe']['exec']['command'])
-                    self.assertEqual(d['metadata']['annotations']['configmap.reloader.stakater.com/reload'], name)
 
     def test_terraform_resolves_gcp_image(self):
         source = (ROOT / 'examples/gcp-project-byoc-I/locals.tf').read_text()

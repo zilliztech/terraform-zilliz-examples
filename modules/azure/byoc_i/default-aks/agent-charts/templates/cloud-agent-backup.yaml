@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    configmap.reloader.stakater.com/reload: {{ if $split }}cloud-agent-backup{{ else }}cloud-agent{{ end }}
+    configmap.reloader.stakater.com/reload: cloud-agent-backup
   name: cloud-agent-backup
   namespace: vdc
 spec:

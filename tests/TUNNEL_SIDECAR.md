@@ -31,11 +31,10 @@ The sidecar shares the corresponding primary/backup ConfigMap, listens on
 `127.0.0.1:9999`, and uses the same CPU/memory resources as cloud-agent. It keeps
 the existing `/cloud/check_healthy_db` readiness contract; this endpoint does not
 prove that the remote tunnel is authenticated. Main and backup retain `srvNo`
-1 and 2. Split Deployments use Recreate and distinct component selectors.
+1 and 2. Split Deployments use Recreate and preserve the original selector and Pod labels.
 
-This change targets new deployments. Existing Deployment selectors are immutable;
-switching an existing Terraform installation to split mode requires the existing
-manual upgrade/recreation procedure. It is not an automatic fleet migration.
+This change targets new deployments. Existing Data Planes are upgraded manually
+through the established procedure. It is not an automatic fleet migration.
 
 ## Offline validation
 

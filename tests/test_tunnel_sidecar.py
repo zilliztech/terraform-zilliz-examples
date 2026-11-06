@@ -32,7 +32,6 @@ class TunnelSidecarTest(unittest.TestCase):
                            for d in docs if d['kind'] == 'ConfigMap'}
                 deployments = [d for d in docs if d['kind'] == 'Deployment']
                 self.assertEqual(len(deployments), 2)
-                selectors = []
                 for d in deployments:
                     name = d['metadata']['name']
                     spec = d['spec']
@@ -49,7 +48,7 @@ class TunnelSidecarTest(unittest.TestCase):
                     self.assertEqual(spec['strategy'], {'type': 'Recreate'})
                     selector = spec['selector']['matchLabels']
                     self.assertEqual(selector, spec['template']['metadata']['labels'])
-                    selectors.append(selector)
+                    self.assertEqual(selector, {'app.kubernetes.io/name': 'cloud-agent', 'app.kubernetes.io/instance': 'vdc'})
                     sidecar = containers['tunnel-client']
                     agent = containers['cloud-agent']
                     self.assertEqual(sidecar['image'], image)
@@ -63,8 +62,6 @@ class TunnelSidecarTest(unittest.TestCase):
                     self.assertEqual(env['SPRING_APPLICATION_NAME'], 'tunnel-client-app')
                     self.assertIn('http://127.0.0.1:9999/cloud/check_healthy_db', sidecar['readinessProbe']['exec']['command'])
                     self.assertEqual(d['metadata']['annotations']['configmap.reloader.stakater.com/reload'], name)
-                if image.strip():
-                    self.assertNotEqual(*selectors)
 
     def test_terraform_resolves_gcp_image(self):
         source = (ROOT / 'examples/gcp-project-byoc-I/locals.tf').read_text()

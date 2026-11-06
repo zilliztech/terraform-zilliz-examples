@@ -8,12 +8,9 @@ an old embedded-tunnel agent must not run alongside the sidecar.
 
 ## Required releases
 
-1. Release the Terraform provider change exposing
-   `op_config.tunnel_client_image_url` on BYOC-I settings. These examples reference
-   the field directly so an older provider fails validation instead of silently
-   discarding an enabled split configuration. Upgrade the provider lock file with
-   `terraform init -upgrade` after the containing provider release is available.
-   No unreleased provider version is assumed here.
+1. Use Terraform provider v0.6.46 or newer, which exposes
+   `op_config.tunnel_client_image_url`. The examples require at least this version.
+   Run `terraform init -upgrade` to update an existing provider lock file.
 2. Publish the updated AWS booter image from `paas-deploy/bootstrap` and GCP booter
    image from `zilliz-cloud/infra/gcp-booter` to each target registry. Terraform's
    booter image selection must reference those builds.

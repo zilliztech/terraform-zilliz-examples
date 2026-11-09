@@ -129,7 +129,7 @@ module "milvus_aks" {
   storage_identity_id           = local.common_storage_identity_id
 
   # Optional AKS configuration
-  env               = var.env
+  env               = local.normalized_env
   dataplane_id      = local.data_plane_id
   agent_tag         = local.agent_config.tag
   tunnel_client_tag = local.agent_config.tunnel_client_tag
@@ -153,6 +153,7 @@ module "zilliz_private_endpoint" {
   resource_group_name   = local.private_endpoint_config.resource_group_name
   subnet_id             = local.private_endpoint_config.subnet_id
   vnet_id               = local.private_endpoint_config.vnet_id
+  env                   = local.normalized_env
 
   custom_tags = local.private_endpoint_config.tags
 

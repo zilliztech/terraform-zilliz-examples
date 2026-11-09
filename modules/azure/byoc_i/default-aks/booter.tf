@@ -18,7 +18,7 @@ EOF
 
   agent_config = {
     repository = "${local.azure_agent_config.acr_name}.azurecr.io/${local.azure_agent_config.acr_prefix}"
-    tag        = var.agent_tag
+    tag        = local.agent_tag
     tunnelClientImage = trimspace(var.tunnel_client_tag) == "" ? "" : (
       can(regex("/", var.tunnel_client_tag)) ? trimspace(var.tunnel_client_tag) : "${local.azure_agent_config.acr_name}.azurecr.io/${local.azure_agent_config.acr_prefix}/vdc/cloud-tunnel-client:${trimspace(var.tunnel_client_tag)}"
     )

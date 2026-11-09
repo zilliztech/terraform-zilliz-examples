@@ -1,5 +1,8 @@
 locals {
 
+  is_uat         = upper(trimspace(var.env)) == "UAT"
+  normalized_env = local.is_uat ? "UAT" : "Production"
+
   # ============================================================================
   # Project Configuration
   # ============================================================================

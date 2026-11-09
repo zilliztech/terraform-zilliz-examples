@@ -4,7 +4,8 @@ data "azurerm_location" "current" {
 
 locals {
   # Load config file (similar to AWS EKS pattern)
-  config = yamldecode(file("${path.module}/../../../conf.yaml"))
+  config_file = upper(trimspace(var.env)) == "UAT" ? "conf-uat.yaml" : "conf.yaml"
+  config      = yamldecode(file("${path.module}/../../../${local.config_file}"))
 
   # Prefix name for resource naming (similar to AWS EKS pattern)
   prefix_name = var.prefix_name != "" ? var.prefix_name : replace(var.cluster_name, "-", "")
@@ -18,17 +19,18 @@ locals {
   # Get Azure agent config from config file based on location
   # Default to empty map if location not found in config
   azure_agent_config = try(local.config.Azure.agent_config[local.location], {})
+  agent_tag          = trimspace(var.agent_tag) != "" ? var.agent_tag : try(local.azure_agent_config.agent_tag, "")
 
   # Hosts
 
   # The regex [^-]+$ matches one or more non-hyphen characters at the end of the string
   # zilliz-byoc-azure-southeastasia-xxxyyyzzz -> xxxyyyzzz
   dataplane_suffix = regex("[^-]+$", var.dataplane_id)
-  env_domain       = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
+  env_domain       = upper(trimspace(var.env)) == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
   # if enable_private_endpoint is true, the server_host is cloud-tunnel.az-southeastasia.byoc.cloud.zilliz.com, otherwise it is cloud-tunnel.az-southeastasia.zilliz.com
-  server_host      = "cloud-tunnel.az-${local.location}${var.enable_private_endpoint ? ".byoc" : ""}.${local.env_domain}"
+  server_host = "cloud-tunnel.az-${local.location}${var.enable_private_endpoint ? ".byoc" : ""}.${local.env_domain}"
   # k8sxxxyyyzzz.az-southeastasia.byoc.cloud.zilliz.com
-  tunnel_host      = "k8s${local.dataplane_suffix}.az-${local.location}.byoc.${local.env_domain}"
+  tunnel_host = "k8s${local.dataplane_suffix}.az-${local.location}.byoc.${local.env_domain}"
 
   # Standard tags for all resources (similar to AWS EKS pattern)
   # Merge Vendor tag with custom_tags

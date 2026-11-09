@@ -48,10 +48,12 @@ locals {
     })
   }
 
+  is_uat                         = upper(trimspace(var.env)) == "UAT"
   dataplane_suffix               = regex("[^-]+$", local.data_plane_id)
-  env_domain                     = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
-  module_config                  = yamldecode(file("${path.module}/../../modules/conf.yaml"))
-  psc_service_attachment_project = var.env == "UAT" ? "vdc-dev-test" : "vdc-prod"
+  env_domain                     = local.is_uat ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
+  module_config_file             = local.is_uat ? "conf-uat.yaml" : "conf.yaml"
+  module_config                  = yamldecode(file("${path.module}/../../modules/${local.module_config_file}"))
+  psc_service_attachment_project = local.is_uat ? "vdc-dev-test" : "vdc-prod"
   psc_service_attachment_name    = "zilliz-byoc-psc-dns"
   gcp_psc_service_attachment_id = (
     var.gcp_psc_service_attachment_id != ""
@@ -92,11 +94,7 @@ locals {
   booter_image_repository = (
     local.image_repo_url != ""
     ? "${local.image_repo_url}/gcp-byoc-i-booter"
-    : (
-      var.env == "UAT"
-      ? try(local.gcp_booter_config.uat_repository, local.gcp_booter_config.repository)
-      : local.gcp_booter_config.repository
-    )
+    : local.gcp_booter_config.repository
   )
   booter_image = (
     var.booter_image != ""
@@ -106,11 +104,7 @@ locals {
   agent_image_repository = (
     local.image_repo_url != ""
     ? "${local.image_repo_url}/cloud-agent"
-    : (
-      var.env == "UAT"
-      ? try(local.gcp_agent_config.uat_repository, try(local.gcp_agent_config.repository, local.module_config.agent_config.repository))
-      : try(local.gcp_agent_config.repository, local.module_config.agent_config.repository)
-    )
+    : try(local.gcp_agent_config.repository, local.module_config.agent_config.repository)
   )
   agent_image = (
     local.image_repo_url != ""

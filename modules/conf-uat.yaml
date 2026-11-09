@@ -1,0 +1,29 @@
+zillizAccount: 306787409409
+vpce_service_ids:
+  us-west-2: vpce-svc-0dfdaa96b9114453c
+  eu-central-1: vpce-svc-0d5ce1ec4decbc7df
+private_zone_name: byoc-uat.zillizcloud.com
+agent_config:
+  server_host: zilliz-byoc-us.byoc-uat.zillizcloud.com
+  repository: 965570967084.dkr.ecr.us-west-2.amazonaws.com/zilliz-byoc/vdc/cloud-agent
+eks_cluster_oidc_issuer_thumbprint:
+  eu-central-1: 06b25927c42a721631c1efd9431e648fa62e1e39
+  us-west-2: 9e99a48a9960b14926bb7f3b02e22da2b0ab7280
+
+Azure:
+  private_zone_domain_suffix: byoc.cloud-uat3.zilliz.com
+  zilliz_byoc_privatelink_resource_alias:
+    westus3: azure-westus3-byoc.5de34d90-5378-4bcf-a358-8b0ab472bbc9.westus3.azure.privatelinkservice
+  agent_config:
+    westus3:
+      acr_name: zillizeastus
+      acr_prefix: zilliz-byoc
+      agent_tag: 20251229-a1e98a5
+
+GCP:
+  agent_config:
+    repository: gcr.io/zilliz-byoc-uat/cloud-agent
+  booter_config:
+    repository: gcr.io/zilliz-byoc-uat/gcp-byoc-i-booter
+  private_service_connect:
+    service_attachment_ids: {}

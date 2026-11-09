@@ -68,6 +68,7 @@ run "platform_keys_by_default" {
   command = plan
   assert {
     condition = (
+      output.disk_sse_config == null &&
       azurerm_kubernetes_cluster.main.disk_encryption_set_id == null &&
       azurerm_kubernetes_cluster.main.identity[0].type == "SystemAssigned" &&
       length(azurerm_disk_encryption_set.sse) == 0 &&
@@ -111,6 +112,18 @@ run "customer_key_with_rotation" {
     )
     error_message = "Use a rotating key with key-scoped crypto permissions and DES-scoped Reader."
   }
+  assert {
+    condition = (
+      output.disk_sse_config.disk_encryption_set_id == azurerm_disk_encryption_set.sse[0].id &&
+      output.disk_sse_config.key_vault_id == var.customer_managed_key.key_vault_id &&
+      output.disk_sse_config.key_name == "disk-key" &&
+      output.disk_sse_config.key_version == null &&
+      output.disk_sse_config.key_vault_key_id == "https://byoc-test.vault.azure.net/keys/disk-key" &&
+      output.disk_sse_config.auto_key_rotation_enabled
+    )
+    error_message = "Registration metadata must describe the actual rotating DES/key configuration."
+  }
+
 }
 
 run "pinned_customer_key" {
@@ -129,6 +142,15 @@ run "pinned_customer_key" {
     )
     error_message = "An explicit key version must disable automatic DES rotation."
   }
+  assert {
+    condition = (
+      output.disk_sse_config.key_version == "0123456789abcdef0123456789abcdef" &&
+      output.disk_sse_config.key_vault_key_id == "https://byoc-test.vault.azure.net/keys/disk-key/0123456789abcdef0123456789abcdef" &&
+      !output.disk_sse_config.auto_key_rotation_enabled
+    )
+    error_message = "Registration metadata must preserve the explicit key version and rotation setting."
+  }
+
 }
 
 run "disabled_switch_ignores_customer_key" {
@@ -142,6 +164,7 @@ run "disabled_switch_ignores_customer_key" {
   }
   assert {
     condition = (
+      output.disk_sse_config == null &&
       azurerm_kubernetes_cluster.main.disk_encryption_set_id == null &&
       azurerm_kubernetes_cluster.main.identity[0].type == "SystemAssigned" &&
       length(data.azurerm_key_vault_key.sse) == 0 &&

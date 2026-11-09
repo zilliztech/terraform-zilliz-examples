@@ -235,6 +235,7 @@ locals {
       name   = local.aks_cluster_name
       issuer = local.aks_issuer_url
     }
-    acr = var.customer_acr
+    acr      = var.customer_acr
+    disk_sse = module.milvus_aks.disk_sse_config
   }
 }

@@ -243,6 +243,34 @@ version with a real key version, or omit it for automatic rotation.
   rotate, or delete them. Outputs include `storage_sse_identity_id` and
   `disk_encryption_set_id` (null when the corresponding CMK is inactive).
 
+### Disk metadata sent to Zilliz
+
+At dataplane creation, `ext_config.disk_sse` carries the effective disk CMK
+configuration from the AKS module. It contains:
+
+- `disk_encryption_set_id`: the provisioned DES resource ID.
+- `key_vault_id`, `key_name`, `key_version`: the configured key reference;
+  `key_version` is null for automatic rotation.
+- `key_vault_key_id`: the DES-configured key URL (versionless for rotation,
+  versioned for a pinned key).
+- `auto_key_rotation_enabled`: the DES rotation setting.
+
+Platform-key mode sends `disk_sse: null`, including when CMK is disabled but a
+custom key remains in the input. Blob CMK metadata is not sent. Existing `aks`
+and `acr` fields remain present. Only identifiers/configuration are sent, never
+key material; a versionless URL does not report the current service-side key version.
+
+The provider submits the base64-encoded JSON as `extConfig` to
+`POST byoc/op/dataplane/create`. The backend stores it in
+`byoc_cluster_vpc.mode_config` as `VpcOpConfig.extConfig`, using the same path as
+AWS EBS and GCP PD key metadata. No backend schema change is needed.
+
+This is **creation-time registration metadata**, not continuous synchronization.
+The existing resource ignores changes to `ext_config`, and the provider Update
+method does not call a backend update API. Upgrading this example does not
+backfill existing dataplanes, nor does it synchronize later key changes/rotation.
+Do not recreate a dataplane solely to refresh metadata.
+
 ### Key Vault prerequisites
 
 Use an existing same-tenant Azure Key Vault with RBAC, soft delete and purge

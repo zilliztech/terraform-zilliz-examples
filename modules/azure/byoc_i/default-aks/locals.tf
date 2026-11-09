@@ -26,7 +26,7 @@ locals {
   # The regex [^-]+$ matches one or more non-hyphen characters at the end of the string
   # zilliz-byoc-azure-southeastasia-xxxyyyzzz -> xxxyyyzzz
   dataplane_suffix = regex("[^-]+$", var.dataplane_id)
-  env_domain       = var.env == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
+  env_domain       = upper(trimspace(var.env)) == "UAT" ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
   # if enable_private_endpoint is true, the server_host is cloud-tunnel.az-southeastasia.byoc.cloud.zilliz.com, otherwise it is cloud-tunnel.az-southeastasia.zilliz.com
   server_host = "cloud-tunnel.az-${local.location}${var.enable_private_endpoint ? ".byoc" : ""}.${local.env_domain}"
   # k8sxxxyyyzzz.az-southeastasia.byoc.cloud.zilliz.com

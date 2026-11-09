@@ -146,11 +146,39 @@ azure-project-byoc-I/
 └── README.md            # This file
 ```
 
+## Milvus Client-Side Encryption with an Existing Azure AES Key
+
+CSE is disabled by default. The default deployment keeps the existing Storage Account and storage identity behavior and creates no CSE identity or Key permissions.
+
+For a **new DataPlane**, supply an existing AES (`oct-HSM`) Key in an Azure RBAC-enabled Key Vault. The Key must allow `encrypt` and `decrypt`. It can be in another resource group in the deployment subscription. Supply a versionless Key URL; do not append a Key version.
+
+```hcl
+enable_cse = true
+azure_cse_key_identifier = "https://customer-vault.vault.azure.net/keys/customer-key"
+azure_cse_key_vault_id   = "/subscriptions/<subscription-id>/resourceGroups/<key-resource-group>/providers/Microsoft.KeyVault/vaults/customer-vault"
+```
+
+Use these values alongside the normal `project_id`, `dataplane_id`, `subscription_id` and `resource_group_name` inputs, then run `terraform plan` and review the resources before `terraform apply`.
+
+Terraform creates a dedicated CSE managed identity and a federated credential trusting this DataPlane's AKS issuer and `milvus-tool/milvus-bucket` service account. It grants **Key Vault Crypto User** at the existing **Key scope**. No Storage Account or Vault-wide crypto grant is added, and storage identities and their Blob access remain unchanged. The existing Key is never owned or deleted by Terraform.
+
+The Terraform caller needs Vault/Key read permissions, managed identity and federation creation permissions in the DataPlane resource group, and role-assignment creation permissions at the target Key. The Vault must already use Azure RBAC and allow the deployment environment and DataPlane to reach its data endpoint. Terraform does not change the Vault's networking or authorization model. Azure IAM propagation can delay registration; retry the failed registration workflow after propagation if needed.
+
+The provider reports `azure.cse.identity`, `azure.cse.tenant_id` and `azure.cse.default_key_identifier` to Zilliz Cloud only after federation and IAM resources exist. The platform stores the dedicated identity as `cseIdentity`, the tenant as `azureTenantId`, and the default Key as `defaultAzureCseKeyIdentifier`, then verifies and registers the CMEK integration during DataPlane creation. Outputs `cse_identity` and `cse_key_identifier` expose the configured values.
+
+This example requires a Zilliz Cloud provider build that supports the optional `azure.cse` schema. The existing minimum provider constraint alone does not guarantee that support; select the release containing Azure BYOC CSE or the corresponding development build before initialization.
+
+The existing `zillizcloud_byoc_i_project` lifecycle ignores changes to `azure` after creation and prevents destruction. Changing these CSE variables does **not** retroactively enable CSE on an already-created DataPlane; use the platform's documented existing-DataPlane integration procedure instead. Do not replace a running DataPlane to force a configuration update.
+
+This phase supports existing AES Keys only. RSA/EC, Managed HSM endpoints, cross-subscription Keys and automatic Key creation are not supported. CSE is independent of cloud-side storage encryption (SSE); enabling it does not set a Storage Account default encryption Key, AKS Secrets Key or node disk Key.
+
+See the [CSE module](../../modules/azure/byoc_i/cmek/README.md) for permission and lifecycle details.
+
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| terraform | >= 1.0 |
+| terraform | >= 1.6 |
 | azurerm | >= 4.0 |
 | zillizcloud | >=0.6.26 |
 
@@ -161,6 +189,7 @@ azure-project-byoc-I/
 - [default-storage-identity](../../modules/azure/byoc_i/default-storage-identity/README.md)
 - [default-privatelink](../../modules/azure/byoc_i/default-privatelink/README.md)
 - [default-aks](../../modules/azure/byoc_i/default-aks/README.md)
+- [cmek](../../modules/azure/byoc_i/cmek/README.md)
 
 
 ## Stay Updated

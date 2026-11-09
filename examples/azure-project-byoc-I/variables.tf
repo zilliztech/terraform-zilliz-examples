@@ -94,3 +94,21 @@ variable "dataplane_id" {
   type        = string
   nullable    = false
 }
+
+variable "enable_cse" {
+  description = "Enable Milvus client-side encryption with a dedicated managed identity and an existing Azure AES Key. Independent of Azure storage encryption."
+  type        = bool
+  default     = false
+}
+
+variable "azure_cse_key_identifier" {
+  description = "Existing versionless Azure Key Vault AES Key URL; required when enable_cse is true."
+  type        = string
+  default     = ""
+}
+
+variable "azure_cse_key_vault_id" {
+  description = "ARM resource ID of the existing CSE Key Vault; required when enable_cse is true."
+  type        = string
+  default     = ""
+}

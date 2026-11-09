@@ -3,6 +3,9 @@ image:
   tag: "${tag}"
   registrykey: ""
 
+tunnelClient:
+  image: ${jsonencode(tunnelClientImage)}
+
 config:
   tunnel:
     serverHost: "${serverHost}"

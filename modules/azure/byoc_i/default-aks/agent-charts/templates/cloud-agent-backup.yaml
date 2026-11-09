@@ -1,8 +1,9 @@
+{{- if (not (trim (default "" (.Values.tunnelClient).image))) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    configmap.reloader.stakater.com/reload: cloud-agent
+    configmap.reloader.stakater.com/reload: cloud-agent-backup
   name: cloud-agent-backup
   namespace: vdc
 spec:
@@ -136,3 +137,4 @@ spec:
       - configMap:
           name: cloud-agent-backup
         name: spring-config
+{{- end }}

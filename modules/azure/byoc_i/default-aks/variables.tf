@@ -116,6 +116,13 @@ variable "agent_tag" {
   type        = string
 }
 
+variable "tunnel_client_tag" {
+  description = "Tunnel client image tag or full reference; empty keeps the legacy agent deployment. Requires a matching split cloud-agent image when set."
+  type        = string
+  default     = ""
+  nullable    = false
+}
+
 variable "env" {
   description = "Environment name"
   type        = string

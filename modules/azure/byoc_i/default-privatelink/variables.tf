@@ -23,6 +23,12 @@ variable "vnet_id" {
   type        = string
 }
 
+variable "env" {
+  description = "Environment name. UAT loads conf-uat.yaml; all other values load conf.yaml."
+  type        = string
+  default     = "Production"
+}
+
 variable "custom_tags" {
   description = "Custom tags to apply to all resources (merged with Vendor=zilliz-byoc tag)"
   type        = map(string)

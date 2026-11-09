@@ -153,6 +153,7 @@ module "zilliz_private_endpoint" {
   resource_group_name   = local.private_endpoint_config.resource_group_name
   subnet_id             = local.private_endpoint_config.subnet_id
   vnet_id               = local.private_endpoint_config.vnet_id
+  env                   = var.env
 
   custom_tags = local.private_endpoint_config.tags
 

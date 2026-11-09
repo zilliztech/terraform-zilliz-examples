@@ -37,4 +37,5 @@ provider "azapi" {
 }
 
 provider "zillizcloud" {
+  host_address = upper(trimspace(var.env)) == "UAT" ? "https://api.cloud-uat3.zilliz.com/v2" : "https://api.cloud.zilliz.com/v2"
 }

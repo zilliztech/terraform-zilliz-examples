@@ -14,7 +14,8 @@ locals {
     var.custom_tags
   )
 
-  config = yamldecode(file("${path.module}/../../../conf.yaml"))
+  config_file = upper(trimspace(var.env)) == "UAT" ? "conf-uat.yaml" : "conf.yaml"
+  config      = yamldecode(file("${path.module}/../../../${local.config_file}"))
 
   dns_zone_name = "cloud-tunnel.az-${local.location}.${local.config.Azure.private_zone_domain_suffix}"
 

@@ -15,7 +15,9 @@ data "zillizcloud_byoc_vpc_endpoint_service" "this" {
 }
 
 locals {
-  config = yamldecode(file("${path.module}/../../modules/conf.yaml"))
+  is_uat      = upper(trimspace(var.env)) == "UAT"
+  config_file = local.is_uat ? "conf-uat.yaml" : "conf.yaml"
+  config      = yamldecode(file("${path.module}/../../modules/${local.config_file}"))
   # Boolean flag to determine if customer is providing their own existing VPC infrastructure
   # Returns true if customer_vpc_id variable is not empty, false otherwise
   is_existing_vpc = var.customer_vpc_id != ""

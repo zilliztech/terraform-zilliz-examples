@@ -153,3 +153,7 @@ output "search_userdata_patch_output" {
   value       = azapi_resource_action.search_userdata_patch
   sensitive   = true
 }
+output "disk_encryption_set_id" {
+  description = "AKS Disk Encryption Set ID, or null for platform-managed encryption"
+  value       = try(azurerm_disk_encryption_set.sse[0].id, null)
+}

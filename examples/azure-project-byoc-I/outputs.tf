@@ -106,3 +106,13 @@ output "aks_kube_config" {
   sensitive   = true
 }
 
+
+output "storage_sse_identity_id" {
+  description = "Dedicated Storage SSE managed identity ID, or null when CMK is disabled"
+  value       = module.storage_account.sse_identity_id
+}
+
+output "disk_encryption_set_id" {
+  description = "AKS Disk Encryption Set ID, or null for platform-managed encryption"
+  value       = module.milvus_aks.disk_encryption_set_id
+}

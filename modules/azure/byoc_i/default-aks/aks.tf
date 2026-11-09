@@ -5,14 +5,17 @@ resource "azurerm_kubernetes_cluster" "main" {
   resource_group_name = var.resource_group_name
   dns_prefix          = "${var.cluster_name}-dns"
 
-  # Identity
-  # identity {
-  #   type = "UserAssigned"
-  #   identity_ids = [var.kubelet_identity.user_assigned_identity_id]
-  # }
+  disk_encryption_set_id = local.disk_cmk_enabled ? azurerm_disk_encryption_set.sse[0].id : null
+
   identity {
-    type = "SystemAssigned"
+    type         = local.disk_cmk_enabled ? "UserAssigned" : "SystemAssigned"
+    identity_ids = local.disk_cmk_enabled ? [azurerm_user_assigned_identity.cmk_control_plane[0].id] : null
   }
+
+  depends_on = [
+    azurerm_role_assignment.aks_des_reader,
+    azurerm_role_assignment.cmk_aks_network_contributor,
+  ]
 
   node_os_upgrade_channel = "None"
 
@@ -117,7 +120,7 @@ resource "azurerm_kubernetes_cluster" "main" {
 resource "azurerm_role_assignment" "aks_network_contributor" {
   scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
   role_definition_name = "Network Contributor"
-  principal_id         = azurerm_kubernetes_cluster.main.identity[0].principal_id
+  principal_id         = local.disk_cmk_enabled ? azurerm_user_assigned_identity.cmk_control_plane[0].principal_id : azurerm_kubernetes_cluster.main.identity[0].principal_id
 }
 
 # Data source to get current subscription

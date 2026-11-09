@@ -52,6 +52,12 @@ variable "vnet" {
 variable "storage" {
   description = "Storage Account configuration. All options have defaults. By default, allows access from all VNet subnets."
   type = object({
+    enable_cmk_sse = optional(bool, true)
+    customer_managed_key = optional(object({
+      key_vault_id = string
+      key_name     = string
+      key_version  = optional(string)
+    }))
     account_tier                  = optional(string, "Standard")
     account_replication_type      = optional(string, "RAGRS")
     account_kind                  = optional(string, "StorageV2")
@@ -93,4 +99,17 @@ variable "dataplane_id" {
   description = "BYOC Dataplane ID"
   type        = string
   nullable    = false
+}
+variable "disk" {
+  description = "AKS disk SSE. No key (or disabled CMK) uses platform keys. CMK is inherited by all OS disks, including Ephemeral; changing DES replaces AKS."
+  type = object({
+    enable_cmk_sse = optional(bool, true)
+    customer_managed_key = optional(object({
+      key_vault_id = string
+      key_name     = string
+      key_version  = optional(string)
+    }))
+  })
+  default  = {}
+  nullable = false
 }

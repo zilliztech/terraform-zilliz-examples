@@ -50,3 +50,8 @@ output "byoc_data_container_id" {
   description = "The ID of the BYOC data container"
   value       = azurerm_storage_container.zilliz_container.id
 }
+
+output "sse_identity_id" {
+  description = "Dedicated Storage SSE managed identity ID, or null when CMK is disabled"
+  value       = try(azurerm_user_assigned_identity.sse[0].id, null)
+}

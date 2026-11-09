@@ -215,3 +215,41 @@ After successful deployment:
 
 - [azurerm_kubernetes_cluster](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster)
 - [azurerm_kubernetes_cluster_node_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool)
+
+## Customer-managed disk SSE
+
+Optional inputs:
+
+```hcl
+enable_cmk_sse = true # default; false ignores the supplied key
+customer_managed_key = {
+  key_vault_id = "/subscriptions/<subscription-id>/resourceGroups/<rg>/providers/Microsoft.KeyVault/vaults/<vault>"
+  key_name     = "byoc-disk-key"
+  # key_version = "0123456789abcdef0123456789abcdef" # optional pin
+}
+```
+
+No key (`null`, the default) uses platform encryption, even when the switch is
+true. Azure's mandatory SSE cannot be disabled. These inputs are independent of
+the Storage Account module's Blob CMK inputs.
+
+When active, this module provisions DES, a key-authorized identity, and an AKS
+control-plane identity with DES Reader and subnet Network Contributor before
+creating AKS. The existing resource-group network permission targets the same
+control-plane identity. When inactive, the existing SystemAssigned identity is
+preserved. `disk_encryption_set_id` outputs DES ID, or null in platform mode.
+
+The cluster-level DES covers all OS pools, including Ephemeral search nodes.
+New Azure Disk CSI volumes can inherit the cluster DES; existing PVCs are not
+migrated. Local temporary NVMe disks and host encryption are outside this change.
+Adding/removing/changing the DES ID forces AKS replacement. Do not apply such a
+change to an existing deployment without planning migration.
+
+Omitting a key version enables DES automatic rotation. Supplying a version pins
+it. Ephemeral OS nodes need upgrade/reimage/recreation to adopt a new version;
+keep previous versions enabled until adoption is complete.
+
+See the [deployment guide](../../../../examples/azure-project-byoc-I/README.md#server-side-encryption-blob-and-aks-disks)
+for prerequisites, configuration combinations, rotation and verification.
+Requires Terraform >= 1.3, AzureRM >= 4.0 and < 5.0. Offline tests use Terraform
+>= 1.7: `terraform init -backend=false`, `terraform validate`, `terraform test`.

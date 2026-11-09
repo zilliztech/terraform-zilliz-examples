@@ -123,8 +123,34 @@ variable "container_access_type" {
 variable "container_metadata" {
   description = "Metadata for the storage container"
   type        = map(string)
-  default     = {
+  default = {
     "purpose" = "zilliz-byoc-storage-container"
   }
 }
 
+
+variable "customer_managed_key" {
+  description = "Existing same-tenant RBAC Key Vault key for Blob/File SSE. Null uses Microsoft-managed keys; omit key_version for automatic rotation."
+  type = object({
+    key_vault_id = string
+    key_name     = string
+    key_version  = optional(string)
+  })
+  default = null
+
+  validation {
+    condition = var.customer_managed_key == null ? true : (
+      can(regex("(?i)^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft.KeyVault/vaults/[^/]+$", var.customer_managed_key.key_vault_id)) &&
+      can(regex("^[a-zA-Z0-9-]{1,127}$", var.customer_managed_key.key_name)) &&
+      (var.customer_managed_key.key_version == null ? true : can(regex("^[a-fA-F0-9]{32}$", var.customer_managed_key.key_version)))
+    )
+    error_message = "Provide a Key Vault ARM resource ID, a valid key name, and optionally a 32-character hexadecimal key version."
+  }
+}
+
+variable "enable_cmk_sse" {
+  description = "Allow customer-managed SSE when a key is supplied. False uses platform-managed encryption; Azure SSE itself cannot be disabled."
+  type        = bool
+  default     = true
+  nullable    = false
+}

@@ -1,6 +1,6 @@
 # Azure Storage Account Module
 
-This Terraform module creates an Azure Storage Account with containers for storing BYOC data, strictly following the provided ARM template structure.
+This Terraform module creates an Azure Storage Account with containers for storing BYOC data, with optional customer-managed server-side encryption.
 
 ## Features
 
@@ -8,7 +8,7 @@ This Terraform module creates an Azure Storage Account with containers for stori
 - Configures all storage services (blob, file, queue, table) as per ARM template
 - Creates a container for storing BYOC data
 - Implements all security settings from the ARM template
-- Follows ARM template resource structure exactly
+- Supports an existing Azure Key Vault key for Blob/File SSE using a dedicated managed identity
 
 ## Resources Created
 
@@ -24,7 +24,7 @@ This module creates the following Azure resources:
 
 ```hcl
 module "storage_account" {
-  source = "../../modules/azure/standard-storageaccount"
+  source = "../../modules/azure/byoc_i/default-storageaccount"
 
   storage_account_name      = "zillizbyocstorage"
   resource_group_name       = "rg-zilliz-byoc"
@@ -48,6 +48,7 @@ module "storage_account" {
 | location | The location/region where the storage account will be created | `string` | n/a | yes |
 | container_name | The name of the storage container for BYOC data | `string` | n/a | yes |
 | virtual_network_subnet_ids | A list of virtual network subnet IDs to secure the storage account | `list(string)` | n/a | yes |
+| customer_managed_key | Existing RBAC Key Vault key (`key_vault_id`, `key_name`, optional `key_version`) | `object` | `null` | no |
 | account_tier | Defines the Tier to use for this storage account | `string` | `"Standard"` | no |
 | account_replication_type | Defines the type of replication | `string` | `"RAGRS"` | no |
 | account_kind | Defines the Kind of account | `string` | `"StorageV2"` | no |
@@ -75,6 +76,7 @@ module "storage_account" {
 
 | Name | Description |
 |------|-------------|
+| sse_identity_id | Dedicated SSE identity ID, or null when CMK is disabled |
 | storage_account_id | The ID of the storage account |
 | storage_account_name | The name of the storage account |
 | primary_access_key | The primary access key for the storage account (sensitive) |
@@ -116,3 +118,43 @@ module "storage_account" {
 - Virtual network subnet IDs must be provided to configure network access rules
 - Some blob and file service properties are hardcoded (retention policies, versioning)
 - Queue and Table services are automatically created with StorageV2 accounts
+
+## Customer-managed SSE
+
+Requires Terraform >= 1.3 and AzureRM >= 4.0, < 5.0. Pass this optional object:
+
+```hcl
+customer_managed_key = {
+  key_vault_id = "/subscriptions/<subscription-id>/resourceGroups/<rg>/providers/Microsoft.KeyVault/vaults/<vault>"
+  key_name     = "byoc-storage-key"
+  # key_version = "0123456789abcdef0123456789abcdef" # optional; omit for rotation
+}
+```
+
+Default: `null` (Microsoft-managed keys). Supported account kind: `StorageV2`.
+The module reads the existing key, creates a dedicated user-assigned identity,
+assigns `Key Vault Crypto Service Encryption User` at key scope, then attaches
+both identity and CMK to Storage. `sse_identity_id` outputs the dedicated identity
+ID, or `null` when disabled. Keys and vaults are never managed by this module.
+
+See the [deployment guide](../../../../examples/azure-project-byoc-I/README.md#server-side-encryption-blob-and-aks-disks)
+for RBAC/network prerequisites, rotation, existing accounts, and verification.
+This is Blob/File SSE, not AKS disk encryption or Milvus application-level CMEK.
+Queue/Table encryption settings remain unchanged.
+
+Offline tests (Terraform >= 1.7 for mock providers):
+
+```sh
+terraform init -backend=false
+terraform validate
+terraform test
+```
+
+### CMK-SSE switch
+
+`enable_cmk_sse` defaults to `true`.
+With no `customer_managed_key`, Azure uses platform-managed encryption.
+With a key supplied, CMK-SSE is enabled. Setting `enable_cmk_sse = false`
+ignores the supplied key and uses platform-managed encryption without creating
+CMK identities, roles, or key lookups. This switch never disables Azure's
+mandatory server-side encryption.

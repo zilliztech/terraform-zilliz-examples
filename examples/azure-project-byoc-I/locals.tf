@@ -87,6 +87,9 @@ locals {
     location            = local.location
     resource_group_name = local.resource_group_name
 
+    enable_cmk_sse       = var.storage.enable_cmk_sse
+    customer_managed_key = var.storage.customer_managed_key
+
     # Storage account properties
     account_tier             = var.storage.account_tier
     account_replication_type = var.storage.account_replication_type

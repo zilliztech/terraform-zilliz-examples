@@ -62,6 +62,8 @@ module "vnet" {
 module "storage_account" {
   source = "../../modules/azure/byoc_i/default-storageaccount"
 
+  enable_cmk_sse       = local.storage_config.enable_cmk_sse
+  customer_managed_key = local.storage_config.customer_managed_key
   storage_account_name = local.storage_config.name
   resource_group_name  = local.storage_config.resource_group_name
   location             = local.storage_config.location
@@ -109,6 +111,9 @@ module "storage_identity" {
 # ============================================================================
 module "milvus_aks" {
   source = "../../modules/azure/byoc_i/default-aks"
+
+  enable_cmk_sse       = var.disk.enable_cmk_sse
+  customer_managed_key = var.disk.customer_managed_key
 
   enable_private_endpoint = local.enable_private_link
   prefix_name             = local.name_prefix

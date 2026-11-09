@@ -253,3 +253,11 @@ See the [deployment guide](../../../../examples/azure-project-byoc-I/README.md#s
 for prerequisites, configuration combinations, rotation and verification.
 Requires Terraform >= 1.3, AzureRM >= 4.0 and < 5.0. Offline tests use Terraform
 >= 1.7: `terraform init -backend=false`, `terraform validate`, `terraform test`.
+
+### Registration metadata output
+
+`disk_sse_config` exports effective DES/key identifiers and rotation settings for
+`ext_config.disk_sse` in the Azure BYOC-I example. It is null for platform keys
+or when `enable_cmk_sse` is false, even if a custom key is supplied. It never
+exports key material. See the deployment guide for the creation-only persistence
+semantics and lack of automatic backfill or synchronization.

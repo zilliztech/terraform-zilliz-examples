@@ -157,3 +157,15 @@ output "disk_encryption_set_id" {
   description = "AKS Disk Encryption Set ID, or null for platform-managed encryption"
   value       = try(azurerm_disk_encryption_set.sse[0].id, null)
 }
+
+output "disk_sse_config" {
+  description = "Effective disk CMK metadata for BYOC registration; null when using platform keys. Contains identifiers only, never key material."
+  value = local.disk_cmk_enabled ? {
+    disk_encryption_set_id    = azurerm_disk_encryption_set.sse[0].id
+    key_vault_id              = local.customer_managed_key.key_vault_id
+    key_name                  = local.customer_managed_key.key_name
+    key_version               = local.customer_managed_key.key_version
+    key_vault_key_id          = azurerm_disk_encryption_set.sse[0].key_vault_key_id
+    auto_key_rotation_enabled = azurerm_disk_encryption_set.sse[0].auto_key_rotation_enabled
+  } : null
+}

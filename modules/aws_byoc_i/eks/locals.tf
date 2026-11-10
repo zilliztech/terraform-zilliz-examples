@@ -69,10 +69,11 @@ locals {
   account_id = data.aws_caller_identity.current.account_id
   // auto-generate private subnets cidr
 
-  booter_ecr_account_id = length(var.booter.account_id) > 0 ? var.booter.account_id : var.customer_ecr.ecr_account_id
-  booter_ecr_region     = length(var.booter.region) > 0 ? var.booter.region : (length(var.customer_ecr.ecr_region) > 0 ? var.customer_ecr.ecr_region : var.region)
-  booter_ecr_prefix     = length(var.booter.prefix) > 0 ? var.booter.prefix : var.customer_ecr.ecr_prefix
-  booter_ecr_image      = length(var.booter.image) > 0 ? var.booter.image : "infra/byoc-booter"
+  default_booter_ecr_image = lower(trimspace(var.env)) == "uat" ? "infra/uat-byoc-booter" : "infra/byoc-booter"
+  booter_ecr_account_id    = length(var.booter.account_id) > 0 ? var.booter.account_id : var.customer_ecr.ecr_account_id
+  booter_ecr_region        = length(var.booter.region) > 0 ? var.booter.region : (length(var.customer_ecr.ecr_region) > 0 ? var.customer_ecr.ecr_region : var.region)
+  booter_ecr_prefix        = length(var.booter.prefix) > 0 ? var.booter.prefix : var.customer_ecr.ecr_prefix
+  booter_ecr_image         = length(var.booter.image) > 0 ? var.booter.image : local.default_booter_ecr_image
 
 
   agent_config_json = jsonencode(var.agent_config)
@@ -131,11 +132,11 @@ done
 DEFAULT_TAG=$(aws ecr describe-images \
   --registry-id 965570967084 \
   --region ${var.region} \
-  --repository-name zilliz-byoc/infra/byoc-booter \
+  --repository-name zilliz-byoc/${local.default_booter_ecr_image} \
   --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
   --output text)
 
-DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.${var.region}.amazonaws.com/zilliz-byoc/infra/byoc-booter:$DEFAULT_TAG
+DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.${var.region}.amazonaws.com/zilliz-byoc/${local.default_booter_ecr_image}:$DEFAULT_TAG
 
 TAG=$(aws ecr describe-images \
   --registry-id ${local.booter_ecr_account_id} \
@@ -144,8 +145,7 @@ TAG=$(aws ecr describe-images \
   --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
   --output text)
 
-if [[ -z "$TAG" || "$TAG" == "None" || ${local.booter_ecr_account_id} == "965570967084" ]]; then
-  # if the ecr account id is the zilliz's ecr account id, use the default image
+if [[ -z "$TAG" || "$TAG" == "None" ]]; then
   ZILLIZ_BYOC_IMAGE=$DEFAULT_ZILLIZ_BYOC_IMAGE
   ctr image pull --user AWS:$(aws ecr get-login-password --region ${var.region})  $ZILLIZ_BYOC_IMAGE
 else
@@ -183,11 +183,11 @@ done
 DEFAULT_TAG=$(aws ecr describe-images \
   --registry-id 965570967084 \
   --region ${var.region} \
-  --repository-name zilliz-byoc/infra/byoc-booter \
+  --repository-name zilliz-byoc/${local.default_booter_ecr_image} \
   --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
   --output text)
 
-DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.${var.region}.amazonaws.com/zilliz-byoc/infra/byoc-booter:$DEFAULT_TAG
+DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.${var.region}.amazonaws.com/zilliz-byoc/${local.default_booter_ecr_image}:$DEFAULT_TAG
 
 TAG=$(aws ecr describe-images \
   --registry-id ${local.booter_ecr_account_id} \

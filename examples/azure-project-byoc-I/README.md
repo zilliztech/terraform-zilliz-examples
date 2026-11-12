@@ -289,6 +289,129 @@ RBAC assignment creation does not guarantee immediate propagation. If the first
 apply fails with a Key Vault authorization error, check the identity, role and
 firewall, wait for propagation, and retry the same apply.
 
+### Create the vault and keys in Azure Portal
+
+Complete these steps before enabling CMK. Reuse an existing vault and keys if
+they meet the prerequisites above. Platform-managed encryption needs no vault
+or customer key. A vault ID is the resource ID assigned to a Key Vault, not a
+separate resource to create.
+
+1. Sign in to [Azure Portal](https://portal.azure.com), search for **Key vaults**,
+   and select **Create**. Choose the BYOC subscription, a resource group for the
+   keys, a globally unique vault name, and the **same region as AKS** for disk
+   encryption. For software RSA keys, select the **Standard** pricing tier.
+   Keep soft delete enabled and enable **Purge protection** under recovery
+   options. Purge protection cannot be disabled once enabled. Under **Access
+   configuration**, select **Azure role-based access control (RBAC)**, then
+   review and create the vault. This implementation requires the vault and BYOC
+   resources to be in the same Microsoft Entra tenant.
+2. Open the vault's **Access control (IAM) > Add role assignment**. The user
+   creating keys needs data-plane key management permissions, such as **Key
+   Vault Crypto Officer**. The identity running Terraform needs key metadata
+   read access, such as **Key Vault Reader**, in addition to its BYOC resource
+   provisioning permissions. Terraform also creates role assignments: its
+   identity must have `Microsoft.Authorization/roleAssignments/write` at the
+   relevant scopes, including the vault/key scope when the vault is in a
+   separate resource group. Contributor alone does not grant this permission;
+   have an administrator grant an appropriate role-assignment role if needed.
+   Portal-user permissions do not automatically apply to a Terraform service
+   principal.
+3. Under **Networking**, ensure both the Portal user's machine and the Terraform
+   runner can reach the vault data endpoint. When using selected networks,
+   allow the required client networks and enable the trusted Microsoft services
+   firewall bypass for Storage/DES access. Private endpoints require working
+   routing and DNS from the clients; a private endpoint or service bypass does
+   not replace RBAC authorization.
+4. Open **Objects > Keys > Generate/Import** (not Secrets). Select **Generate**,
+   name the key `byoc-blob-key`, choose **RSA** with **2048** bits, and keep it
+   enabled. Ensure it is currently valid and supports **Wrap Key** and **Unwrap
+   Key**. Create a second key named `byoc-disk-key` using the same settings.
+   Alternatively, reuse one key for both services. RSA-HSM keys require a
+   suitable Premium vault; the ordinary RSA example does not require HSM.
+5. Copy the following identifiers. Do not download or copy private key material:
+
+   | Terraform field | Portal location and expected value |
+   | --- | --- |
+   | `key_vault_id` | Vault **Properties > Resource ID**, or the `id` in **Overview > JSON View**: `/subscriptions/<subscription-id>/resourceGroups/<rg>/providers/Microsoft.KeyVault/vaults/<vault-name>` |
+   | `key_name` | Name shown in **Keys**, such as `byoc-disk-key` |
+   | `key_version` (optional) | Open the key and a version; use the final segment of its **Key Identifier** URL, a 32-character version |
+
+   `key_vault_id` must be an ARM resource ID, **not** the vault URI
+   `https://<vault-name>.vault.azure.net/` or a key URL. Omit `key_version` to
+   follow new versions automatically. This does not generate new key versions:
+   configure a Key Vault rotation policy or rotate manually, and follow the
+   [rotation precautions below](#rotation).
+
+### Complete Terraform CMK configuration
+
+Use the following `terraform.tfvars` in this example directory, replacing all
+placeholders. If you already use `terraform.tfvars.json`, update that file
+instead; do not leave conflicting definitions in both files. Keep any existing
+network and other deployment settings.
+
+```hcl
+subscription_id     = "<subscription-id>"
+resource_group_name = "<byoc-resource-group>"
+project_id          = "<zilliz-project-id>"
+dataplane_id        = "<zilliz-dataplane-id>"
+
+# Bucket: Azure Blob Storage.
+storage = {
+  enable_cmk_sse = true
+  customer_managed_key = {
+    key_vault_id = "/subscriptions/<subscription-id>/resourceGroups/<key-vault-rg>/providers/Microsoft.KeyVault/vaults/<vault-name>"
+    key_name     = "byoc-blob-key"
+    # Optional: pin a real version instead of following new versions.
+    # key_version = "0123456789abcdef0123456789abcdef"
+  }
+}
+
+# AKS OS disks and new Azure Disk CSI volumes inheriting the cluster DES.
+disk = {
+  enable_cmk_sse = true
+  customer_managed_key = {
+    key_vault_id = "/subscriptions/<subscription-id>/resourceGroups/<key-vault-rg>/providers/Microsoft.KeyVault/vaults/<vault-name>"
+    key_name     = "byoc-disk-key"
+    # key_version = "0123456789abcdef0123456789abcdef"
+  }
+}
+```
+
+Storage defaults to `account_kind = "StorageV2"` (general-purpose v2),
+`account_tier = "Standard"` (performance tier), and
+`account_replication_type = "RAGRS"` (read-access geo-redundancy). These are
+storage account settings, not encryption switches, and can be omitted as above.
+To use the same customer key for bucket and disk, supply identical key references
+in both objects.
+
+For platform-managed encryption, replace the two objects above with:
+
+```hcl
+storage = {
+  enable_cmk_sse = false
+}
+disk = {
+  enable_cmk_sse = false
+}
+```
+
+The switches are independent and never disable Azure SSE. Leaving a key unset
+also selects platform-managed encryption, even with `enable_cmk_sse = true`.
+
+Run `terraform init` and `terraform plan`, then review the plan before running
+`terraform apply`. **Adding, removing, or changing the AKS DES ID replaces the
+cluster**; see [existing deployment considerations](#aks-scope-and-existing-deployments).
+Terraform creates the managed identities, key-use role assignments, DES, and
+Storage/AKS bindings; do not create the DES or configure those bindings manually
+in Portal. A StorageClass without another explicit DES uses the cluster DES for
+new PVC disks, so those disks and the node OS disks reference the same customer
+key. Existing PVCs do not automatically change encryption keys.
+
+After deployment, check the Storage Account's **Encryption** page for the
+customer-managed key, AKS's JSON view for `diskEncryptionSetID`, and that DES's
+key reference. Use the commands in [Verification](#verification) for a more
+complete check.
+
 ### AKS scope and existing deployments
 
 **OS disk CMK is cluster-wide, including the search pool's Ephemeral OS Disk.**
@@ -345,3 +468,7 @@ References:
 - [Azure Storage CMK](https://learn.microsoft.com/en-us/azure/storage/common/customer-managed-keys-configure-new-account)
 - [AKS disk CMK, inheritance and rotation](https://learn.microsoft.com/en-us/azure/aks/azure-disk-customer-managed-keys)
 - [AzureRM cluster DES replacement behavior](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster#disk_encryption_set_id)
+
+- [Create a Key Vault in Azure Portal](https://learn.microsoft.com/en-us/azure/key-vault/general/quick-create-portal)
+- [Create a key in Azure Portal](https://learn.microsoft.com/en-us/azure/key-vault/keys/quick-create-portal)
+- [Key Vault RBAC roles](https://learn.microsoft.com/en-us/azure/key-vault/general/rbac-guide)

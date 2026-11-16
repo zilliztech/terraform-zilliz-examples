@@ -134,7 +134,7 @@ DEFAULT_TAG=$(aws ecr describe-images \
   --region ${var.region} \
   --repository-name zilliz-byoc/${local.default_booter_ecr_image} \
   --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
-  --output text)
+  --output text 2>/dev/null || true)
 
 DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.${var.region}.amazonaws.com/zilliz-byoc/${local.default_booter_ecr_image}:$DEFAULT_TAG
 
@@ -143,14 +143,18 @@ TAG=$(aws ecr describe-images \
   --region ${local.booter_ecr_region} \
   --repository-name ${local.booter_ecr_prefix}/${local.booter_ecr_image} \
   --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
-  --output text)
+  --output text 2>/dev/null || true)
 
-if [[ -z "$TAG" || "$TAG" == "None" ]]; then
+if [[ -n "$TAG" && "$TAG" != "None" ]]; then
+  ZILLIZ_BYOC_IMAGE=${local.booter_ecr_account_id}.dkr.ecr.${local.booter_ecr_region}.amazonaws.com/${local.booter_ecr_prefix}/${local.booter_ecr_image}:$TAG
+  ctr image pull --user AWS:$(aws ecr get-login-password --region ${local.booter_ecr_region})  $ZILLIZ_BYOC_IMAGE
+elif [[ -n "$DEFAULT_TAG" && "$DEFAULT_TAG" != "None" ]]; then
+  echo "Configured booter image is unavailable; falling back to the default booter image."
   ZILLIZ_BYOC_IMAGE=$DEFAULT_ZILLIZ_BYOC_IMAGE
   ctr image pull --user AWS:$(aws ecr get-login-password --region ${var.region})  $ZILLIZ_BYOC_IMAGE
 else
-  ZILLIZ_BYOC_IMAGE=${local.booter_ecr_account_id}.dkr.ecr.${local.booter_ecr_region}.amazonaws.com/${local.booter_ecr_prefix}/${local.booter_ecr_image}:$TAG
-  ctr image pull --user AWS:$(aws ecr get-login-password --region ${local.booter_ecr_region})  $ZILLIZ_BYOC_IMAGE
+  echo "No usable BYOC booter image tag was found in either the configured or default ECR repository."
+  exit 1
 fi
 
 ctr run --rm --net-host --privileged --env BOOT_CONFIG='${local.boot_config_json}'  $ZILLIZ_BYOC_IMAGE zilliz-bootstrap
@@ -185,7 +189,7 @@ DEFAULT_TAG=$(aws ecr describe-images \
   --region ${var.region} \
   --repository-name zilliz-byoc/${local.default_booter_ecr_image} \
   --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
-  --output text)
+  --output text 2>/dev/null || true)
 
 DEFAULT_ZILLIZ_BYOC_IMAGE=965570967084.dkr.ecr.${var.region}.amazonaws.com/zilliz-byoc/${local.default_booter_ecr_image}:$DEFAULT_TAG
 
@@ -194,12 +198,16 @@ TAG=$(aws ecr describe-images \
   --region ${local.booter_ecr_region} \
   --repository-name ${local.booter_ecr_prefix}/${local.booter_ecr_image} \
   --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' \
-  --output text)
+  --output text 2>/dev/null || true)
 
-if [[ -z "$TAG" || "$TAG" == "None" ]]; then
+if [[ -n "$TAG" && "$TAG" != "None" ]]; then
+  ZILLIZ_BYOC_IMAGE=${local.booter_ecr_account_id}.dkr.ecr.${local.booter_ecr_region}.amazonaws.com/${local.booter_ecr_prefix}/${local.booter_ecr_image}:$TAG
+elif [[ -n "$DEFAULT_TAG" && "$DEFAULT_TAG" != "None" ]]; then
+  echo "Configured booter image is unavailable; falling back to the default booter image."
   ZILLIZ_BYOC_IMAGE=$DEFAULT_ZILLIZ_BYOC_IMAGE
 else
-  ZILLIZ_BYOC_IMAGE=${local.booter_ecr_account_id}.dkr.ecr.${local.booter_ecr_region}.amazonaws.com/${local.booter_ecr_prefix}/${local.booter_ecr_image}:$TAG
+  echo "No usable BYOC booter image tag was found in either the configured or default ECR repository."
+  exit 1
 fi
 
 K8S_SG_ID="${aws_eks_cluster.zilliz_byoc_cluster.vpc_config[0].cluster_security_group_id}"

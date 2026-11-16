@@ -70,6 +70,21 @@ class BooterEnvironmentTest(unittest.TestCase):
         )
         self.assertNotIn("${local.booter_ecr_account_id} == \"965570967084\"", source)
 
+    def test_image_lookup_failures_reach_fallback_logic(self):
+        source = LOCALS.read_text()
+        self.assertEqual(source.count("--output text 2>/dev/null || true)"), 4)
+        self.assertEqual(source.count('if [[ -n "$TAG" && "$TAG" != "None" ]]'), 2)
+        self.assertEqual(
+            source.count('elif [[ -n "$DEFAULT_TAG" && "$DEFAULT_TAG" != "None" ]]'),
+            2,
+        )
+        self.assertEqual(
+            source.count(
+                "No usable BYOC booter image tag was found in either the configured or default ECR repository."
+            ),
+            2,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

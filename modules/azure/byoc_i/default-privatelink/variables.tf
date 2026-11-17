@@ -29,6 +29,12 @@ variable "env" {
   default     = "Production"
 }
 
+variable "privatelink_resource_alias" {
+  description = "Optional Zilliz BYOC Private Link Service alias. Defaults to the environment configuration for supported regions."
+  type        = string
+  default     = ""
+}
+
 variable "custom_tags" {
   description = "Custom tags to apply to all resources (merged with Vendor=zilliz-byoc tag)"
   type        = map(string)

@@ -153,12 +153,13 @@ module "zilliz_private_endpoint" {
 
   source = "../../modules/azure/byoc_i/default-privatelink"
 
-  private_endpoint_name = local.private_endpoint_config.name
-  location              = local.private_endpoint_config.location
-  resource_group_name   = local.private_endpoint_config.resource_group_name
-  subnet_id             = local.private_endpoint_config.subnet_id
-  vnet_id               = local.private_endpoint_config.vnet_id
-  env                   = local.normalized_env
+  private_endpoint_name      = local.private_endpoint_config.name
+  location                   = local.private_endpoint_config.location
+  resource_group_name        = local.private_endpoint_config.resource_group_name
+  subnet_id                  = local.private_endpoint_config.subnet_id
+  vnet_id                    = local.private_endpoint_config.vnet_id
+  env                        = local.normalized_env
+  privatelink_resource_alias = local.privatelink_resource_alias
 
   custom_tags = local.private_endpoint_config.tags
 

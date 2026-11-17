@@ -9,7 +9,7 @@ This Terraform module creates an Azure Private Endpoint for connecting to Zilliz
 - Links Private DNS Zone to Virtual Network
 - Creates DNS A record pointing to the private endpoint IP
 - Automatically configures DNS zone name based on Azure region
-- Uses configuration from `conf.yaml` for Zilliz Cloud resource IDs
+- Accepts a Zilliz Cloud Private Link Service alias from the caller, with environment configuration as a fallback
 
 ## Resources Created
 
@@ -56,6 +56,7 @@ The DNS zone name and Zilliz Cloud resource ID are read from `conf.yaml`:
 | resource_group_name | Name of the resource group | `string` | n/a | yes |
 | subnet_id | ID of the subnet where the private endpoint will be created | `string` | n/a | yes |
 | vnet_id | ID of the virtual network to link DNS zones to | `string` | n/a | yes |
+| privatelink_resource_alias | Optional Zilliz Cloud Private Link Service alias; falls back to the environment configuration | `string` | `""` | no |
 | custom_tags | Custom tags to apply to all resources (merged with Vendor=zilliz-byoc tag) | `map(string)` | `{}` | no |
 
 ## Outputs
@@ -74,7 +75,7 @@ The DNS zone name and Zilliz Cloud resource ID are read from `conf.yaml`:
 
 1. **conf.yaml**: The module requires a `conf.yaml` file at `../../../conf.yaml` with:
    - `Azure.private_zone_domain_suffix`: Domain suffix for DNS zones
-   - `Azure.zilliz_byoc_privatelink_resource_id`: Map of region to Zilliz Cloud resource ID
+   - `Azure.zilliz_byoc_privatelink_resource_alias`: Map of region to Zilliz Cloud Private Link Service alias, unless `privatelink_resource_alias` is supplied
 
 2. **Subnet**: The subnet specified in `subnet_id` must exist and be in the same VNet as `vnet_id`
 

@@ -2,6 +2,8 @@ locals {
 
   is_uat         = upper(trimspace(var.env)) == "UAT"
   normalized_env = local.is_uat ? "UAT" : "Production"
+  config_file    = local.is_uat ? "conf-uat.yaml" : "conf.yaml"
+  config         = yamldecode(file("${path.module}/../../modules/${local.config_file}"))
 
   # ============================================================================
   # Project Configuration
@@ -41,6 +43,16 @@ locals {
   # Azure region extracted from Zilliz cloud settings, removing "az-" prefix
   # Normalizes region format from Zilliz naming convention to standard Azure region names
   location = replace(data.zillizcloud_byoc_i_project_settings.this.region, "az-", "")
+
+  configured_privatelink_resource_alias = trimspace(try(
+    local.config.Azure.zilliz_byoc_privatelink_resource_alias[local.location],
+    ""
+  ))
+  privatelink_resource_alias = !local.enable_private_link ? "" : (
+    local.configured_privatelink_resource_alias != ""
+    ? local.configured_privatelink_resource_alias
+    : data.zillizcloud_byoc_vpc_endpoint_service.this[0].endpoint_service
+  )
 
   # Resource group name from variable
   resource_group_name = var.resource_group_name

@@ -48,17 +48,21 @@ locals {
     })
   }
 
-  is_uat                         = upper(trimspace(var.env)) == "UAT"
-  dataplane_suffix               = regex("[^-]+$", local.data_plane_id)
-  env_domain                     = local.is_uat ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
-  module_config_file             = local.is_uat ? "conf-uat.yaml" : "conf.yaml"
-  module_config                  = yamldecode(file("${path.module}/../../modules/${local.module_config_file}"))
-  psc_service_attachment_project = local.is_uat ? "vdc-dev-test" : "vdc-prod"
-  psc_service_attachment_name    = "zilliz-byoc-psc-dns"
+  is_uat             = upper(trimspace(var.env)) == "UAT"
+  dataplane_suffix   = regex("[^-]+$", local.data_plane_id)
+  env_domain         = local.is_uat ? "cloud-uat3.zilliz.com" : "cloud.zilliz.com"
+  module_config_file = local.is_uat ? "conf-uat.yaml" : "conf.yaml"
+  module_config      = yamldecode(file("${path.module}/../../modules/${local.module_config_file}"))
+  configured_psc_service_attachment_id = trimspace(try(
+    local.module_config.GCP.private_service_connect.service_attachment_ids[local.gcp_region],
+    ""
+  ))
   gcp_psc_service_attachment_id = (
     var.gcp_psc_service_attachment_id != ""
     ? var.gcp_psc_service_attachment_id
-    : "projects/${local.psc_service_attachment_project}/regions/${local.gcp_region}/serviceAttachments/${local.psc_service_attachment_name}"
+    : local.configured_psc_service_attachment_id != ""
+    ? local.configured_psc_service_attachment_id
+    : data.zillizcloud_byoc_vpc_endpoint_service.this[0].endpoint_service
   )
   gcp_private_service_domain = "gcp-${local.gcp_region}.byoc.${local.env_domain}"
   psc_private_dns_domain = (

@@ -19,5 +19,9 @@ locals {
 
   dns_zone_name = "cloud-tunnel.az-${local.location}.${local.config.Azure.private_zone_domain_suffix}"
 
-  zilliz_byoc_privatelink_resource_alias = local.config.Azure.zilliz_byoc_privatelink_resource_alias["${local.location}"]
+  configured_privatelink_resource_alias = trimspace(try(
+    local.config.Azure.zilliz_byoc_privatelink_resource_alias[local.location],
+    ""
+  ))
+  zilliz_byoc_privatelink_resource_alias = var.privatelink_resource_alias != "" ? var.privatelink_resource_alias : local.configured_privatelink_resource_alias
 }

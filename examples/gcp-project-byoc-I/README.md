@@ -20,7 +20,7 @@ This example provisions a GCP BYOC-I dataplane with customer-managed infrastruct
 - Zilliz Cloud provider version that includes `zillizcloud_byoc_i_project.gcp`
 - A GCP project with the APIs needed for Artifact Registry, Compute Engine, Cloud DNS, GKE, IAM, Service Usage, and Cloud Storage
 - By default, the Terraform runner needs `roles/resourcemanager.tagAdmin` and `roles/resourcemanager.tagUser` to create and bind Resource Manager tags
-- For Private Service Connect, `gcp_psc_service_attachment_id` is optional. When unset, it defaults to `projects/vdc-dev-test/regions/<region>/serviceAttachments/zilliz-byoc-psc-dns` for `env = "UAT"` and `projects/vdc-prod/regions/<region>/serviceAttachments/zilliz-byoc-psc-dns` otherwise.
+- For Private Service Connect, `gcp_psc_service_attachment_id` is optional. Terraform first checks the selected environment configuration and then queries the Zilliz Cloud endpoint-service API when that configuration has no entry for the region.
 
 ## Usage
 
@@ -271,7 +271,7 @@ If multiple GCP BYOC-I VPCs need VPC Peering, configure non-overlapping `vpc_cid
 
 The example outputs `primary_subnet_cidr`, `pod_subnet_cidr`, `service_subnet_cidr`, `lb_subnet_cidr`, and `master_ipv4_cidr_block` to make VPC Peering overlap checks and firewall source range setup explicit.
 
-The PSC service attachment ID can be overridden with `gcp_psc_service_attachment_id`. When it is not set, Terraform builds the ID from the current BYOC-I project region and environment.
+The PSC service attachment ID can be overridden with `gcp_psc_service_attachment_id`. Resolution order is: explicit variable, `GCP.private_service_connect.service_attachment_ids[region]` in the selected environment configuration, then the Zilliz Cloud endpoint-service API using `cloud_id = "gcp"` and the GCP region.
 
 The example grants the storage service account to the fixed BYOC-I Kubernetes service accounts used by Loki and Milvus bootstrap through GKE Workload Identity. It also grants storage Workload Identity access to the target GKE cluster because instance namespaces and service accounts are created at runtime.
 

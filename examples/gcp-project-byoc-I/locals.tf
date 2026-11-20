@@ -57,6 +57,9 @@ locals {
     local.module_config.GCP.private_service_connect.service_attachment_ids[local.gcp_region],
     ""
   ))
+  default_psc_service_attachment_project = local.is_uat ? "vdc-dev-test" : "vdc-prod"
+  default_psc_service_attachment_name    = "zilliz-byoc-psc-dns"
+  default_gcp_psc_service_attachment_id  = "projects/${local.default_psc_service_attachment_project}/regions/${local.gcp_region}/serviceAttachments/${local.default_psc_service_attachment_name}"
   gcp_psc_service_attachment_id = (
     var.gcp_psc_service_attachment_id != ""
     ? var.gcp_psc_service_attachment_id

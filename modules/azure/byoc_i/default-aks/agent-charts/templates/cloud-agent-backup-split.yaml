@@ -27,6 +27,16 @@ spec:
         - {{ .Values.config.tunnel.serverHost }}
       {{- end }}
       serviceAccountName: cloud-agent-sa
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: vdc
+                    app.kubernetes.io/name: cloud-agent
+                topologyKey: kubernetes.io/hostname
       containers:
       - env:
         - name: OTEL_TRACES_EXPORTER

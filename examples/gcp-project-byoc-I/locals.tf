@@ -57,7 +57,7 @@ locals {
     local.module_config.GCP.private_service_connect.service_attachment_ids[local.gcp_region],
     ""
   ))
-  gcp_psc_service_attachment_id = (
+  gcp_psc_service_attachment_id = !local.enable_private_link ? "" : (
     var.gcp_psc_service_attachment_id != ""
     ? var.gcp_psc_service_attachment_id
     : local.configured_psc_service_attachment_id != ""

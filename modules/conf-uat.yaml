@@ -13,7 +13,7 @@ eks_cluster_oidc_issuer_thumbprint:
 Azure:
   private_zone_domain_suffix: byoc.cloud-uat3.zilliz.com
   zilliz_byoc_privatelink_resource_alias:
-    westus3: azure-westus3-byoc.5de34d90-5378-4bcf-a358-8b0ab472bbc9.westus3.azure.privatelinkservice
+    westus3: azure-westus3-byoc.7dff937a-d522-494c-a3de-b595c2fc429c.westus3.azure.privatelinkservice
   agent_config:
     westus3:
       acr_name: zillizeastus
